@@ -7,7 +7,17 @@
 import { ensureTablesExist } from '../db-init.js';
 
 export async function onRequest({ request, env }) {
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  // Handle OPTIONS pre-flight requests
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers });
+  }
 
   // Ensure database tables exist on first use
   await ensureTablesExist(env);

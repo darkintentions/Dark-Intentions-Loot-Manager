@@ -481,6 +481,15 @@ async function deleteTransaction(transactionId, transactionType, characterName) 
     const res = await fetch(`/api/transaction-history/${transactionId}/${transactionType}`, {
       method: 'DELETE',
     });
+
+    // Check content-type before parsing JSON
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text();
+      showMessage('roster', 'error', `✗ Server error: ${res.status} - ${text || 'No response'}`);
+      return;
+    }
+
     const data = await res.json();
 
     if (data.success) {
@@ -491,7 +500,7 @@ async function deleteTransaction(transactionId, transactionType, characterName) 
         await openTransactionHistoryModal(characterName);
       }
     } else {
-      showMessage('roster', 'error', `✗ ${data.error}`);
+      showMessage('roster', 'error', `✗ ${data.error || 'Delete failed'}`);
     }
   } catch (err) {
     showMessage('roster', 'error', `✗ Network error: ${err.message}`);
