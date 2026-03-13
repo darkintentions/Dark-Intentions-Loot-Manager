@@ -9,13 +9,13 @@
  */
 export async function ensureTablesExist(env) {
   try {
-    // Check if tables exist
+    // Check if the newest table exists (loot_history)
+    // If it doesn't, run initialization — all statements use IF NOT EXISTS so it's safe
     const result = await env.DB
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='epgp_gear_values'")
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='loot_history'")
       .first();
 
     if (!result) {
-      // Tables don't exist, create them
       await initializeDatabase(env);
     }
   } catch (err) {
@@ -76,6 +76,37 @@ async function initializeDatabase(env) {
       description TEXT DEFAULT '',
       ep          INTEGER NOT NULL DEFAULT 0,
       created_at  TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS wowaudit_period (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      period_id   INTEGER NOT NULL UNIQUE,
+      data        TEXT NOT NULL,
+      updated_at  TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS loot_history (
+      id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+      rclootcouncil_id        TEXT NOT NULL UNIQUE,
+      item_id                 INTEGER NOT NULL,
+      name                    TEXT NOT NULL,
+      icon                    TEXT,
+      slot                    TEXT,
+      quality                 TEXT,
+      character_id            INTEGER NOT NULL,
+      awarded_by_character_id INTEGER,
+      awarded_by_name         TEXT,
+      awarded_at              TEXT,
+      difficulty              TEXT,
+      discarded               BOOLEAN DEFAULT 0,
+      same_response_amount    INTEGER DEFAULT 0,
+      note                    TEXT,
+      wish_value              INTEGER DEFAULT 0,
+      response_type           TEXT,
+      bonus_ids               TEXT,
+      old_items               TEXT,
+      wish_data               TEXT,
+      updated_at              TEXT DEFAULT (datetime('now'))
     );
 
     INSERT OR REPLACE INTO settings (key, value)

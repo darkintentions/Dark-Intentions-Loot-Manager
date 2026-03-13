@@ -117,6 +117,18 @@ export async function onRequest({ request, env }) {
         .first();
       const defaultGp = defaultGpRow?.value ? parseInt(defaultGpRow.value) : 2;
 
+      // Get existing roster to check for new characters
+      let existingRoster = [];
+      try {
+        const { results } = await env.DB
+          .prepare('SELECT name FROM roster')
+          .all();
+        existingRoster = (results || []).map(r => r.name);
+      } catch (e) {
+        // Table doesn't exist yet, all characters are new
+        existingRoster = [];
+      }
+
       // Replace roster with fresh data
       await env.DB.prepare('DELETE FROM roster').run();
 
@@ -130,6 +142,7 @@ export async function onRequest({ request, env }) {
 
       for (const c of chars) {
         const charName = c.name ?? 'Unknown';
+        const isNewCharacter = !existingRoster.includes(charName);
 
         // Insert into roster
         await stmt
@@ -147,16 +160,18 @@ export async function onRequest({ request, env }) {
           )
           .run();
 
-        // Add initial GP log entry for this character
-        try {
-          await env.DB.prepare(`
-            INSERT INTO gp_log (name, gp, reason, timestamp)
-            VALUES (?, ?, ?, ?)
-          `)
-            .bind(charName, defaultGp, 'Initial GP on roster sync', now)
-            .run();
-        } catch (e) {
-          // gp_log table may not exist yet; ignore
+        // Add initial GP log entry ONLY for new characters
+        if (isNewCharacter) {
+          try {
+            await env.DB.prepare(`
+              INSERT INTO gp_log (name, gp, reason, timestamp)
+              VALUES (?, ?, ?, ?)
+            `)
+              .bind(charName, defaultGp, 'Initial GP on roster sync', now)
+              .run();
+          } catch (e) {
+            // gp_log table may not exist yet; ignore
+          }
         }
       }
 

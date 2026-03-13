@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script>const whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true};</script>
+  <script src="https://wow.zamimg.com/js/tooltips.js"></script>
 </head>
 <body>
 
@@ -67,9 +69,14 @@
     <div id="tab-roster" class="tab-panel active">
       <div class="panel-header">
         <h1>Guild Roster</h1>
-        <button id="sync-roster-btn" class="btn btn-primary">
-          <span class="btn-icon">🔄</span> Sync from WoWAudit
-        </button>
+        <div class="panel-header-actions">
+          <button id="export-pr-btn" class="btn btn-secondary">
+            <span class="btn-icon">📋</span> Export Roster PR
+          </button>
+          <button id="sync-roster-btn" class="btn btn-primary">
+            <span class="btn-icon">🔄</span> Sync Roster from WoWAudit
+          </button>
+        </div>
       </div>
       <div id="roster-message" class="message hidden"></div>
       <div class="content-scroll">
@@ -84,14 +91,12 @@
               <th class="sortable-header" data-sort="realm">Realm</th>
               <th class="sortable-header" data-sort="class">Class</th>
               <th class="sortable-header" data-sort="role">Role</th>
-              <th class="sortable-header" data-sort="ep">EP</th>
-              <th class="sortable-header" data-sort="gp">GP</th>
               <th class="sortable-header" data-sort="status">Status</th>
             </tr>
           </thead>
           <tbody id="roster-tbody">
             <tr class="empty-row">
-              <td colspan="8">No roster data. Click "Sync from WoWAudit" to load characters.</td>
+              <td colspan="6">No roster data. Click "Sync Roster from WoWAudit" to load characters.</td>
             </tr>
           </tbody>
         </table>
@@ -102,11 +107,29 @@
     <div id="tab-loot" class="tab-panel">
       <div class="panel-header">
         <h1>Loot History</h1>
+        <button id="sync-loot-btn" class="btn btn-primary">
+          <span class="btn-icon">🔄</span> Sync Loot from WoWAudit
+        </button>
       </div>
-      <div class="coming-soon">
-        <div class="coming-soon-icon">💎</div>
-        <h2>Coming Soon</h2>
-        <p>Loot tracking and distribution history will be available in a future update.</p>
+      <div id="loot-message" class="message hidden"></div>
+      <div class="content-scroll">
+        <table id="loot-table" class="data-table sortable">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Slot</th>
+              <th>Quality</th>
+              <th>Character</th>
+              <th>Awarded By</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="loot-tbody">
+            <tr class="empty-row">
+              <td colspan="6">No loot history. Click "Sync Loot from WoWAudit" to load data.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -114,9 +137,6 @@
     <div id="tab-epgp" class="tab-panel">
       <div class="panel-header">
         <h1>EPGP</h1>
-        <button id="save-epgp-btn" class="btn btn-primary">
-          <span class="btn-icon">💾</span> Save Values
-        </button>
       </div>
       <div id="epgp-message" class="message hidden"></div>
       <div class="content-scroll">
@@ -126,19 +146,24 @@
             <h2 class="section-title">Gear Slot Point Value</h2>
           </button>
           <div id="gear-slot-content" class="collapsible-content">
-            <table id="epgp-table" class="data-table gear-table">
-              <thead>
-                <tr>
-                  <th>Gear Slot</th>
-                  <th>Point Value</th>
-                  <th>Gear Slot</th>
-                  <th>Point Value</th>
-                </tr>
-              </thead>
-              <tbody id="epgp-tbody">
-                <!-- Populated by app.js -->
-              </tbody>
-            </table>
+            <div class="gear-table-wrapper">
+              <table id="epgp-table" class="data-table gear-table">
+                <thead>
+                  <tr>
+                    <th>Gear Slot</th>
+                    <th>Point Value</th>
+                    <th>Gear Slot</th>
+                    <th>Point Value</th>
+                  </tr>
+                </thead>
+                <tbody id="epgp-tbody">
+                  <!-- Populated by app.js -->
+                </tbody>
+              </table>
+              <button id="save-epgp-btn" class="btn btn-primary">
+                <span class="btn-icon">💾</span> Save Values
+              </button>
+            </div>
           </div>
         </div>
 
@@ -149,8 +174,8 @@
           </button>
           <div id="edit-ep-content" class="collapsible-content">
             <div class="epgp-log-form">
-              <select id="ep-name-select" class="form-input">
-                <option value="">Select Character</option>
+              <select id="ep-name-select" class="form-select">
+                <option value="">— Select a character —</option>
               </select>
               <input type="number" id="ep-value-input" class="form-input" placeholder="+/- EP">
               <input type="text" id="ep-reason-input" class="form-input" placeholder="Reason">
@@ -168,10 +193,11 @@
           </button>
           <div id="edit-gp-content" class="collapsible-content">
             <div class="epgp-log-form">
-              <select id="gp-name-select" class="form-input">
-                <option value="">Select Character</option>
+              <select id="gp-name-select" class="form-select">
+                <option value="">— Select a character —</option>
               </select>
               <input type="number" id="gp-value-input" class="form-input" placeholder="+/- GP">
+              <input type="number" id="gp-item-id-input" class="form-input" placeholder="Item ID (optional)">
               <input type="text" id="gp-reason-input" class="form-input" placeholder="Reason">
               <button id="edit-gp-btn" class="btn btn-primary">
                 <span class="btn-icon">📝</span> Edit GP
@@ -202,7 +228,6 @@
       <div id="admin-message" class="message hidden"></div>
       <div class="content-scroll">
         <section class="admin-section">
-          <h2 class="section-title">API Configuration</h2>
           <div class="form-group">
             <label for="api-key-input">WoW Audit API Key:</label>
             <div class="input-group">
@@ -217,50 +242,75 @@
               <button class="btn btn-icon-only" id="toggle-api-key" title="Toggle visibility">
                 👁
               </button>
+              <button id="save-admin-btn" class="btn btn-primary">
+                <span class="btn-icon">💾</span> Save Settings
+              </button>
             </div>
             <small class="form-hint">
               Used in the <code>Authorization</code> header for all WoWAudit API requests.
               Stored in the D1 database.
             </small>
           </div>
-          <button id="save-admin-btn" class="btn btn-primary">
-            <span class="btn-icon">💾</span> Save Settings
-          </button>
         </section>
 
+        <hr class="admin-separator">
         <section class="admin-section">
-          <h2 class="section-title">Add Custom EP Button</h2>
-          <button id="open-custom-ep-btn" class="btn btn-primary">
+          <h2 class="section-title">Custom EP Buttons</h2>
+          <button id="open-custom-ep-btn" class="btn btn-primary btn-no-top-margin">
             <span class="btn-icon">➕</span> Create New Button
           </button>
         </section>
 
+        <hr class="admin-separator">
         <section class="admin-section">
-          <h2 class="section-title">Default GP Setting</h2>
-          <div class="form-group">
-            <label for="default-gp-input">Default GP for New Characters:</label>
-            <input
-              type="number"
-              id="default-gp-input"
-              class="form-input"
-              placeholder="Default GP value..."
-              min="0"
-            >
+          <h2 class="section-title">Default GP</h2>
+          <div class="form-group form-group-no-top-margin">
+            <div class="input-group">
+              <input
+                type="number"
+                id="default-gp-input"
+                class="form-input"
+                placeholder="Default GP value..."
+                min="0"
+              >
+              <button id="save-default-gp-btn" class="btn btn-primary">
+                <span class="btn-icon">💾</span> Save
+              </button>
+            </div>
             <small class="form-hint">
               This value is assigned to new characters when synced from WoWAudit.
-              Current default: 2 GP
             </small>
           </div>
-          <button id="save-default-gp-btn" class="btn btn-primary">
-            <span class="btn-icon">💾</span> Save Default GP
-          </button>
         </section>
 
+        <hr class="admin-separator">
         <section class="admin-section">
           <h2 class="section-title">Danger Zone</h2>
-          <button id="delete-roster-btn" class="btn btn-danger" title="This will delete everyone in the roster and wipe all data related to them in the database">
-            <span class="btn-icon">🗑️</span> Permanently Delete Roster
-          </button>
+
+          <!-- Delete Single Character -->
+          <div class="admin-subsection">
+            <h3 class="subsection-title">Delete Character</h3>
+            <p class="subsection-description">Permanently delete a single character and all their transaction history.</p>
+            <div class="admin-input-group">
+              <select id="delete-character-select" class="form-select">
+                <option value="">— Select a character —</option>
+              </select>
+              <button id="delete-character-btn" class="btn btn-danger" disabled title="Permanently delete the selected character">
+                <span class="btn-icon">🗑️</span> Delete Character
+              </button>
+            </div>
+          </div>
+
+          <hr class="admin-subseparator">
+
+          <!-- Delete Entire Roster -->
+          <div class="admin-subsection">
+            <h3 class="subsection-title">Delete Entire Roster</h3>
+            <p class="subsection-description">Permanently delete everyone in the roster and wipe all related data.</p>
+            <button id="delete-roster-btn" class="btn btn-danger" title="This will delete everyone in the roster and wipe all data related to them in the database">
+              <span class="btn-icon">🗑️</span> Permanently Delete Roster
+            </button>
+          </div>
         </section>
       </div>
     </div>
@@ -291,6 +341,79 @@
       <div class="modal-footer">
         <button id="save-custom-ep-btn" class="btn btn-primary">Save Button</button>
         <button id="cancel-custom-ep-btn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction History Modal -->
+  <div id="transaction-history-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="transaction-history-title">Transaction History</h2>
+        <button id="close-transaction-history-btn" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="transaction-list" class="transaction-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Transaction Modal -->
+  <div id="edit-transaction-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Edit Transaction</h2>
+        <button id="close-edit-transaction-btn" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Amount</label>
+          <input id="edit-transaction-amount" type="number" class="form-input" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Reason</label>
+          <input id="edit-transaction-reason" type="text" class="form-input" placeholder="Enter reason for transaction">
+        </div>
+        <div class="form-group">
+          <label>Timestamp</label>
+          <input id="edit-transaction-timestamp" type="datetime-local" class="form-input">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="save-edit-transaction-btn" class="btn btn-primary">Update Transaction</button>
+        <button id="cancel-edit-transaction-btn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Modal -->
+  <div id="alert-modal" class="modal hidden">
+    <div class="modal-content alert-modal-content">
+      <div class="modal-header">
+        <h2 id="alert-modal-title">Notice</h2>
+      </div>
+      <div class="modal-body">
+        <p id="alert-modal-message"></p>
+      </div>
+      <div class="modal-footer">
+        <button id="alert-modal-ok" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-content alert-modal-content">
+      <div class="modal-header">
+        <h2 id="confirm-modal-title">Confirm</h2>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-modal-message"></p>
+        <input type="text" id="confirm-modal-input" class="form-input confirm-modal-input hidden" autocomplete="off">
+      </div>
+      <div class="modal-footer">
+        <button id="confirm-modal-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="confirm-modal-ok" class="btn btn-danger">Confirm</button>
       </div>
     </div>
   </div>

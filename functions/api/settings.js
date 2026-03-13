@@ -1,6 +1,6 @@
 /**
  * /api/settings
- * GET  — returns the stored WoWAudit API key
+ * GET  — returns the stored WoWAudit API key and default GP value
  * POST — saves a key/value setting to D1
  */
 import { ensureTablesExist } from '../db-init.js';
@@ -14,11 +14,17 @@ export async function onRequest({ request, env }) {
   // ── GET ─────────────────────────────────────────────────────
   if (request.method === 'GET') {
     try {
-      const row = await env.DB
+      const apiKeyRow = await env.DB
         .prepare("SELECT value FROM settings WHERE key = 'wowaudit_api_key'")
         .first();
+      const defaultGpRow = await env.DB
+        .prepare("SELECT value FROM settings WHERE key = 'default_gp'")
+        .first();
       return new Response(
-        JSON.stringify({ api_key: row?.value ?? '' }),
+        JSON.stringify({
+          api_key: apiKeyRow?.value ?? '',
+          default_gp: defaultGpRow?.value ?? ''
+        }),
         { headers }
       );
     } catch (err) {

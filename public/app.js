@@ -8,6 +8,82 @@
 const $  = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+// ── Custom alert modal ──────────────────────────────────────────
+function showAlert(message, title = 'Notice') {
+  const modal = $('#alert-modal');
+  $('#alert-modal-title').textContent = title;
+  $('#alert-modal-message').textContent = message;
+  modal.classList.remove('hidden');
+  const okBtn = $('#alert-modal-ok');
+  okBtn.focus();
+  const close = () => modal.classList.add('hidden');
+  okBtn.onclick = close;
+  modal.onclick = (e) => { if (e.target === modal) close(); };
+}
+
+// ── Custom confirm modal (returns Promise<boolean>) ─────────────
+// options: { title, message, confirmText, cancelText, inputPlaceholder, inputMatch }
+// If inputPlaceholder is set, shows a text input the user must fill.
+// If inputMatch is set, the confirm button only works when input matches that string.
+function showConfirm({ title = 'Confirm', message = '', confirmText = 'Confirm', cancelText = 'Cancel', inputPlaceholder = '', inputMatch = '' } = {}) {
+  return new Promise((resolve) => {
+    const modal = $('#confirm-modal');
+    const msgEl = $('#confirm-modal-message');
+    const titleEl = $('#confirm-modal-title');
+    const okBtn = $('#confirm-modal-ok');
+    const cancelBtn = $('#confirm-modal-cancel');
+    const inputEl = $('#confirm-modal-input');
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+    okBtn.textContent = confirmText;
+    cancelBtn.textContent = cancelText;
+
+    // Input field setup
+    if (inputPlaceholder) {
+      inputEl.classList.remove('hidden');
+      inputEl.value = '';
+      inputEl.placeholder = inputPlaceholder;
+    } else {
+      inputEl.classList.add('hidden');
+    }
+
+    modal.classList.remove('hidden');
+
+    if (inputPlaceholder) {
+      inputEl.focus();
+    } else {
+      okBtn.focus();
+    }
+
+    function cleanup(result) {
+      modal.classList.add('hidden');
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      modal.onclick = null;
+      inputEl.oninput = null;
+      resolve(result);
+    }
+
+    okBtn.onclick = () => {
+      if (inputMatch && inputEl.value !== inputMatch) return;
+      cleanup(true);
+    };
+    cancelBtn.onclick = () => cleanup(false);
+    modal.onclick = (e) => { if (e.target === modal) cleanup(false); };
+
+    // If inputMatch is set, disable confirm until it matches
+    if (inputMatch) {
+      okBtn.disabled = true;
+      inputEl.oninput = () => {
+        okBtn.disabled = inputEl.value !== inputMatch;
+      };
+    } else {
+      okBtn.disabled = false;
+    }
+  });
+}
+
 function escHtml(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -93,21 +169,45 @@ if (window.innerWidth <= 768) {
 }
 
 // ================================================================
-//  TAB SWITCHING
+//  TAB SWITCHING & UNSAVED CHANGES
 // ================================================================
 const tabLoaded = {};
+let unsavedChanges = false;
 
-function switchTab(name) {
+function markUnsavedChanges() {
+  unsavedChanges = true;
+}
+
+function clearUnsavedChanges() {
+  unsavedChanges = false;
+}
+
+async function switchTab(name) {
+  // Check for unsaved changes before switching
+  if (unsavedChanges) {
+    const confirmed = await showConfirm({
+      title: 'Unsaved Changes',
+      message: 'You have unsaved changes. Do you want to leave without saving?',
+      confirmText: 'Leave',
+      cancelText: 'Stay',
+    });
+    if (!confirmed) return;
+  }
+
   $$('.nav-item').forEach(li => li.classList.remove('active'));
   $$('.tab-panel').forEach(panel => panel.classList.remove('active'));
 
   $(`.nav-item[data-tab="${name}"]`).classList.add('active');
   $(`#tab-${name}`).classList.add('active');
 
+  // Clear unsaved flag when switching tabs
+  clearUnsavedChanges();
+
   // Lazy-load tab data on first visit
   if (!tabLoaded[name]) {
     tabLoaded[name] = true;
     if (name === 'roster') loadRoster();
+    if (name === 'loot')   loadLootHistory();
     if (name === 'epgp')   loadEpgp();
     if (name === 'admin')  loadAdminSettings();
   }
@@ -115,6 +215,15 @@ function switchTab(name) {
 
 $$('.nav-item').forEach(li => {
   li.addEventListener('click', () => switchTab(li.dataset.tab));
+});
+
+// Warn before closing/reloading if there are unsaved changes
+window.addEventListener('beforeunload', (e) => {
+  if (unsavedChanges) {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
 });
 
 // ================================================================
@@ -172,15 +281,16 @@ function renderRoster(roster) {
         <td>${escHtml(c.realm || '—')}</td>
         <td class="${css}">${escHtml(c.class || '—')}</td>
         <td>${escHtml(c.role || '—')}</td>
-        <td>${ep}</td>
-        <td>${gp}</td>
         <td><span class="status-badge status-${escHtml(status)}">${escHtml(status)}</span></td>
       </tr>
       <tr class="roster-detail-row hidden" id="${charId}">
-        <td colspan="8">
+        <td colspan="6">
           <div class="detail-content">
-            <h4>${escHtml(c.name)}</h4>
             <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Priority Ratio:</span>
+                <span class="detail-value">${pr}</span>
+              </div>
               <div class="detail-item">
                 <span class="detail-label">Earned Points (EP):</span>
                 <span class="detail-value">${ep}</span>
@@ -190,20 +300,7 @@ function renderRoster(roster) {
                 <span class="detail-value">${gp}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">Priority Ratio:</span>
-                <span class="detail-value">${pr}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Realm:</span>
-                <span class="detail-value">${escHtml(c.realm || '—')}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Class:</span>
-                <span class="detail-value ${css}">${escHtml(c.class || '—')}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Role:</span>
-                <span class="detail-value">${escHtml(c.role || '—')}</span>
+                <button class="btn btn-secondary view-history-btn" data-character="${escHtml(c.name)}" style="padding: 11px 23px; font-size: 14px; margin-left: auto;">📜 View EP/GP History</button>
               </div>
             </div>
           </div>
@@ -219,6 +316,15 @@ function renderRoster(roster) {
       if (detailRow) {
         detailRow.classList.toggle('hidden');
       }
+    });
+  });
+
+  // Add click handlers for View History buttons
+  $$('.view-history-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const characterName = btn.dataset.character;
+      await openTransactionHistoryModal(characterName);
     });
   });
 }
@@ -282,6 +388,245 @@ function filterRoster(query) {
   renderRoster(filtered);
 }
 
+// ── Transaction History Functions ──────────────────────────────────
+
+async function loadTransactionHistory(characterName) {
+  try {
+    const res = await fetch(`/api/transaction-history?name=${encodeURIComponent(characterName)}`);
+    const data = await res.json();
+    if (data.transactions) {
+      return data.transactions;
+    } else {
+      showMessage('roster', 'error', '✗ Failed to load transaction history');
+      return [];
+    }
+  } catch (err) {
+    showMessage('roster', 'error', `✗ Network error: ${err.message}`);
+    return [];
+  }
+}
+
+async function openTransactionHistoryModal(characterName) {
+  const modal = $('#transaction-history-modal');
+  const transactions = await loadTransactionHistory(characterName);
+  await populateHistoryModal(transactions, characterName);
+  modal.classList.remove('hidden');
+}
+
+async function formatReasonWithLinks(reason) {
+  if (!reason) return '(no reason)';
+
+  // If the reason already contains HTML link tags, extract the URL and clean it up
+  const existingHtmlLinkRegex = /<a\s+href="(https:\/\/www\.wowhead\.com\/item=\d+[^"]*)"\s*[^>]*>[^<]*<\/a>\s*-?\s*/g;
+  let cleanReason = reason.replace(existingHtmlLinkRegex, '$1 ');
+
+  // Find WoWhead URLs (either plain text or extracted from HTML) and replace with clean item links
+  const wowheadUrlRegex = /(https:\/\/www\.wowhead\.com\/item=\d+(?:[?&#]\S+)?)/g;
+  let result = cleanReason;
+  const links = [];
+
+  // Replace URLs with placeholder
+  const placeholderPrefix = '__WOWHEAD_';
+  const placeholderSuffix = '__';
+
+  // Collect all item IDs to fetch names for
+  const itemIds = [];
+  const matches = [...cleanReason.matchAll(wowheadUrlRegex)];
+
+  for (const match of matches) {
+    const itemId = match[0].match(/item=(\d+)/)[1];
+    if (!itemIds.includes(itemId)) {
+      itemIds.push(itemId);
+    }
+  }
+
+  // Fetch all item names in parallel
+  const itemNames = {};
+  try {
+    const namePromises = itemIds.map(id =>
+      fetch(`/api/item-info?id=${id}`)
+        .then(r => r.json())
+        .then(data => {
+          itemNames[id] = data.name || id;
+        })
+        .catch(() => {
+          itemNames[id] = id; // Fallback to ID if fetch fails
+        })
+    );
+    await Promise.all(namePromises);
+  } catch (err) {
+    console.error('Error fetching item names:', err);
+    // If fetch fails, we'll fall back to showing item IDs
+  }
+
+  result = result.replace(wowheadUrlRegex, (match) => {
+    const itemId = match.match(/item=(\d+)/)[1];
+    const itemName = itemNames[itemId] || itemId;
+    // Create link with item name (WoWhead tooltip will work based on the href URL)
+    links.push(`<a href="${match}" target="_blank" class="wowhead-link">${escHtml(itemName)}</a>`);
+    return placeholderPrefix + (links.length - 1) + placeholderSuffix;
+  });
+
+  // Escape the entire reason text
+  result = escHtml(result);
+
+  // Replace placeholders back with actual links
+  links.forEach((link, i) => {
+    const placeholder = escHtml(placeholderPrefix + i + placeholderSuffix);
+    result = result.replace(placeholder, link);
+  });
+
+  return result;
+}
+
+async function populateHistoryModal(transactions, characterName) {
+  const titleEl = $('#transaction-history-title');
+  const listEl = $('#transaction-list');
+
+  titleEl.textContent = `Transaction History — ${escHtml(characterName)}`;
+
+  if (transactions.length === 0) {
+    listEl.innerHTML = '<div class="transaction-list-empty">No transaction history for this character</div>';
+    return;
+  }
+
+  // Format all transaction reasons in parallel
+  const formattedReasons = await Promise.all(
+    transactions.map(t => formatReasonWithLinks(t.reason))
+  );
+
+  listEl.innerHTML = transactions.map((t, index) => {
+    const badge = t.type.toUpperCase();
+    const badgeClass = t.type === 'ep' ? 'ep' : 'gp';
+    const formattedTime = new Date(t.timestamp).toLocaleString();
+    const amount = t.amount ?? 0;
+    const reasonHTML = formattedReasons[index];
+
+    // Store original data in data attributes for later retrieval
+    const originalAmount = escHtml(String(t.amount ?? 0));
+    const originalReason = escHtml(t.reason || '');
+    const originalTimestamp = escHtml(t.timestamp || '');
+
+    return `
+      <div class="transaction-item" data-transaction-id="${t.id}" data-transaction-type="${t.type}"
+           data-original-amount="${originalAmount}" data-original-reason="${originalReason}"
+           data-original-timestamp="${originalTimestamp}">
+        <button class="transaction-icon-btn edit-transaction-btn" data-transaction-id="${t.id}" data-transaction-type="${t.type}" title="Edit">✎</button>
+        <div class="transaction-content">
+          <span class="transaction-type-badge ${badgeClass}">${badge}</span>
+          <div class="transaction-details">
+            <span class="transaction-amount">${amount > 0 ? '+' : ''}${amount}</span>
+            <span class="transaction-reason">${reasonHTML}</span>
+            <span class="transaction-timestamp">${formattedTime}</span>
+          </div>
+        </div>
+        <button class="transaction-icon-btn delete-btn delete-transaction-btn" data-transaction-id="${t.id}" data-transaction-type="${t.type}" title="Delete">🗑</button>
+      </div>
+    `;
+  }).join('');
+
+  // Attach event listeners to edit buttons
+  $$('.edit-transaction-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.transactionId;
+      const type = btn.dataset.transactionType;
+      const transItem = $(`.transaction-item[data-transaction-id="${id}"][data-transaction-type="${type}"]`);
+      if (transItem) {
+        // Read original data from attributes (not from rendered DOM)
+        const amount = transItem.dataset.originalAmount;
+        const reason = transItem.dataset.originalReason;
+        const timestamp = transItem.dataset.originalTimestamp;
+        openEditTransactionModal(id, type, { amount, reason, timestamp }, characterName);
+      }
+    });
+  });
+
+  // Attach event listeners to delete buttons
+  $$('.delete-transaction-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.transactionId;
+      const type = btn.dataset.transactionType;
+      deleteTransaction(id, type, characterName);
+    });
+  });
+
+  // Refresh WoWhead tooltips for dynamically added content
+  if (window.__WowheadPower) {
+    window.__WowheadPower.refreshLinks();
+  }
+}
+
+function openEditTransactionModal(transactionId, transactionType, transaction, characterName) {
+  const modal = $('#edit-transaction-modal');
+  const amountInput = $('#edit-transaction-amount');
+  const reasonInput = $('#edit-transaction-reason');
+  const timestampInput = $('#edit-transaction-timestamp');
+
+  // Pre-fill form with current values
+  amountInput.value = transaction.amount || 0;
+  reasonInput.value = transaction.reason || '';
+
+  // Format timestamp for datetime-local input
+  if (transaction.timestamp) {
+    const date = new Date(transaction.timestamp);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    timestampInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+  } else {
+    timestampInput.value = '';
+  }
+
+  // Store data for submission
+  modal.dataset.transactionId = transactionId;
+  modal.dataset.transactionType = transactionType;
+  modal.dataset.characterName = characterName;
+
+  modal.classList.remove('hidden');
+}
+
+async function deleteTransaction(transactionId, transactionType, characterName) {
+  const confirmed = await showConfirm({
+    title: 'Delete Transaction',
+    message: 'Delete this transaction? This cannot be undone.',
+    confirmText: 'Delete',
+  });
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`/api/transaction-history?id=${transactionId}&type=${transactionType}`, {
+      method: 'DELETE',
+    });
+
+    // Check content-type before parsing JSON
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text();
+      showMessage('roster', 'error', `✗ Server error: ${res.status} - ${text || 'No response'}`);
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('roster', 'success', '✓ Transaction deleted');
+      // Reload the history modal
+      const historyModal = $('#transaction-history-modal');
+      if (!historyModal.classList.contains('hidden')) {
+        await openTransactionHistoryModal(characterName);
+      }
+    } else {
+      showMessage('roster', 'error', `✗ ${data.error || 'Delete failed'}`);
+    }
+  } catch (err) {
+    showMessage('roster', 'error', `✗ Network error: ${err.message}`);
+  }
+}
+
 // Sort header listeners
 $$('.sortable-header').forEach(h => {
   h.addEventListener('click', () => sortRoster(h.dataset.sort));
@@ -291,6 +636,79 @@ $$('.sortable-header').forEach(h => {
 $('#roster-search').addEventListener('input', (e) => {
   filterRoster(e.target.value);
 });
+
+$('#export-pr-btn').addEventListener('click', () => {
+  if (!rosterData || rosterData.length === 0) {
+    showMessage('roster', 'error', '✗ No roster data to export');
+    return;
+  }
+
+  // Build CSV lines: "Name-Realm,PR"
+  const lines = rosterData.map(c => {
+    const ep = c.ep ?? 0;
+    const gp = c.gp ?? 0;
+    const pr = gp > 0 ? (ep / gp).toFixed(2) : '0.00';
+    const realm = c.realm || 'Unknown';
+    return `${c.name}-${realm},${pr}`;
+  });
+
+  const csv = lines.join('\n');
+
+  // Open a styled modal window with the CSV content
+  showExportModal(csv);
+});
+
+function showExportModal(content) {
+  // Remove existing export modal if any
+  const existing = $('#export-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'export-modal';
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Export Roster PR</h2>
+        <button id="close-export-modal" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="export-textarea" class="export-textarea" readonly>${escHtml(content)}</textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="copy-export-btn" class="btn btn-primary">
+          <span class="btn-icon">📋</span> Copy to Clipboard
+        </button>
+        <button id="cancel-export-btn" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Auto-select all text
+  const textarea = $('#export-textarea');
+  textarea.focus();
+  textarea.select();
+
+  // Copy button
+  $('#copy-export-btn').addEventListener('click', () => {
+    textarea.select();
+    navigator.clipboard.writeText(content).then(() => {
+      $('#copy-export-btn').innerHTML = '<span class="btn-icon">✓</span> Copied!';
+      setTimeout(() => {
+        $('#copy-export-btn').innerHTML = '<span class="btn-icon">📋</span> Copy to Clipboard';
+      }, 2000);
+    });
+  });
+
+  // Close handlers
+  $('#close-export-modal').addEventListener('click', () => modal.remove());
+  $('#cancel-export-btn').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+}
 
 $('#sync-roster-btn').addEventListener('click', async () => {
   const btn = $('#sync-roster-btn');
@@ -339,22 +757,28 @@ function populateRosterDropdowns() {
   const epSelect = $('#ep-name-select');
   const gpSelect = $('#gp-name-select');
 
-  // Clear existing options except the default one
-  while (epSelect.children.length > 1) epSelect.removeChild(epSelect.lastChild);
-  while (gpSelect.children.length > 1) gpSelect.removeChild(gpSelect.lastChild);
+  // Clear existing options
+  epSelect.innerHTML = '<option value="">— Select a character —</option>';
+  gpSelect.innerHTML = '<option value="">— Select a character —</option>';
 
-  // Add roster members
-  rosterData.forEach(member => {
-    const epOption = document.createElement('option');
-    epOption.value = member.name;
-    epOption.textContent = member.name;
-    epSelect.appendChild(epOption);
+  // Add roster members, sorted alphabetically, excluding Social rank
+  if (rosterData && rosterData.length > 0) {
+    const characters = rosterData
+      .filter(c => c.rank && c.rank.toLowerCase() !== 'social')
+      .sort((a, b) => a.name.localeCompare(b.name));
 
-    const gpOption = document.createElement('option');
-    gpOption.value = member.name;
-    gpOption.textContent = member.name;
-    gpSelect.appendChild(gpOption);
-  });
+    characters.forEach(member => {
+      const epOption = document.createElement('option');
+      epOption.value = member.name;
+      epOption.textContent = member.name;
+      epSelect.appendChild(epOption);
+
+      const gpOption = document.createElement('option');
+      gpOption.value = member.name;
+      gpOption.textContent = member.name;
+      gpSelect.appendChild(gpOption);
+    });
+  }
 }
 
 function renderEpgpTable(gearValues) {
@@ -400,6 +824,12 @@ function renderEpgpTable(gearValues) {
   }
 
   tbody.innerHTML = html;
+
+  // Attach change listeners to newly created gear inputs
+  $$('table.gear-table input').forEach(input => {
+    input.addEventListener('change', markUnsavedChanges);
+    input.addEventListener('input', markUnsavedChanges);
+  });
 }
 
 $('#save-epgp-btn').addEventListener('click', async () => {
@@ -421,6 +851,7 @@ $('#save-epgp-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('epgp', 'success', `✓ ${data.message}`);
+      clearUnsavedChanges();
     } else {
       showMessage('epgp', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -468,6 +899,9 @@ $('#edit-ep-btn').addEventListener('click', async () => {
       $('#ep-name-select').value = '';
       $('#ep-value-input').value = '';
       $('#ep-reason-input').value = '';
+      // Reload roster to update PR values
+      await loadRoster();
+      clearUnsavedChanges();
     } else {
       showMessage('epgp', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -483,7 +917,8 @@ $('#edit-gp-btn').addEventListener('click', async () => {
   const btn = $('#edit-gp-btn');
   const name = $('#gp-name-select').value.trim();
   const gp = parseInt($('#gp-value-input').value, 10);
-  const reason = $('#gp-reason-input').value.trim();
+  const itemId = $('#gp-item-id-input').value.trim();
+  let reason = $('#gp-reason-input').value.trim();
 
   if (!name) {
     showMessage('epgp', 'error', '✗ Please select a character');
@@ -493,6 +928,12 @@ $('#edit-gp-btn').addEventListener('click', async () => {
   if (isNaN(gp)) {
     showMessage('epgp', 'error', '✗ Please enter a valid GP value');
     return;
+  }
+
+  // If item ID is provided, prepend the WoWhead URL to the reason
+  if (itemId) {
+    const wowheadUrl = `https://www.wowhead.com/item=${itemId}`;
+    reason = wowheadUrl + (reason ? ` - ${reason}` : '');
   }
 
   btn.disabled = true;
@@ -514,7 +955,11 @@ $('#edit-gp-btn').addEventListener('click', async () => {
       showMessage('epgp', 'success', `✓ ${data.message}`);
       $('#gp-name-select').value = '';
       $('#gp-value-input').value = '';
+      $('#gp-item-id-input').value = '';
       $('#gp-reason-input').value = '';
+      // Reload roster to update PR values
+      await loadRoster();
+      clearUnsavedChanges();
     } else {
       showMessage('epgp', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -541,6 +986,9 @@ async function loadAdminSettings() {
   } catch {
     // Settings may just not be set yet; fail silently
   }
+
+  // Populate character delete dropdown
+  await populateCharacterDeleteSelect();
 }
 
 // Toggle API key visibility
@@ -572,6 +1020,7 @@ $('#save-admin-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('admin', 'success', `✓ ${data.message}`);
+      clearUnsavedChanges();
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -604,6 +1053,7 @@ $('#save-default-gp-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('admin', 'success', `✓ Default GP updated to ${defaultGp}`);
+      clearUnsavedChanges();
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -614,26 +1064,109 @@ $('#save-default-gp-btn').addEventListener('click', async () => {
   }
 });
 
-// Delete roster with confirmation
-$('#delete-roster-btn').addEventListener('click', async () => {
-  const confirmed = window.confirm(
-    'Are you absolutely sure?\n\n' +
-    'This will:\n' +
-    '• Delete ALL characters from the roster\n' +
-    '• Delete ALL EP/GP transaction logs\n' +
-    '• Permanently wipe all roster-related data\n\n' +
-    'This action CANNOT be undone.\n\n' +
-    'Type "DELETE" to confirm:'
-  );
+// ================================================================
+//  CHARACTER DELETION (DANGER ZONE)
+// ================================================================
+
+// Populate character select dropdown
+async function populateCharacterDeleteSelect() {
+  const select = $('#delete-character-select');
+
+  try {
+    const res = await fetch('/api/roster');
+    const data = await res.json();
+
+    select.innerHTML = '<option value="">— Select a character —</option>';
+
+    if (data.roster && data.roster.length > 0) {
+      // Filter out Social rank members and sort by name
+      const characters = data.roster
+        .filter(c => c.rank && c.rank.toLowerCase() !== 'social')
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      characters.forEach(char => {
+        const option = document.createElement('option');
+        option.value = char.name;
+        option.textContent = char.name;
+        select.appendChild(option);
+      });
+    }
+  } catch (err) {
+    select.innerHTML = '<option value="">Error loading characters</option>';
+  }
+}
+
+// Update delete button disabled state based on selection
+$('#delete-character-select').addEventListener('change', (e) => {
+  const btn = $('#delete-character-btn');
+  btn.disabled = !e.target.value;
+});
+
+// Delete character with confirmation
+$('#delete-character-btn').addEventListener('click', async () => {
+  const select = $('#delete-character-select');
+  const characterName = select.value;
+
+  if (!characterName) {
+    showMessage('admin', 'error', '✗ Please select a character');
+    return;
+  }
+
+  const confirmed = await showConfirm({
+    title: 'Delete Character',
+    message: `Are you sure you want to delete "${characterName}"? This will remove them from the roster and delete all their EP/GP transactions. This action CANNOT be undone.`,
+    confirmText: 'Delete',
+  });
 
   if (!confirmed) return;
 
-  // Prompt for confirmation word
-  const confirmWord = window.prompt('Type "DELETE" to permanently delete the roster:');
-  if (confirmWord !== 'DELETE') {
-    showMessage('admin', 'error', '✗ Deletion cancelled. Type "DELETE" to confirm.');
-    return;
+  const btn = $('#delete-character-btn');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/character-delete?name=${encodeURIComponent(characterName)}`, {
+      method: 'POST',
+    });
+
+    // Check content-type before parsing JSON
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text();
+      showMessage('admin', 'error', `✗ Server error: ${res.status} - ${text || 'No response'}`);
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('admin', 'success', `✓ ${data.message}`);
+      // Reload roster and refill the select dropdown
+      await populateCharacterDeleteSelect();
+      select.value = '';
+      btn.disabled = true;
+      // Reload roster to update display
+      loadRoster();
+    } else {
+      showMessage('admin', 'error', `✗ ${data.error || 'Deletion failed'}`);
+    }
+  } catch (err) {
+    showMessage('admin', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
   }
+});
+
+// Delete roster with confirmation
+$('#delete-roster-btn').addEventListener('click', async () => {
+  const confirmed = await showConfirm({
+    title: 'Delete Entire Roster',
+    message: 'This will delete ALL characters, ALL EP/GP transaction logs, and permanently wipe all roster-related data. This action CANNOT be undone. Type "DELETE" to confirm.',
+    confirmText: 'Delete Everything',
+    inputPlaceholder: 'Type DELETE to confirm',
+    inputMatch: 'DELETE',
+  });
+
+  if (!confirmed) return;
 
   const btn = $('#delete-roster-btn');
   btn.disabled = true;
@@ -686,11 +1219,11 @@ function renderCustomEpButtons() {
 
   container.innerHTML = customEpButtons.map(button => `
     <div class="custom-ep-button-row">
-      <select class="form-input ep-char-select" data-button-id="${button.id}">
-        <option value="">Select Character</option>
+      <select class="form-select ep-char-select" data-button-id="${button.id}">
+        <option value="">— Select a character —</option>
         ${rosterData.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
       </select>
-      <button class="btn btn-primary award-custom-ep-btn" data-button-id="${button.id}" data-button-name="${escHtml(button.name)}" data-button-ep="${button.ep}" title="${escHtml(button.description)}">
+      <button class="btn btn-primary award-custom-ep-btn" data-button-id="${button.id}" data-button-name="${escHtml(button.name)}" data-button-ep="${button.ep}" data-button-description="${escHtml(button.description)}" title="${escHtml(button.description)}">
         <span class="btn-icon">⭐</span> ${escHtml(button.name)}
       </button>
     </div>
@@ -701,6 +1234,7 @@ function renderCustomEpButtons() {
     btn.addEventListener('click', async () => {
       const buttonId = btn.dataset.buttonId;
       const buttonName = btn.dataset.buttonName;
+      const buttonDescription = btn.dataset.buttonDescription;
       const buttonEp = parseInt(btn.dataset.buttonEp);
       const charSelect = $(`.ep-char-select[data-button-id="${buttonId}"]`);
       const selectedChar = charSelect.value;
@@ -720,7 +1254,7 @@ function renderCustomEpButtons() {
           body: JSON.stringify({
             name: selectedChar,
             ep: buttonEp,
-            reason: buttonName,
+            reason: buttonDescription || buttonName,
             timestamp: timestamp,
           }),
         });
@@ -729,6 +1263,9 @@ function renderCustomEpButtons() {
         if (data.success) {
           showMessage('epgp', 'success', `✓ Awarded ${buttonEp} EP to ${selectedChar}`);
           charSelect.value = '';
+          // Reload roster to update PR values
+          await loadRoster();
+          clearUnsavedChanges();
         } else {
           showMessage('epgp', 'error', `✗ ${data.error || 'Failed to award EP'}`);
         }
@@ -808,6 +1345,202 @@ customEpModal.addEventListener('click', (e) => {
   if (e.target === customEpModal) {
     customEpModal.classList.add('hidden');
     resetCustomEpForm();
+  }
+});
+
+// ================================================================
+//  TRANSACTION HISTORY MODAL
+// ================================================================
+
+// View History button listeners (added dynamically in renderRoster)
+// We set them up after each render call
+
+const transactionHistoryModal = $('#transaction-history-modal');
+const closeTransactionHistoryBtn = $('#close-transaction-history-btn');
+const editTransactionModal = $('#edit-transaction-modal');
+const closeEditTransactionBtn = $('#close-edit-transaction-btn');
+const saveEditTransactionBtn = $('#save-edit-transaction-btn');
+const cancelEditTransactionBtn = $('#cancel-edit-transaction-btn');
+
+closeTransactionHistoryBtn.addEventListener('click', () => {
+  transactionHistoryModal.classList.add('hidden');
+});
+
+transactionHistoryModal.addEventListener('click', (e) => {
+  if (e.target === transactionHistoryModal) {
+    transactionHistoryModal.classList.add('hidden');
+  }
+});
+
+closeEditTransactionBtn.addEventListener('click', () => {
+  editTransactionModal.classList.add('hidden');
+});
+
+cancelEditTransactionBtn.addEventListener('click', () => {
+  editTransactionModal.classList.add('hidden');
+});
+
+editTransactionModal.addEventListener('click', (e) => {
+  if (e.target === editTransactionModal) {
+    editTransactionModal.classList.add('hidden');
+  }
+});
+
+saveEditTransactionBtn.addEventListener('click', async () => {
+  const id = editTransactionModal.dataset.transactionId;
+  const type = editTransactionModal.dataset.transactionType;
+  const characterName = editTransactionModal.dataset.characterName;
+  const amount = $('#edit-transaction-amount').value.trim();
+  const reason = $('#edit-transaction-reason').value.trim();
+  const timestamp = $('#edit-transaction-timestamp').value;
+
+  if (!amount || isNaN(parseInt(amount))) {
+    showMessage('roster', 'error', '✗ Please enter a valid amount');
+    return;
+  }
+
+  saveEditTransactionBtn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/transaction-history?id=${id}&type=${type}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: parseInt(amount), reason, timestamp }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('roster', 'success', '✓ Transaction updated');
+      editTransactionModal.classList.add('hidden');
+      clearUnsavedChanges();
+      // Reload history modal
+      await openTransactionHistoryModal(characterName);
+    } else {
+      showMessage('roster', 'error', `✗ ${data.error}`);
+    }
+  } catch (err) {
+    showMessage('roster', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    saveEditTransactionBtn.disabled = false;
+  }
+});
+
+// ================================================================
+//  UNSAVED CHANGES — Form Input Listeners
+// ================================================================
+// Track changes in EPGP forms
+['#ep-name-select', '#ep-value-input', '#ep-reason-input',
+ '#gp-name-select', '#gp-value-input', '#gp-reason-input'].forEach(sel => {
+  const el = $(sel);
+  if (el) {
+    el.addEventListener('change', markUnsavedChanges);
+    el.addEventListener('input', markUnsavedChanges);
+  }
+});
+
+// Track changes in Admin forms
+['#api-key-input', '#default-gp-input'].forEach(sel => {
+  const el = $(sel);
+  if (el) {
+    el.addEventListener('change', markUnsavedChanges);
+    el.addEventListener('input', markUnsavedChanges);
+  }
+});
+
+// Track changes in transaction edit modal
+['#edit-transaction-amount', '#edit-transaction-reason', '#edit-transaction-timestamp'].forEach(sel => {
+  const el = $(sel);
+  if (el) {
+    el.addEventListener('change', markUnsavedChanges);
+    el.addEventListener('input', markUnsavedChanges);
+  }
+});
+
+// ================================================================
+//  LOOT TAB — Sync and Display Loot History
+// ================================================================
+async function syncWowAuditPeriod() {
+  try {
+    const res = await fetch('/api/wowaudit-period');
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to sync period');
+    }
+    return data.period;
+  } catch (err) {
+    throw new Error(`Failed to sync WoWAudit period: ${err.message}`);
+  }
+}
+
+async function syncLootFromWoWAudit() {
+  try {
+    const res = await fetch('/api/sync-loot-from-wowaudit', { method: 'POST' });
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Sync failed');
+    }
+    return data;
+  } catch (err) {
+    throw new Error(`Failed to sync loot: ${err.message}`);
+  }
+}
+
+async function loadLootHistory() {
+  try {
+    const res = await fetch('/api/loot-history');
+    const data = await res.json();
+    const items = data.history_items || [];
+    renderLootTable(items);
+  } catch (err) {
+    showMessage('loot', 'error', `✗ Error loading loot history: ${err.message}`);
+    renderLootTable([]);
+  }
+}
+
+function renderLootTable(items) {
+  const tbody = $('#loot-tbody');
+  if (!tbody) return;
+
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No loot history. Click "Sync Loot from WoWAudit" to load data.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = items.map(item => `
+    <tr>
+      <td><strong>${escHtml(item.name)}</strong></td>
+      <td>${escHtml(item.slot || '—')}</td>
+      <td>${escHtml(item.quality || '—')}</td>
+      <td>${escHtml(item.awarded_by_name || 'Unknown')}</td>
+      <td>${item.awarded_at ? new Date(item.awarded_at).toLocaleDateString() : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+$('#sync-loot-btn').addEventListener('click', async () => {
+  const btn = $('#sync-loot-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-icon">⏳</span> Syncing…';
+
+  try {
+    // Sync loot (endpoint handles period fetch internally)
+    const syncData = await syncLootFromWoWAudit();
+
+    // Check if any loot was actually synced
+    if (syncData.inserted === 0) {
+      showAlert('No loot uploaded to WoWAudit yet!', 'No Loot Found');
+    } else {
+      showMessage('loot', 'success', `✓ ${syncData.message}`);
+    }
+
+    // Load and display the loot
+    await loadLootHistory();
+  } catch (err) {
+    showMessage('loot', 'error', `✗ ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="btn-icon">🔄</span> Sync Loot from WoWAudit';
   }
 });
 
