@@ -120,9 +120,13 @@ $$('.nav-item').forEach(li => {
 // ================================================================
 //  ROSTER TAB
 // ================================================================
+let rosterData = [];
+let rosterSortKey = null;
+let rosterSortDir = 'asc';
+
 async function loadRoster() {
   const tbody = $('#roster-tbody');
-  tbody.innerHTML = '<tr class="empty-row"><td colspan="8" class="loading">Loading roster…</td></tr>';
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="5" class="loading">Loading roster…</td></tr>';
 
   try {
     const res  = await fetch('/api/roster');
@@ -131,40 +135,88 @@ async function loadRoster() {
     if (data.error) throw new Error(data.error);
 
     if (data.roster && data.roster.length > 0) {
-      renderRoster(data.roster);
+      // Filter out Social rank members
+      rosterData = data.roster.filter(c =>
+        c.rank && c.rank.toLowerCase() !== 'social'
+      );
+      renderRoster(rosterData);
     } else {
       tbody.innerHTML =
-        '<tr class="empty-row"><td colspan="8">No roster data. Click "Sync from WoWAudit" to load characters.</td></tr>';
+        '<tr class="empty-row"><td colspan="5">No roster data. Click "Sync from WoWAudit" to load characters.</td></tr>';
     }
   } catch (err) {
     tbody.innerHTML =
-      `<tr class="empty-row"><td colspan="8">Error loading roster: ${escHtml(err.message)}</td></tr>`;
+      `<tr class="empty-row"><td colspan="5">Error loading roster: ${escHtml(err.message)}</td></tr>`;
   }
 }
 
 function renderRoster(roster) {
   const tbody = $('#roster-tbody');
+  if (roster.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No matching roster members.</td></tr>';
+    return;
+  }
+
   tbody.innerHTML = roster.map(c => {
     const css    = classCss(c.class);
     const status = (c.status || 'active').toLowerCase();
-    const rank   = c.rank_name
-      ? escHtml(c.rank_name)
-      : (c.rank !== null && c.rank !== undefined ? c.rank : '—');
-    const ilvl   = c.ilvl ? Number(c.ilvl).toFixed(1) : '—';
 
     return `
       <tr>
         <td><span class="char-name ${css}">${escHtml(c.name)}</span></td>
         <td>${escHtml(c.realm || '—')}</td>
         <td class="${css}">${escHtml(c.class || '—')}</td>
-        <td>${escHtml(c.spec || '—')}</td>
         <td>${escHtml(c.role || '—')}</td>
-        <td>${rank}</td>
-        <td>${ilvl}</td>
         <td><span class="status-badge status-${escHtml(status)}">${escHtml(status)}</span></td>
       </tr>`;
   }).join('');
 }
+
+function sortRoster(key) {
+  if (rosterSortKey === key) {
+    rosterSortDir = rosterSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    rosterSortKey = key;
+    rosterSortDir = 'asc';
+  }
+
+  // Update header styles
+  $$('.sortable-header').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+  $(`.sortable-header[data-sort="${key}"]`).classList.add(`sort-${rosterSortDir}`);
+
+  // Sort data
+  const sorted = [...rosterData].sort((a, b) => {
+    const aVal = String(a[key] || '').toLowerCase();
+    const bVal = String(b[key] || '').toLowerCase();
+    const cmp = aVal.localeCompare(bVal);
+    return rosterSortDir === 'asc' ? cmp : -cmp;
+  });
+
+  renderRoster(sorted);
+}
+
+function filterRoster(query) {
+  const q = query.toLowerCase();
+  const filtered = rosterData.filter(c =>
+    c.name.toLowerCase().includes(q) ||
+    (c.realm || '').toLowerCase().includes(q) ||
+    (c.class || '').toLowerCase().includes(q) ||
+    (c.role || '').toLowerCase().includes(q) ||
+    (c.rank || '').toLowerCase().includes(q)
+  );
+
+  renderRoster(filtered);
+}
+
+// Sort header listeners
+$$('.sortable-header').forEach(h => {
+  h.addEventListener('click', () => sortRoster(h.dataset.sort));
+});
+
+// Filter input listener
+$('#roster-search').addEventListener('input', (e) => {
+  filterRoster(e.target.value);
+});
 
 $('#sync-roster-btn').addEventListener('click', async () => {
   const btn = $('#sync-roster-btn');
@@ -201,10 +253,33 @@ async function loadEpgp() {
 
     if (data.error) throw new Error(data.error);
     renderEpgpTable(data.gear_values || []);
+    populateRosterDropdowns();
   } catch (err) {
     showMessage('epgp', 'error', `✗ Error loading EPGP data: ${err.message}`);
     renderEpgpTable([]);
   }
+}
+
+function populateRosterDropdowns() {
+  const epSelect = $('#ep-name-select');
+  const gpSelect = $('#gp-name-select');
+
+  // Clear existing options except the default one
+  while (epSelect.children.length > 1) epSelect.removeChild(epSelect.lastChild);
+  while (gpSelect.children.length > 1) gpSelect.removeChild(gpSelect.lastChild);
+
+  // Add roster members
+  rosterData.forEach(member => {
+    const epOption = document.createElement('option');
+    epOption.value = member.name;
+    epOption.textContent = member.name;
+    epSelect.appendChild(epOption);
+
+    const gpOption = document.createElement('option');
+    gpOption.value = member.name;
+    gpOption.textContent = member.name;
+    gpSelect.appendChild(gpOption);
+  });
 }
 
 function renderEpgpTable(gearValues) {
@@ -281,6 +356,100 @@ $('#save-epgp-btn').addEventListener('click', async () => {
   }
 });
 
+// EP Log Button
+$('#edit-ep-btn').addEventListener('click', async () => {
+  const btn = $('#edit-ep-btn');
+  const name = $('#ep-name-select').value.trim();
+  const ep = parseInt($('#ep-value-input').value, 10);
+  const reason = $('#ep-reason-input').value.trim();
+
+  if (!name) {
+    showMessage('epgp', 'error', '✗ Please select a character');
+    return;
+  }
+
+  if (isNaN(ep)) {
+    showMessage('epgp', 'error', '✗ Please enter a valid EP value');
+    return;
+  }
+
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/ep-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        ep,
+        reason,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('epgp', 'success', `✓ ${data.message}`);
+      $('#ep-name-select').value = '';
+      $('#ep-value-input').value = '';
+      $('#ep-reason-input').value = '';
+    } else {
+      showMessage('epgp', 'error', `✗ ${data.error || 'Save failed'}`);
+    }
+  } catch (err) {
+    showMessage('epgp', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// GP Log Button
+$('#edit-gp-btn').addEventListener('click', async () => {
+  const btn = $('#edit-gp-btn');
+  const name = $('#gp-name-select').value.trim();
+  const gp = parseInt($('#gp-value-input').value, 10);
+  const reason = $('#gp-reason-input').value.trim();
+
+  if (!name) {
+    showMessage('epgp', 'error', '✗ Please select a character');
+    return;
+  }
+
+  if (isNaN(gp)) {
+    showMessage('epgp', 'error', '✗ Please enter a valid GP value');
+    return;
+  }
+
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/gp-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        gp,
+        reason,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('epgp', 'success', `✓ ${data.message}`);
+      $('#gp-name-select').value = '';
+      $('#gp-value-input').value = '';
+      $('#gp-reason-input').value = '';
+    } else {
+      showMessage('epgp', 'error', `✗ ${data.error || 'Save failed'}`);
+    }
+  } catch (err) {
+    showMessage('epgp', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 // ================================================================
 //  ADMIN TAB
 // ================================================================
@@ -333,6 +502,15 @@ $('#save-admin-btn').addEventListener('click', async () => {
   } finally {
     btn.disabled = false;
   }
+});
+
+// ================================================================
+//  COLLAPSIBLE SECTIONS
+// ================================================================
+$$('.collapsible-header').forEach(header => {
+  header.addEventListener('click', () => {
+    header.classList.toggle('collapsed');
+  });
 });
 
 // ================================================================

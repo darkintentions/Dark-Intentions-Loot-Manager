@@ -7,8 +7,13 @@
  *   GET https://wowaudit.com/v1/characters
  *   Header: Authorization: <api_key>
  */
+import { ensureTablesExist } from '../db-init.js';
+
 export async function onRequest({ request, env }) {
   const headers = { 'Content-Type': 'application/json' };
+
+  // Ensure database tables exist on first use
+  await ensureTablesExist(env);
 
   // ── GET — return stored roster ───────────────────────────────
   if (request.method === 'GET') {

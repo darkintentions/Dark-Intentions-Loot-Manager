@@ -3,8 +3,13 @@
  * GET  — returns all gear slot point values from D1
  * POST — saves updated point values for each gear slot
  */
+import { ensureTablesExist } from '../db-init.js';
+
 export async function onRequest({ request, env }) {
   const headers = { 'Content-Type': 'application/json' };
+
+  // Ensure database tables exist on first use
+  await ensureTablesExist(env);
 
   // ── GET ─────────────────────────────────────────────────────
   if (request.method === 'GET') {
