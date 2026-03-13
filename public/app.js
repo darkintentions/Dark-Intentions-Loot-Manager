@@ -193,8 +193,7 @@ function renderRoster(roster) {
                 <span class="detail-value">${gp}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">History:</span>
-                <button class="btn btn-secondary view-history-btn" data-character="${escHtml(c.name)}" style="padding: 8px 16px; font-size: 12px;">📜 View History</button>
+                <button class="btn btn-secondary view-history-btn" data-character="${escHtml(c.name)}" style="padding: 11px 23px; font-size: 13px; margin-left: auto;">📜 View History</button>
               </div>
             </div>
           </div>
