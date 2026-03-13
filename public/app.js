@@ -505,6 +505,15 @@ $('#save-admin-btn').addEventListener('click', async () => {
 });
 
 // ================================================================
+//  COLLAPSIBLE SECTIONS
+// ================================================================
+$$('.collapsible-header').forEach(header => {
+  header.addEventListener('click', () => {
+    header.classList.toggle('collapsed');
+  });
+});
+
+// ================================================================
 //  INIT — load default tab
 // ================================================================
 (function init() {
