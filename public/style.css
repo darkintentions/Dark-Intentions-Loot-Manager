@@ -623,6 +623,10 @@ body {
   color: var(--color-gold);
 }
 
+.collapsible-header.collapsed {
+  border-bottom: none;
+}
+
 .collapsible-header.collapsed .collapse-icon {
   transform: rotate(-90deg);
 }
