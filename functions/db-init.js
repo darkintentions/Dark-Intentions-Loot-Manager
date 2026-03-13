@@ -1,6 +1,11 @@
 /**
  * Initialize D1 database tables on first use
  * Runs the schema automatically if tables don't exist
+ *
+ * ⚠️  IMPORTANT: Keep schema.sql in sync!
+ * When modifying this schema, also update schema.sql to match.
+ * schema.sql is used for manual remote database initialization.
+ * Keeping them in sync ensures fresh deployments work correctly.
  */
 export async function ensureTablesExist(env) {
   try {
