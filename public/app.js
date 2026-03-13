@@ -568,6 +568,12 @@ function renderEpgpTable(gearValues) {
   }
 
   tbody.innerHTML = html;
+
+  // Attach change listeners to newly created gear inputs
+  $$('table.gear-table input').forEach(input => {
+    input.addEventListener('change', markUnsavedChanges);
+    input.addEventListener('input', markUnsavedChanges);
+  });
 }
 
 $('#save-epgp-btn').addEventListener('click', async () => {
@@ -1091,12 +1097,6 @@ saveEditTransactionBtn.addEventListener('click', async () => {
     el.addEventListener('change', markUnsavedChanges);
     el.addEventListener('input', markUnsavedChanges);
   }
-});
-
-// Track changes in EPGP gear slot inputs
-$$('table.gear-table input').forEach(input => {
-  input.addEventListener('change', markUnsavedChanges);
-  input.addEventListener('input', markUnsavedChanges);
 });
 
 // ================================================================
