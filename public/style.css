@@ -602,7 +602,7 @@ body {
   color: var(--color-text);
   font-family: inherit;
   gap: 12px;
-  transition: background-color 0.18s;
+  transition: background-color 0.18s, border-bottom 0.18s;
 }
 
 .collapsible-header:hover {
@@ -624,7 +624,7 @@ body {
 }
 
 .collapsible-header.collapsed {
-  border-bottom-color: transparent !important;
+  border-bottom: none;
 }
 
 .collapsible-section:has(.collapsible-header.collapsed) {
