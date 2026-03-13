@@ -336,18 +336,22 @@ async function openTransactionHistoryModal(characterName) {
 function formatReasonWithLinks(reason) {
   if (!reason) return '(no reason)';
 
-  // Find WoWhead URLs and replace with clean item links
-  // Match the URL but not trailing quotes or whitespace
+  // If the reason already contains HTML link tags, extract the URL and clean it up
+  const existingHtmlLinkRegex = /<a\s+href="(https:\/\/www\.wowhead\.com\/item=\d+[^"]*)"\s*[^>]*>[^<]*<\/a>\s*-?\s*/g;
+  let cleanReason = reason.replace(existingHtmlLinkRegex, '$1 ');
+
+  // Find WoWhead URLs (either plain text or extracted from HTML) and replace with clean item links
   const wowheadUrlRegex = /(https:\/\/www\.wowhead\.com\/item=\d+(?:[?&#]\S+)?)/g;
-  let result = reason;
+  let result = cleanReason;
   const links = [];
 
   // Replace URLs with placeholder
   const placeholderPrefix = '__WOWHEAD_';
   const placeholderSuffix = '__';
 
-  result = result.replace(wowheadUrlRegex, (match, url, itemId) => {
-    links.push(`<a href="${url}" target="_blank" class="wowhead-link">[Item ${itemId}]</a>`);
+  result = result.replace(wowheadUrlRegex, (match) => {
+    const itemId = match.match(/item=(\d+)/)[1];
+    links.push(`<a href="${match}" target="_blank" class="wowhead-link">[Item ${itemId}]</a>`);
     return placeholderPrefix + (links.length - 1) + placeholderSuffix;
   });
 
