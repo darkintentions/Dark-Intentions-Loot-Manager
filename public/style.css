@@ -345,6 +345,27 @@ body {
   pointer-events: none;
 }
 
+.btn-danger {
+  background: linear-gradient(180deg, #3d1414 0%, #2a0d0d 100%);
+  border-color: #8b3a3a;
+  color: #ff6b6b;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(180deg, #5a2020 0%, #3d1414 100%);
+  border-color: #ff6b6b;
+  color: #ff8888;
+  box-shadow: 0 0 14px rgba(255, 107, 107, 0.25);
+}
+
+.btn-danger:active { transform: translateY(1px); }
+
+.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .btn-icon-only {
   background: var(--bg-card);
   border-color: var(--color-border);

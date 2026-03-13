@@ -614,6 +614,51 @@ $('#save-default-gp-btn').addEventListener('click', async () => {
   }
 });
 
+// Delete roster with confirmation
+$('#delete-roster-btn').addEventListener('click', async () => {
+  const confirmed = window.confirm(
+    'Are you absolutely sure?\n\n' +
+    'This will:\n' +
+    '• Delete ALL characters from the roster\n' +
+    '• Delete ALL EP/GP transaction logs\n' +
+    '• Permanently wipe all roster-related data\n\n' +
+    'This action CANNOT be undone.\n\n' +
+    'Type "DELETE" to confirm:'
+  );
+
+  if (!confirmed) return;
+
+  // Prompt for confirmation word
+  const confirmWord = window.prompt('Type "DELETE" to permanently delete the roster:');
+  if (confirmWord !== 'DELETE') {
+    showMessage('admin', 'error', '✗ Deletion cancelled. Type "DELETE" to confirm.');
+    return;
+  }
+
+  const btn = $('#delete-roster-btn');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/roster-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('admin', 'success', `✓ ${data.message}`);
+      // Reload roster to show empty state
+      loadRoster();
+    } else {
+      showMessage('admin', 'error', `✗ ${data.error || 'Deletion failed'}`);
+    }
+  } catch (err) {
+    showMessage('admin', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 // ================================================================
 //  CUSTOM EP BUTTONS
 // ================================================================
