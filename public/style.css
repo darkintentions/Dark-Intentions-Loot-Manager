@@ -991,6 +991,51 @@ body {
   justify-content: flex-end;
 }
 
+.alert-modal-content {
+  max-width: 420px;
+  text-align: center;
+}
+
+.alert-modal-content .modal-header {
+  justify-content: center;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.alert-modal-content .modal-body {
+  padding: 16px 24px 8px;
+}
+
+.alert-modal-content .modal-body p {
+  color: var(--color-text);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.alert-modal-content .modal-footer {
+  justify-content: center;
+  border-top: none;
+  padding-top: 8px;
+}
+
+.alert-modal-content .modal-footer .btn {
+  min-width: 100px;
+  justify-content: center;
+  text-align: center;
+}
+
+.confirm-modal-input {
+  margin-top: 12px;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+}
+
+.confirm-modal-input.hidden {
+  display: none;
+}
+
 .btn-secondary {
   background: transparent;
   border: 1px solid var(--color-border);

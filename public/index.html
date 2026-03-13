@@ -70,7 +70,7 @@
       <div class="panel-header">
         <h1>Guild Roster</h1>
         <button id="sync-roster-btn" class="btn btn-primary">
-          <span class="btn-icon">🔄</span> Sync from WoWAudit
+          <span class="btn-icon">🔄</span> Sync Roster from WoWAudit
         </button>
       </div>
       <div id="roster-message" class="message hidden"></div>
@@ -91,7 +91,7 @@
           </thead>
           <tbody id="roster-tbody">
             <tr class="empty-row">
-              <td colspan="6">No roster data. Click "Sync from WoWAudit" to load characters.</td>
+              <td colspan="6">No roster data. Click "Sync Roster from WoWAudit" to load characters.</td>
             </tr>
           </tbody>
         </table>
@@ -102,11 +102,29 @@
     <div id="tab-loot" class="tab-panel">
       <div class="panel-header">
         <h1>Loot History</h1>
+        <button id="sync-loot-btn" class="btn btn-primary">
+          <span class="btn-icon">🔄</span> Sync Loot from WoWAudit
+        </button>
       </div>
-      <div class="coming-soon">
-        <div class="coming-soon-icon">💎</div>
-        <h2>Coming Soon</h2>
-        <p>Loot tracking and distribution history will be available in a future update.</p>
+      <div id="loot-message" class="message hidden"></div>
+      <div class="content-scroll">
+        <table id="loot-table" class="data-table sortable">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Slot</th>
+              <th>Quality</th>
+              <th>Character</th>
+              <th>Awarded By</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="loot-tbody">
+            <tr class="empty-row">
+              <td colspan="6">No loot history. Click "Sync Loot from WoWAudit" to load data.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -359,6 +377,38 @@
       <div class="modal-footer">
         <button id="save-edit-transaction-btn" class="btn btn-primary">Update Transaction</button>
         <button id="cancel-edit-transaction-btn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Modal -->
+  <div id="alert-modal" class="modal hidden">
+    <div class="modal-content alert-modal-content">
+      <div class="modal-header">
+        <h2 id="alert-modal-title">Notice</h2>
+      </div>
+      <div class="modal-body">
+        <p id="alert-modal-message"></p>
+      </div>
+      <div class="modal-footer">
+        <button id="alert-modal-ok" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-content alert-modal-content">
+      <div class="modal-header">
+        <h2 id="confirm-modal-title">Confirm</h2>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-modal-message"></p>
+        <input type="text" id="confirm-modal-input" class="form-input confirm-modal-input hidden" autocomplete="off">
+      </div>
+      <div class="modal-footer">
+        <button id="confirm-modal-cancel" class="btn btn-secondary">Cancel</button>
+        <button id="confirm-modal-ok" class="btn btn-danger">Confirm</button>
       </div>
     </div>
   </div>

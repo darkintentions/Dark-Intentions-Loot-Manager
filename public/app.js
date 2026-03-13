@@ -8,6 +8,82 @@
 const $  = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+// ── Custom alert modal ──────────────────────────────────────────
+function showAlert(message, title = 'Notice') {
+  const modal = $('#alert-modal');
+  $('#alert-modal-title').textContent = title;
+  $('#alert-modal-message').textContent = message;
+  modal.classList.remove('hidden');
+  const okBtn = $('#alert-modal-ok');
+  okBtn.focus();
+  const close = () => modal.classList.add('hidden');
+  okBtn.onclick = close;
+  modal.onclick = (e) => { if (e.target === modal) close(); };
+}
+
+// ── Custom confirm modal (returns Promise<boolean>) ─────────────
+// options: { title, message, confirmText, cancelText, inputPlaceholder, inputMatch }
+// If inputPlaceholder is set, shows a text input the user must fill.
+// If inputMatch is set, the confirm button only works when input matches that string.
+function showConfirm({ title = 'Confirm', message = '', confirmText = 'Confirm', cancelText = 'Cancel', inputPlaceholder = '', inputMatch = '' } = {}) {
+  return new Promise((resolve) => {
+    const modal = $('#confirm-modal');
+    const msgEl = $('#confirm-modal-message');
+    const titleEl = $('#confirm-modal-title');
+    const okBtn = $('#confirm-modal-ok');
+    const cancelBtn = $('#confirm-modal-cancel');
+    const inputEl = $('#confirm-modal-input');
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+    okBtn.textContent = confirmText;
+    cancelBtn.textContent = cancelText;
+
+    // Input field setup
+    if (inputPlaceholder) {
+      inputEl.classList.remove('hidden');
+      inputEl.value = '';
+      inputEl.placeholder = inputPlaceholder;
+    } else {
+      inputEl.classList.add('hidden');
+    }
+
+    modal.classList.remove('hidden');
+
+    if (inputPlaceholder) {
+      inputEl.focus();
+    } else {
+      okBtn.focus();
+    }
+
+    function cleanup(result) {
+      modal.classList.add('hidden');
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+      modal.onclick = null;
+      inputEl.oninput = null;
+      resolve(result);
+    }
+
+    okBtn.onclick = () => {
+      if (inputMatch && inputEl.value !== inputMatch) return;
+      cleanup(true);
+    };
+    cancelBtn.onclick = () => cleanup(false);
+    modal.onclick = (e) => { if (e.target === modal) cleanup(false); };
+
+    // If inputMatch is set, disable confirm until it matches
+    if (inputMatch) {
+      okBtn.disabled = true;
+      inputEl.oninput = () => {
+        okBtn.disabled = inputEl.value !== inputMatch;
+      };
+    } else {
+      okBtn.disabled = false;
+    }
+  });
+}
+
 function escHtml(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -106,12 +182,15 @@ function clearUnsavedChanges() {
   unsavedChanges = false;
 }
 
-function switchTab(name) {
+async function switchTab(name) {
   // Check for unsaved changes before switching
   if (unsavedChanges) {
-    const confirmed = window.confirm(
-      'You have unsaved changes. Do you want to leave without saving?'
-    );
+    const confirmed = await showConfirm({
+      title: 'Unsaved Changes',
+      message: 'You have unsaved changes. Do you want to leave without saving?',
+      confirmText: 'Leave',
+      cancelText: 'Stay',
+    });
     if (!confirmed) return;
   }
 
@@ -128,6 +207,7 @@ function switchTab(name) {
   if (!tabLoaded[name]) {
     tabLoaded[name] = true;
     if (name === 'roster') loadRoster();
+    if (name === 'loot')   loadLootHistory();
     if (name === 'epgp')   loadEpgp();
     if (name === 'admin')  loadAdminSettings();
   }
@@ -510,9 +590,12 @@ function openEditTransactionModal(transactionId, transactionType, transaction, c
 }
 
 async function deleteTransaction(transactionId, transactionType, characterName) {
-  if (!window.confirm('Delete this transaction? This cannot be undone.')) {
-    return;
-  }
+  const confirmed = await showConfirm({
+    title: 'Delete Transaction',
+    message: 'Delete this transaction? This cannot be undone.',
+    confirmText: 'Delete',
+  });
+  if (!confirmed) return;
 
   try {
     const res = await fetch(`/api/transaction-history?id=${transactionId}&type=${transactionType}`, {
@@ -783,6 +866,21 @@ $('#edit-gp-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
+    // If an item ID was provided, scrape WoWhead for item details
+    let itemInfo = null;
+    if (itemId) {
+      try {
+        const infoRes = await fetch(`/api/item-info?id=${itemId}`);
+        if (infoRes.ok) {
+          itemInfo = await infoRes.json();
+        }
+      } catch (e) {
+        console.warn('Could not fetch item info from WoWhead:', e);
+      }
+    }
+
+    const timestamp = new Date().toISOString();
+
     const res = await fetch('/api/gp-log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -790,12 +888,54 @@ $('#edit-gp-btn').addEventListener('click', async () => {
         name,
         gp,
         reason,
-        timestamp: new Date().toISOString(),
+        timestamp,
       }),
     });
     const data = await res.json();
 
     if (data.success) {
+      // If we have item info, also add to loot history
+      if (itemInfo) {
+        try {
+          const lootEntry = {
+            history_items: [{
+              rclootcouncil_id: `manual-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+              item_id: parseInt(itemId),
+              name: itemInfo.name || `Item ${itemId}`,
+              icon: itemInfo.icon || '',
+              slot: itemInfo.slot || '',
+              quality: itemInfo.quality ? String(itemInfo.quality) : 'epic',
+              character_id: 0,
+              character_name: name,
+              awarded_by_character_id: null,
+              awarded_by_name: 'Manual GP Entry',
+              awarded_at: timestamp,
+              difficulty: itemInfo.difficulty || '',
+              discarded: false,
+              same_response_amount: 0,
+              note: reason || '',
+              wish_value: 0,
+              response_type: {},
+              bonus_ids: [],
+              old_items: [],
+              wish_data: [],
+              // Extra scraped fields
+              armor_type: itemInfo.armorType || '',
+              dropped_by: itemInfo.droppedBy || '',
+              drop_chance: itemInfo.dropChance || '',
+            }],
+          };
+
+          await fetch('/api/loot-history', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(lootEntry),
+          });
+        } catch (lootErr) {
+          console.warn('Could not add item to loot history:', lootErr);
+        }
+      }
+
       showMessage('epgp', 'success', `✓ ${data.message}`);
       $('#gp-name-select').value = '';
       $('#gp-value-input').value = '';
@@ -956,13 +1096,11 @@ $('#delete-character-btn').addEventListener('click', async () => {
     return;
   }
 
-  const confirmed = window.confirm(
-    `Are you sure you want to delete "${characterName}"?\n\n` +
-    'This will:\n' +
-    '• Remove them from the roster\n' +
-    '• Delete all their EP/GP transactions\n\n' +
-    'This action CANNOT be undone.'
-  );
+  const confirmed = await showConfirm({
+    title: 'Delete Character',
+    message: `Are you sure you want to delete "${characterName}"? This will remove them from the roster and delete all their EP/GP transactions. This action CANNOT be undone.`,
+    confirmText: 'Delete',
+  });
 
   if (!confirmed) return;
 
@@ -972,8 +1110,16 @@ $('#delete-character-btn').addEventListener('click', async () => {
   try {
     const res = await fetch(`/api/character-delete?name=${encodeURIComponent(characterName)}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
     });
+
+    // Check content-type before parsing JSON
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text();
+      showMessage('admin', 'error', `✗ Server error: ${res.status} - ${text || 'No response'}`);
+      return;
+    }
+
     const data = await res.json();
 
     if (data.success) {
@@ -996,24 +1142,15 @@ $('#delete-character-btn').addEventListener('click', async () => {
 
 // Delete roster with confirmation
 $('#delete-roster-btn').addEventListener('click', async () => {
-  const confirmed = window.confirm(
-    'Are you absolutely sure?\n\n' +
-    'This will:\n' +
-    '• Delete ALL characters from the roster\n' +
-    '• Delete ALL EP/GP transaction logs\n' +
-    '• Permanently wipe all roster-related data\n\n' +
-    'This action CANNOT be undone.\n\n' +
-    'Type "DELETE" to confirm:'
-  );
+  const confirmed = await showConfirm({
+    title: 'Delete Entire Roster',
+    message: 'This will delete ALL characters, ALL EP/GP transaction logs, and permanently wipe all roster-related data. This action CANNOT be undone. Type "DELETE" to confirm.',
+    confirmText: 'Delete Everything',
+    inputPlaceholder: 'Type DELETE to confirm',
+    inputMatch: 'DELETE',
+  });
 
   if (!confirmed) return;
-
-  // Prompt for confirmation word
-  const confirmWord = window.prompt('Type "DELETE" to permanently delete the roster:');
-  if (confirmWord !== 'DELETE') {
-    showMessage('admin', 'error', '✗ Deletion cancelled. Type "DELETE" to confirm.');
-    return;
-  }
 
   const btn = $('#delete-roster-btn');
   btn.disabled = true;
@@ -1066,8 +1203,8 @@ function renderCustomEpButtons() {
 
   container.innerHTML = customEpButtons.map(button => `
     <div class="custom-ep-button-row">
-      <select class="form-input ep-char-select" data-button-id="${button.id}">
-        <option value="">Select Character</option>
+      <select class="form-select ep-char-select" data-button-id="${button.id}">
+        <option value="">— Select a character —</option>
         ${rosterData.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
       </select>
       <button class="btn btn-primary award-custom-ep-btn" data-button-id="${button.id}" data-button-name="${escHtml(button.name)}" data-button-ep="${button.ep}" data-button-description="${escHtml(button.description)}" title="${escHtml(button.description)}">
@@ -1301,6 +1438,93 @@ saveEditTransactionBtn.addEventListener('click', async () => {
   if (el) {
     el.addEventListener('change', markUnsavedChanges);
     el.addEventListener('input', markUnsavedChanges);
+  }
+});
+
+// ================================================================
+//  LOOT TAB — Sync and Display Loot History
+// ================================================================
+async function syncWowAuditPeriod() {
+  try {
+    const res = await fetch('/api/wowaudit-period');
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to sync period');
+    }
+    return data.period;
+  } catch (err) {
+    throw new Error(`Failed to sync WoWAudit period: ${err.message}`);
+  }
+}
+
+async function syncLootFromWoWAudit() {
+  try {
+    const res = await fetch('/api/sync-loot-from-wowaudit', { method: 'POST' });
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Sync failed');
+    }
+    return data;
+  } catch (err) {
+    throw new Error(`Failed to sync loot: ${err.message}`);
+  }
+}
+
+async function loadLootHistory() {
+  try {
+    const res = await fetch('/api/loot-history');
+    const data = await res.json();
+    const items = data.history_items || [];
+    renderLootTable(items);
+  } catch (err) {
+    showMessage('loot', 'error', `✗ Error loading loot history: ${err.message}`);
+    renderLootTable([]);
+  }
+}
+
+function renderLootTable(items) {
+  const tbody = $('#loot-tbody');
+  if (!tbody) return;
+
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No loot history. Click "Sync Loot from WoWAudit" to load data.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = items.map(item => `
+    <tr>
+      <td><strong>${escHtml(item.name)}</strong></td>
+      <td>${escHtml(item.slot || '—')}</td>
+      <td>${escHtml(item.quality || '—')}</td>
+      <td>${escHtml(item.awarded_by_name || 'Unknown')}</td>
+      <td>${item.awarded_at ? new Date(item.awarded_at).toLocaleDateString() : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+$('#sync-loot-btn').addEventListener('click', async () => {
+  const btn = $('#sync-loot-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-icon">⏳</span> Syncing…';
+
+  try {
+    // Sync loot (endpoint handles period fetch internally)
+    const syncData = await syncLootFromWoWAudit();
+
+    // Check if any loot was actually synced
+    if (syncData.inserted === 0) {
+      showAlert('No loot uploaded to WoWAudit yet!', 'No Loot Found');
+    } else {
+      showMessage('loot', 'success', `✓ ${syncData.message}`);
+    }
+
+    // Load and display the loot
+    await loadLootHistory();
+  } catch (err) {
+    showMessage('loot', 'error', `✗ ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="btn-icon">🔄</span> Sync Loot from WoWAudit';
   }
 });
 
