@@ -873,7 +873,7 @@ function renderCustomEpButtons() {
         <option value="">Select Character</option>
         ${rosterData.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
       </select>
-      <button class="btn btn-primary award-custom-ep-btn" data-button-id="${button.id}" data-button-name="${escHtml(button.name)}" data-button-ep="${button.ep}" title="${escHtml(button.description)}">
+      <button class="btn btn-primary award-custom-ep-btn" data-button-id="${button.id}" data-button-name="${escHtml(button.name)}" data-button-ep="${button.ep}" data-button-description="${escHtml(button.description)}" title="${escHtml(button.description)}">
         <span class="btn-icon">⭐</span> ${escHtml(button.name)}
       </button>
     </div>
@@ -884,6 +884,7 @@ function renderCustomEpButtons() {
     btn.addEventListener('click', async () => {
       const buttonId = btn.dataset.buttonId;
       const buttonName = btn.dataset.buttonName;
+      const buttonDescription = btn.dataset.buttonDescription;
       const buttonEp = parseInt(btn.dataset.buttonEp);
       const charSelect = $(`.ep-char-select[data-button-id="${buttonId}"]`);
       const selectedChar = charSelect.value;
@@ -903,7 +904,7 @@ function renderCustomEpButtons() {
           body: JSON.stringify({
             name: selectedChar,
             ep: buttonEp,
-            reason: buttonName,
+            reason: buttonDescription || buttonName,
             timestamp: timestamp,
           }),
         });

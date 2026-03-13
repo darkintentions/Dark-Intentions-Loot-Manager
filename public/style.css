@@ -965,8 +965,9 @@ body {
 }
 
 .custom-ep-button-row select {
-  flex: 1;
-  min-width: 0;
+  width: auto;
+  max-width: 300px;
+  min-width: 200px;
 }
 
 .custom-ep-button-row .btn {
