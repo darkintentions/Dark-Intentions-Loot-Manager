@@ -263,9 +263,31 @@
         <hr class="admin-separator">
         <section class="admin-section">
           <h2 class="section-title">Danger Zone</h2>
-          <button id="delete-roster-btn" class="btn btn-danger" title="This will delete everyone in the roster and wipe all data related to them in the database">
-            <span class="btn-icon">🗑️</span> Permanently Delete Roster
-          </button>
+
+          <!-- Delete Single Character -->
+          <div class="admin-subsection">
+            <h3 class="subsection-title">Delete Character</h3>
+            <p class="subsection-description">Permanently delete a single character and all their transaction history.</p>
+            <div class="admin-input-group">
+              <select id="delete-character-select" class="form-select">
+                <option value="">— Select a character —</option>
+              </select>
+              <button id="delete-character-btn" class="btn btn-danger" disabled title="Permanently delete the selected character">
+                <span class="btn-icon">🗑️</span> Delete Character
+              </button>
+            </div>
+          </div>
+
+          <hr class="admin-subseparator">
+
+          <!-- Delete Entire Roster -->
+          <div class="admin-subsection">
+            <h3 class="subsection-title">Delete Entire Roster</h3>
+            <p class="subsection-description">Permanently delete everyone in the roster and wipe all related data.</p>
+            <button id="delete-roster-btn" class="btn btn-danger" title="This will delete everyone in the roster and wipe all data related to them in the database">
+              <span class="btn-icon">🗑️</span> Permanently Delete Roster
+            </button>
+          </div>
         </section>
       </div>
     </div>

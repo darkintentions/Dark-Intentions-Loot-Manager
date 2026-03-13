@@ -602,6 +602,56 @@ body {
   margin: 16px 0;
 }
 
+.admin-subsection {
+  margin-bottom: 24px;
+}
+
+.subsection-title {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-gold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.subsection-description {
+  font-size: 13px;
+  color: var(--color-text-light);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.admin-input-group {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.form-select {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  color: var(--color-text);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+}
+
+.admin-subseparator {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 20px 0;
+}
+
 .form-group {
   margin-bottom: 22px;
 }

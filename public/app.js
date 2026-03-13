@@ -824,6 +824,9 @@ async function loadAdminSettings() {
   } catch {
     // Settings may just not be set yet; fail silently
   }
+
+  // Populate character delete dropdown
+  await populateCharacterDeleteSelect();
 }
 
 // Toggle API key visibility
@@ -891,6 +894,92 @@ $('#save-default-gp-btn').addEventListener('click', async () => {
       clearUnsavedChanges();
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
+    }
+  } catch (err) {
+    showMessage('admin', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ================================================================
+//  CHARACTER DELETION (DANGER ZONE)
+// ================================================================
+
+// Populate character select dropdown
+async function populateCharacterDeleteSelect() {
+  const select = $('#delete-character-select');
+
+  try {
+    const res = await fetch('/api/roster');
+    const data = await res.json();
+
+    select.innerHTML = '<option value="">— Select a character —</option>';
+
+    if (data.roster && data.roster.length > 0) {
+      // Filter out Social rank members and sort by name
+      const characters = data.roster
+        .filter(c => c.rank && c.rank.toLowerCase() !== 'social')
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      characters.forEach(char => {
+        const option = document.createElement('option');
+        option.value = char.name;
+        option.textContent = char.name;
+        select.appendChild(option);
+      });
+    }
+  } catch (err) {
+    select.innerHTML = '<option value="">Error loading characters</option>';
+  }
+}
+
+// Update delete button disabled state based on selection
+$('#delete-character-select').addEventListener('change', (e) => {
+  const btn = $('#delete-character-btn');
+  btn.disabled = !e.target.value;
+});
+
+// Delete character with confirmation
+$('#delete-character-btn').addEventListener('click', async () => {
+  const select = $('#delete-character-select');
+  const characterName = select.value;
+
+  if (!characterName) {
+    showMessage('admin', 'error', '✗ Please select a character');
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Are you sure you want to delete "${characterName}"?\n\n` +
+    'This will:\n' +
+    '• Remove them from the roster\n' +
+    '• Delete all their EP/GP transactions\n\n' +
+    'This action CANNOT be undone.'
+  );
+
+  if (!confirmed) return;
+
+  const btn = $('#delete-character-btn');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/character-delete?name=${encodeURIComponent(characterName)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('admin', 'success', `✓ ${data.message}`);
+      // Reload roster and refill the select dropdown
+      await populateCharacterDeleteSelect();
+      select.value = '';
+      btn.disabled = true;
+      // Reload roster to update display
+      loadRoster();
+    } else {
+      showMessage('admin', 'error', `✗ ${data.error || 'Deletion failed'}`);
     }
   } catch (err) {
     showMessage('admin', 'error', `✗ Network error: ${err.message}`);
