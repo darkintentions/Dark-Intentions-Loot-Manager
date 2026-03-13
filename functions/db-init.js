@@ -88,7 +88,6 @@ async function initializeDatabase(env) {
       ('Legs',      0),
       ('Feet',      0),
       ('Ring 1',    0),
-      ('Ring 2',    0),
       ('Trinket 1', 0),
       ('Trinket 2', 0),
       ('Main Hand', 0),
