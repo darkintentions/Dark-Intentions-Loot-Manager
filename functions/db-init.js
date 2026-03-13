@@ -38,6 +38,8 @@ async function initializeDatabase(env) {
       rank         INTEGER,
       rank_name    TEXT,
       ilvl         REAL,
+      ep           INTEGER DEFAULT 0,
+      gp           INTEGER DEFAULT 2,
       status       TEXT DEFAULT 'active',
       last_updated TEXT DEFAULT (datetime('now'))
     );
@@ -74,7 +76,9 @@ async function initializeDatabase(env) {
     );
 
     INSERT OR REPLACE INTO settings (key, value)
-    VALUES ('wowaudit_api_key', '62581957225650bd6cd7902ea6f45b3d175a372c524083d3eb30696260bc672d');
+    VALUES
+      ('wowaudit_api_key', '62581957225650bd6cd7902ea6f45b3d175a372c524083d3eb30696260bc672d'),
+      ('default_gp', '2');
 
     INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES
       ('Head',      0),

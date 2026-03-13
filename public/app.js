@@ -461,8 +461,11 @@ async function loadAdminSettings() {
     if (data.api_key) {
       $('#api-key-input').value = data.api_key;
     }
+    if (data.default_gp) {
+      $('#default-gp-input').value = data.default_gp;
+    }
   } catch {
-    // Key may just not be set yet; fail silently
+    // Settings may just not be set yet; fail silently
   }
 }
 
@@ -495,6 +498,38 @@ $('#save-admin-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('admin', 'success', `✓ ${data.message}`);
+    } else {
+      showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
+    }
+  } catch (err) {
+    showMessage('admin', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// Save default GP setting
+$('#save-default-gp-btn').addEventListener('click', async () => {
+  const btn = $('#save-default-gp-btn');
+  const defaultGp = $('#default-gp-input').value.trim();
+
+  if (!defaultGp || isNaN(defaultGp) || parseInt(defaultGp) < 0) {
+    showMessage('admin', 'error', '✗ Default GP must be a non-negative number.');
+    return;
+  }
+
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'default_gp', value: defaultGp }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('admin', 'success', `✓ Default GP updated to ${defaultGp}`);
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
     }

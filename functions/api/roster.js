@@ -72,13 +72,19 @@ export async function onRequest({ request, env }) {
         ? payload
         : (payload.characters ?? payload.data ?? []);
 
+      // Get default GP value from settings
+      const defaultGpRow = await env.DB
+        .prepare("SELECT value FROM settings WHERE key = 'default_gp'")
+        .first();
+      const defaultGp = defaultGpRow?.value ? parseInt(defaultGpRow.value) : 2;
+
       // Replace roster with fresh data
       await env.DB.prepare('DELETE FROM roster').run();
 
       const stmt = env.DB.prepare(`
         INSERT INTO roster
-          (character_id, name, realm, class, spec, role, rank, rank_name, ilvl, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          (character_id, name, realm, class, spec, role, rank, rank_name, ilvl, ep, gp, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       for (const c of chars) {
@@ -93,6 +99,8 @@ export async function onRequest({ request, env }) {
             c.rank           ?? c.guild_rank              ?? null,
             c.rank_name      ?? null,
             c.ilvl           ?? c.item_level ?? c.average_item_level ?? null,
+            0,               // ep: default to 0
+            defaultGp,       // gp: use default from settings
             c.status         ?? (c.is_inactive ? 'inactive' : 'active')
           )
           .run();
