@@ -515,7 +515,7 @@ async function deleteTransaction(transactionId, transactionType, characterName) 
   }
 
   try {
-    const res = await fetch(`/api/transaction-history/${transactionId}/${transactionType}`, {
+    const res = await fetch(`/api/transaction-history?id=${transactionId}&type=${transactionType}`, {
       method: 'DELETE',
     });
 
@@ -1154,7 +1154,7 @@ saveEditTransactionBtn.addEventListener('click', async () => {
   saveEditTransactionBtn.disabled = true;
 
   try {
-    const res = await fetch(`/api/transaction-history/${id}/${type}`, {
+    const res = await fetch(`/api/transaction-history?id=${id}&type=${type}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount: parseInt(amount), reason, timestamp }),

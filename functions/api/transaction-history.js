@@ -69,9 +69,16 @@ export async function onRequest({ request, env }) {
   if (request.method === 'PUT') {
     try {
       const url = new URL(request.url);
-      const pathParts = url.pathname.split('/');
-      const transactionId = pathParts[pathParts.length - 2];
-      const transactionType = pathParts[pathParts.length - 1];
+      const transactionId = url.searchParams.get('id');
+      const transactionType = url.searchParams.get('type');
+
+      // Validate id
+      if (!transactionId || isNaN(parseInt(transactionId))) {
+        return new Response(
+          JSON.stringify({ error: 'Valid transaction ID is required' }),
+          { status: 400, headers }
+        );
+      }
 
       // Validate type
       if (!['ep', 'gp'].includes(transactionType)) {
@@ -134,9 +141,16 @@ export async function onRequest({ request, env }) {
   if (request.method === 'DELETE') {
     try {
       const url = new URL(request.url);
-      const pathParts = url.pathname.split('/');
-      const transactionId = pathParts[pathParts.length - 2];
-      const transactionType = pathParts[pathParts.length - 1];
+      const transactionId = url.searchParams.get('id');
+      const transactionType = url.searchParams.get('type');
+
+      // Validate id
+      if (!transactionId || isNaN(parseInt(transactionId))) {
+        return new Response(
+          JSON.stringify({ error: 'Valid transaction ID is required' }),
+          { status: 400, headers }
+        );
+      }
 
       // Validate type
       if (!['ep', 'gp'].includes(transactionType)) {
