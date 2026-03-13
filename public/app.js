@@ -179,7 +179,6 @@ function renderRoster(roster) {
       <tr class="roster-detail-row hidden" id="${charId}">
         <td colspan="8">
           <div class="detail-content">
-            <h4>${escHtml(c.name)}</h4>
             <div class="detail-grid">
               <div class="detail-item">
                 <span class="detail-label">Priority Ratio:</span>

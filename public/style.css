@@ -440,7 +440,7 @@ body {
 }
 
 .detail-content {
-  padding: 20px;
+  padding: 12px;
   font-size: 15px;
 }
 
@@ -462,7 +462,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: rgba(0, 0, 0, 0.3);
   border-left: 3px solid var(--color-gold);
   border-radius: 3px;
