@@ -513,7 +513,7 @@ body {
 .form-group label {
   display: block;
   font-family: 'Cinzel', serif;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-gold);
   letter-spacing: 0.5px;
