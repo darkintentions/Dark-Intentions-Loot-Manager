@@ -624,6 +624,7 @@ body {
 
 .collapsible-header.collapsed {
   border-bottom: none;
+  padding-bottom: 7px;
 }
 
 .collapsible-section:has(.collapsible-header.collapsed) {
