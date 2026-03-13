@@ -336,11 +336,31 @@ async function openTransactionHistoryModal(characterName) {
 function formatReasonWithLinks(reason) {
   if (!reason) return '(no reason)';
 
-  // Convert WoWhead URLs to clickable links
-  // Format: https://www.wowhead.com/item=12345 or similar
-  const wowheadUrlRegex = /(https:\/\/www\.wowhead\.com\/\S+)/g;
-  const html = escHtml(reason).replace(wowheadUrlRegex, '<a href="$1" target="_blank" class="wowhead-link">$1</a>');
-  return html;
+  // Find WoWhead URLs and replace with clean item links
+  // Match the URL but not trailing quotes or whitespace
+  const wowheadUrlRegex = /(https:\/\/www\.wowhead\.com\/item=\d+(?:[?&#]\S+)?)/g;
+  let result = reason;
+  const links = [];
+
+  // Replace URLs with placeholder
+  const placeholderPrefix = '__WOWHEAD_';
+  const placeholderSuffix = '__';
+
+  result = result.replace(wowheadUrlRegex, (match, url, itemId) => {
+    links.push(`<a href="${url}" target="_blank" class="wowhead-link">[Item ${itemId}]</a>`);
+    return placeholderPrefix + (links.length - 1) + placeholderSuffix;
+  });
+
+  // Escape the entire reason text
+  result = escHtml(result);
+
+  // Replace placeholders back with actual links
+  links.forEach((link, i) => {
+    const placeholder = escHtml(placeholderPrefix + i + placeholderSuffix);
+    result = result.replace(placeholder, link);
+  });
+
+  return result;
 }
 
 function populateHistoryModal(transactions, characterName) {
@@ -361,8 +381,15 @@ function populateHistoryModal(transactions, characterName) {
     const amount = t.amount ?? 0;
     const reasonHTML = formatReasonWithLinks(t.reason);
 
+    // Store original data in data attributes for later retrieval
+    const originalAmount = escHtml(String(t.amount ?? 0));
+    const originalReason = escHtml(t.reason || '');
+    const originalTimestamp = escHtml(t.timestamp || '');
+
     return `
-      <div class="transaction-item" data-transaction-id="${t.id}" data-transaction-type="${t.type}">
+      <div class="transaction-item" data-transaction-id="${t.id}" data-transaction-type="${t.type}"
+           data-original-amount="${originalAmount}" data-original-reason="${originalReason}"
+           data-original-timestamp="${originalTimestamp}">
         <button class="transaction-icon-btn edit-transaction-btn" data-transaction-id="${t.id}" data-transaction-type="${t.type}" title="Edit">✎</button>
         <div class="transaction-content">
           <span class="transaction-type-badge ${badgeClass}">${badge}</span>
@@ -385,9 +412,10 @@ function populateHistoryModal(transactions, characterName) {
       const type = btn.dataset.transactionType;
       const transItem = $(`.transaction-item[data-transaction-id="${id}"][data-transaction-type="${type}"]`);
       if (transItem) {
-        const amount = transItem.querySelector('.transaction-amount').textContent.replace(/[^\d-]/g, '');
-        const reason = transItem.querySelector('.transaction-reason').textContent;
-        const timestamp = transItem.querySelector('.transaction-timestamp').textContent;
+        // Read original data from attributes (not from rendered DOM)
+        const amount = transItem.dataset.originalAmount;
+        const reason = transItem.dataset.originalReason;
+        const timestamp = transItem.dataset.originalTimestamp;
         openEditTransactionModal(id, type, { amount, reason, timestamp }, characterName);
       }
     });
@@ -690,10 +718,10 @@ $('#edit-gp-btn').addEventListener('click', async () => {
     return;
   }
 
-  // If item ID is provided, create WoWhead link
+  // If item ID is provided, prepend the WoWhead URL to the reason
   if (itemId) {
-    const itemLink = `<a href="https://www.wowhead.com/item=${itemId}" target="_blank">${itemId}</a>`;
-    reason = itemLink + (reason ? ` - ${reason}` : '');
+    const wowheadUrl = `https://www.wowhead.com/item=${itemId}`;
+    reason = wowheadUrl + (reason ? ` - ${reason}` : '');
   }
 
   btn.disabled = true;
