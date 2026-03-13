@@ -3,8 +3,13 @@
  * GET  — returns the stored WoWAudit API key
  * POST — saves a key/value setting to D1
  */
+import { ensureTablesExist } from '../db-init.js';
+
 export async function onRequest({ request, env }) {
   const headers = { 'Content-Type': 'application/json' };
+
+  // Ensure database tables exist on first use
+  await ensureTablesExist(env);
 
   // ── GET ─────────────────────────────────────────────────────
   if (request.method === 'GET') {
