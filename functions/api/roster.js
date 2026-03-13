@@ -25,22 +25,37 @@ export async function onRequest({ request, env }) {
       // Calculate EP and GP totals from logs for each character
       const rosterWithTotals = await Promise.all(
         results.map(async (character) => {
-          // Sum EP from ep_log
-          const epResult = await env.DB
-            .prepare('SELECT COALESCE(SUM(ep), 0) as total_ep FROM ep_log WHERE name = ?')
-            .bind(character.name)
-            .first();
+          let ep = 0;
+          let gp = 0;
 
-          // Sum GP from gp_log
-          const gpResult = await env.DB
-            .prepare('SELECT COALESCE(SUM(gp), 0) as total_gp FROM gp_log WHERE name = ?')
-            .bind(character.name)
-            .first();
+          try {
+            // Sum EP from ep_log
+            const epResult = await env.DB
+              .prepare('SELECT COALESCE(SUM(ep), 0) as total_ep FROM ep_log WHERE name = ?')
+              .bind(character.name)
+              .first();
+            ep = epResult?.total_ep ?? 0;
+          } catch (e) {
+            // ep_log table may not exist yet; default to 0
+            ep = 0;
+          }
+
+          try {
+            // Sum GP from gp_log
+            const gpResult = await env.DB
+              .prepare('SELECT COALESCE(SUM(gp), 0) as total_gp FROM gp_log WHERE name = ?')
+              .bind(character.name)
+              .first();
+            gp = gpResult?.total_gp ?? 0;
+          } catch (e) {
+            // gp_log table may not exist yet; default to 0
+            gp = 0;
+          }
 
           return {
             ...character,
-            ep: epResult?.total_ep ?? 0,
-            gp: gpResult?.total_gp ?? 0,
+            ep,
+            gp,
           };
         })
       );
