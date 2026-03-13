@@ -267,6 +267,12 @@ body {
   min-height: 70px;
 }
 
+.panel-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .panel-header h1 {
   font-family: 'Cinzel', serif;
   font-size: 17px;
@@ -981,6 +987,26 @@ body {
 
 .modal-body {
   padding: 20px;
+}
+
+.export-textarea {
+  width: 100%;
+  min-height: 300px;
+  background: var(--color-bg-main);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 12px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.export-textarea:focus {
+  outline: none;
+  border-color: var(--color-gold-border);
 }
 
 .modal-footer {

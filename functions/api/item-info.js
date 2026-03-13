@@ -29,6 +29,18 @@ const ARMOR_TYPE_MAP = {
   6: 'Shield',
 };
 
+// Quality ID to name mapping
+const QUALITY_MAP = {
+  0: 'Poor',
+  1: 'Common',
+  2: 'Uncommon',
+  3: 'Rare',
+  4: 'Epic',
+  5: 'Legendary',
+  6: 'Artifact',
+  7: 'Heirloom',
+};
+
 /**
  * Parse the WoWhead tooltip HTML to extract structured item data
  */
@@ -205,11 +217,13 @@ export async function onRequest({ request, env }) {
       const pageData = await fetchInstanceData(itemId);
 
       // Build comprehensive item data
+      const qualityId = tooltipJson.quality || 0;
       const itemData = {
         id: parseInt(itemId),
         name: tooltipJson.name || `Item ${itemId}`,
         icon: tooltipJson.icon || null,
-        quality: tooltipJson.quality || 0,
+        quality: qualityId,
+        qualityName: QUALITY_MAP[qualityId] || 'Unknown',
         slot: tooltipData.slot || pageData.slotName || null,
         armorType: tooltipData.armorType || pageData.armorTypeName || null,
         droppedBy: tooltipData.droppedBy || null,

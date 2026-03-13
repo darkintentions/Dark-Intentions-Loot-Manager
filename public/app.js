@@ -637,6 +637,79 @@ $('#roster-search').addEventListener('input', (e) => {
   filterRoster(e.target.value);
 });
 
+$('#export-pr-btn').addEventListener('click', () => {
+  if (!rosterData || rosterData.length === 0) {
+    showMessage('roster', 'error', '✗ No roster data to export');
+    return;
+  }
+
+  // Build TSV lines: "Name-Realm\tPR"
+  const lines = rosterData.map(c => {
+    const ep = c.ep ?? 0;
+    const gp = c.gp ?? 0;
+    const pr = gp > 0 ? (ep / gp).toFixed(2) : '0.00';
+    const realm = c.realm || 'Unknown';
+    return `${c.name}-${realm}\t${pr}`;
+  });
+
+  const tsv = lines.join('\n');
+
+  // Open a styled modal window with the TSV content
+  showExportModal(tsv);
+});
+
+function showExportModal(content) {
+  // Remove existing export modal if any
+  const existing = $('#export-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'export-modal';
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Export Roster PR</h2>
+        <button id="close-export-modal" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="export-textarea" class="export-textarea" readonly>${escHtml(content)}</textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="copy-export-btn" class="btn btn-primary">
+          <span class="btn-icon">📋</span> Copy to Clipboard
+        </button>
+        <button id="cancel-export-btn" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Auto-select all text
+  const textarea = $('#export-textarea');
+  textarea.focus();
+  textarea.select();
+
+  // Copy button
+  $('#copy-export-btn').addEventListener('click', () => {
+    textarea.select();
+    navigator.clipboard.writeText(content).then(() => {
+      $('#copy-export-btn').innerHTML = '<span class="btn-icon">✓</span> Copied!';
+      setTimeout(() => {
+        $('#copy-export-btn').innerHTML = '<span class="btn-icon">📋</span> Copy to Clipboard';
+      }, 2000);
+    });
+  });
+
+  // Close handlers
+  $('#close-export-modal').addEventListener('click', () => modal.remove());
+  $('#cancel-export-btn').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+}
+
 $('#sync-roster-btn').addEventListener('click', async () => {
   const btn = $('#sync-roster-btn');
   btn.disabled = true;
@@ -866,21 +939,6 @@ $('#edit-gp-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
-    // If an item ID was provided, scrape WoWhead for item details
-    let itemInfo = null;
-    if (itemId) {
-      try {
-        const infoRes = await fetch(`/api/item-info?id=${itemId}`);
-        if (infoRes.ok) {
-          itemInfo = await infoRes.json();
-        }
-      } catch (e) {
-        console.warn('Could not fetch item info from WoWhead:', e);
-      }
-    }
-
-    const timestamp = new Date().toISOString();
-
     const res = await fetch('/api/gp-log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -888,54 +946,12 @@ $('#edit-gp-btn').addEventListener('click', async () => {
         name,
         gp,
         reason,
-        timestamp,
+        timestamp: new Date().toISOString(),
       }),
     });
     const data = await res.json();
 
     if (data.success) {
-      // If we have item info, also add to loot history
-      if (itemInfo) {
-        try {
-          const lootEntry = {
-            history_items: [{
-              rclootcouncil_id: `manual-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-              item_id: parseInt(itemId),
-              name: itemInfo.name || `Item ${itemId}`,
-              icon: itemInfo.icon || '',
-              slot: itemInfo.slot || '',
-              quality: itemInfo.quality ? String(itemInfo.quality) : 'epic',
-              character_id: 0,
-              character_name: name,
-              awarded_by_character_id: null,
-              awarded_by_name: 'Manual GP Entry',
-              awarded_at: timestamp,
-              difficulty: itemInfo.difficulty || '',
-              discarded: false,
-              same_response_amount: 0,
-              note: reason || '',
-              wish_value: 0,
-              response_type: {},
-              bonus_ids: [],
-              old_items: [],
-              wish_data: [],
-              // Extra scraped fields
-              armor_type: itemInfo.armorType || '',
-              dropped_by: itemInfo.droppedBy || '',
-              drop_chance: itemInfo.dropChance || '',
-            }],
-          };
-
-          await fetch('/api/loot-history', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(lootEntry),
-          });
-        } catch (lootErr) {
-          console.warn('Could not add item to loot history:', lootErr);
-        }
-      }
-
       showMessage('epgp', 'success', `✓ ${data.message}`);
       $('#gp-name-select').value = '';
       $('#gp-value-input').value = '';

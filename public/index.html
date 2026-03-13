@@ -69,9 +69,14 @@
     <div id="tab-roster" class="tab-panel active">
       <div class="panel-header">
         <h1>Guild Roster</h1>
-        <button id="sync-roster-btn" class="btn btn-primary">
-          <span class="btn-icon">🔄</span> Sync Roster from WoWAudit
-        </button>
+        <div class="panel-header-actions">
+          <button id="export-pr-btn" class="btn btn-secondary">
+            <span class="btn-icon">📋</span> Export Roster PR
+          </button>
+          <button id="sync-roster-btn" class="btn btn-primary">
+            <span class="btn-icon">🔄</span> Sync Roster from WoWAudit
+          </button>
+        </div>
       </div>
       <div id="roster-message" class="message hidden"></div>
       <div class="content-scroll">

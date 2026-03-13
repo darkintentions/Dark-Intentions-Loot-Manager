@@ -129,7 +129,6 @@ export async function onRequest({ request, env }) {
                 slot,
                 quality,
                 character_id,
-                character_name,
                 awarded_by_character_id,
                 awarded_by_name,
                 awarded_at,
@@ -141,11 +140,8 @@ export async function onRequest({ request, env }) {
                 response_type,
                 bonus_ids,
                 old_items,
-                wish_data,
-                armor_type,
-                dropped_by,
-                drop_chance
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                wish_data
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             )
             .bind(
               item.rclootcouncil_id,
@@ -155,7 +151,6 @@ export async function onRequest({ request, env }) {
               item.slot || '',
               item.quality || '',
               item.character_id,
-              item.character_name || '',
               item.awarded_by_character_id || null,
               item.awarded_by_name || '',
               item.awarded_at || '',
@@ -167,10 +162,7 @@ export async function onRequest({ request, env }) {
               JSON.stringify(item.response_type || {}),
               JSON.stringify(item.bonus_ids || []),
               JSON.stringify(item.old_items || []),
-              JSON.stringify(item.wish_data || []),
-              item.armor_type || '',
-              item.dropped_by || '',
-              item.drop_chance || ''
+              JSON.stringify(item.wish_data || [])
             )
             .run();
           insertedCount++;

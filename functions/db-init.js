@@ -17,32 +17,10 @@ export async function ensureTablesExist(env) {
 
     if (!result) {
       await initializeDatabase(env);
-    } else {
-      // Migrate: add new columns if they don't exist yet
-      await migrateDatabase(env);
     }
   } catch (err) {
     // If there's an error, try to initialize
     await initializeDatabase(env);
-  }
-}
-
-async function migrateDatabase(env) {
-  // Each migration adds a column if it doesn't exist.
-  // SQLite doesn't have IF NOT EXISTS for ALTER TABLE, so we catch errors.
-  const migrations = [
-    'ALTER TABLE loot_history ADD COLUMN character_name TEXT DEFAULT ""',
-    'ALTER TABLE loot_history ADD COLUMN armor_type TEXT DEFAULT ""',
-    'ALTER TABLE loot_history ADD COLUMN dropped_by TEXT DEFAULT ""',
-    'ALTER TABLE loot_history ADD COLUMN drop_chance TEXT DEFAULT ""',
-  ];
-
-  for (const sql of migrations) {
-    try {
-      await env.DB.prepare(sql).run();
-    } catch (e) {
-      // Column likely already exists — safe to ignore
-    }
   }
 }
 
@@ -116,7 +94,6 @@ async function initializeDatabase(env) {
       slot                    TEXT,
       quality                 TEXT,
       character_id            INTEGER NOT NULL,
-      character_name          TEXT,
       awarded_by_character_id INTEGER,
       awarded_by_name         TEXT,
       awarded_at              TEXT,
@@ -129,9 +106,6 @@ async function initializeDatabase(env) {
       bonus_ids               TEXT,
       old_items               TEXT,
       wish_data               TEXT,
-      armor_type              TEXT,
-      dropped_by              TEXT,
-      drop_chance             TEXT,
       updated_at              TEXT DEFAULT (datetime('now'))
     );
 
