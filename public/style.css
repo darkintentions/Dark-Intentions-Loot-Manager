@@ -55,7 +55,7 @@ body {
   font-family: 'Open Sans', sans-serif;
   background: var(--bg-primary);
   color: var(--color-text);
-  font-size: 14px;
+  font-size: 10px;
   line-height: 1.6;
 }
 
@@ -148,7 +148,7 @@ body {
 }
 
 .brand-logo {
-  font-size: 26px;
+  font-size: 27px;
   filter: drop-shadow(0 0 8px rgba(200, 168, 75, 0.6));
 }
 
@@ -160,7 +160,7 @@ body {
 
 .brand-guild {
   font-family: 'Cinzel', serif;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--color-gold-bright);
   letter-spacing: 0.5px;
@@ -215,7 +215,7 @@ body {
 
 .nav-label {
   font-family: 'Cinzel', serif;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
@@ -224,7 +224,7 @@ body {
 .sidebar-footer {
   padding: 14px 16px;
   border-top: 1px solid var(--color-border);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
@@ -269,7 +269,7 @@ body {
 
 .panel-header h1 {
   font-family: 'Cinzel', serif;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--color-gold-bright);
   letter-spacing: 1px;
@@ -288,7 +288,7 @@ body {
   margin: 10px 28px 0;
   padding: 10px 16px;
   border-radius: 5px;
-  font-size: 13px;
+  font-size: 10px;
   border: 1px solid;
   flex-shrink: 0;
 }
@@ -317,7 +317,7 @@ body {
   border: 1px solid;
   cursor: pointer;
   font-family: 'Cinzel', serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.5px;
   transition: all 0.18s;
@@ -351,7 +351,7 @@ body {
   color: var(--color-text-muted);
   padding: 9px 13px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 10px;
 }
 
 .btn-icon-only:hover {
@@ -359,18 +359,18 @@ body {
   color: var(--color-gold);
 }
 
-.btn-icon { font-size: 13px; }
+.btn-icon { font-size: 17px; }
 
 /* ── Data Tables ────────────────────────────────────────────────── */
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 17px;
 }
 
 .data-table thead th {
   font-family: 'Cinzel', serif;
-  font-size: 10px;
+  font-size: 17px;
   font-weight: 600;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -401,7 +401,7 @@ body {
   color: var(--color-text-muted);
   padding: 48px 14px;
   font-style: italic;
-  font-size: 13px;
+  font-size: 17px;
 }
 
 /* Roster: class-coloured names */
@@ -426,7 +426,7 @@ body {
   display: inline-block;
   padding: 2px 9px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: capitalize;
 }
@@ -446,7 +446,7 @@ body {
 /* ── EPGP Gear Table ────────────────────────────────────────────── */
 .section-title {
   font-family: 'Cinzel', serif;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--color-gold);
   letter-spacing: 0.5px;
@@ -482,7 +482,7 @@ body {
   border-radius: 4px;
   color: var(--color-text);
   padding: 6px 10px;
-  font-size: 13px;
+  font-size: 17px;
   font-family: 'Open Sans', sans-serif;
   text-align: right;
   transition: border-color 0.18s;
@@ -513,7 +513,7 @@ body {
 .form-group label {
   display: block;
   font-family: 'Cinzel', serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--color-gold);
   letter-spacing: 0.5px;
@@ -533,7 +533,7 @@ body {
   border-radius: 5px;
   color: var(--color-text);
   padding: 10px 14px;
-  font-size: 13px;
+  font-size: 17px;
   font-family: 'Open Sans', sans-serif;
   transition: border-color 0.18s;
 }
@@ -549,7 +549,7 @@ body {
 .form-hint {
   display: block;
   margin-top: 7px;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-text-muted);
   font-style: italic;
 }
@@ -560,7 +560,67 @@ body {
   border: 1px solid var(--color-gold-border);
   border-radius: 3px;
   padding: 0 4px;
-  font-size: 11px;
+  font-size: 10px;
+  color: var(--color-gold);
+}
+
+/* ── Roster Filters ─────────────────────────────────────────────── */
+.roster-filters {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+}
+
+.filter-input {
+  flex: 1;
+  max-width: 300px;
+  background: var(--bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  color: var(--color-text);
+  padding: 8px 12px;
+  font-size: 17px;
+  font-family: 'Open Sans', sans-serif;
+  transition: border-color 0.18s;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: var(--color-gold-dim);
+  box-shadow: 0 0 0 2px rgba(200, 168, 75, 0.1);
+}
+
+.filter-input::placeholder { color: var(--color-text-muted); }
+
+/* Sortable table headers */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 18px !important;
+}
+
+.sortable-header:hover {
+  background: rgba(200, 168, 75, 0.08) !important;
+}
+
+.sortable-header::after {
+  content: '⇅';
+  position: absolute;
+  right: 6px;
+  opacity: 0.3;
+  font-size: 17px;
+}
+
+.sortable-header.sort-asc::after {
+  content: '↑';
+  opacity: 1;
+  color: var(--color-gold);
+}
+
+.sortable-header.sort-desc::after {
+  content: '↓';
+  opacity: 1;
   color: var(--color-gold);
 }
 
@@ -577,18 +637,18 @@ body {
 }
 
 .coming-soon-icon {
-  font-size: 52px;
+  font-size: 54px;
   opacity: 0.25;
   margin-bottom: 8px;
 }
 
 .coming-soon h2 {
   font-family: 'Cinzel', serif;
-  font-size: 18px;
+  font-size: 10px;
   color: var(--color-text-muted);
 }
 
-.coming-soon p { font-size: 13px; }
+.coming-soon p { font-size: 17px; }
 
 /* ── Scrollbar ──────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -617,11 +677,11 @@ body {
   .panel-header { padding: 14px 16px; }
   .content-scroll { padding: 16px; }
   .message { margin: 8px 16px 0; }
-  .gear-table { font-size: 12px; }
+  .gear-table { font-size: 10px; }
   .gear-input { width: 80px; }
 }
 
 @media (max-width: 480px) {
-  .panel-header h1 { font-size: 16px; }
-  .btn { padding: 8px 12px; font-size: 10px; }
+  .panel-header h1 { font-size: 17px; }
+  .btn { padding: 8px 12px; font-size: 17px; }
 }
