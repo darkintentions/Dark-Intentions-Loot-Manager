@@ -15,13 +15,52 @@ export async function onRequest({ request, env }) {
   // Ensure database tables exist on first use
   await ensureTablesExist(env);
 
-  // ── GET — return stored roster ───────────────────────────────
+  // ── GET — return stored roster with calculated EP/GP totals ──────
   if (request.method === 'GET') {
     try {
       const { results } = await env.DB
         .prepare('SELECT * FROM roster ORDER BY name ASC')
         .all();
-      return new Response(JSON.stringify({ roster: results }), { headers });
+
+      // Calculate EP and GP totals from logs for each character
+      const rosterWithTotals = await Promise.all(
+        results.map(async (character) => {
+          let ep = 0;
+          let gp = 0;
+
+          try {
+            // Sum EP from ep_log
+            const epResult = await env.DB
+              .prepare('SELECT COALESCE(SUM(ep), 0) as total_ep FROM ep_log WHERE name = ?')
+              .bind(character.name)
+              .first();
+            ep = epResult?.total_ep ?? 0;
+          } catch (e) {
+            // ep_log table may not exist yet; default to 0
+            ep = 0;
+          }
+
+          try {
+            // Sum GP from gp_log
+            const gpResult = await env.DB
+              .prepare('SELECT COALESCE(SUM(gp), 0) as total_gp FROM gp_log WHERE name = ?')
+              .bind(character.name)
+              .first();
+            gp = gpResult?.total_gp ?? 0;
+          } catch (e) {
+            // gp_log table may not exist yet; default to 0
+            gp = 0;
+          }
+
+          return {
+            ...character,
+            ep,
+            gp,
+          };
+        })
+      );
+
+      return new Response(JSON.stringify({ roster: rosterWithTotals }), { headers });
     } catch (err) {
       return new Response(
         JSON.stringify({ error: err.message }),
@@ -72,6 +111,12 @@ export async function onRequest({ request, env }) {
         ? payload
         : (payload.characters ?? payload.data ?? []);
 
+      // Get default GP value from settings
+      const defaultGpRow = await env.DB
+        .prepare("SELECT value FROM settings WHERE key = 'default_gp'")
+        .first();
+      const defaultGp = defaultGpRow?.value ? parseInt(defaultGpRow.value) : 2;
+
       // Replace roster with fresh data
       await env.DB.prepare('DELETE FROM roster').run();
 
@@ -81,11 +126,16 @@ export async function onRequest({ request, env }) {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
+      const now = new Date().toISOString();
+
       for (const c of chars) {
+        const charName = c.name ?? 'Unknown';
+
+        // Insert into roster
         await stmt
           .bind(
             c.id             ?? c.character_id          ?? null,
-            c.name           ?? 'Unknown',
+            charName,
             c.realm          ?? c.realm_slug             ?? null,
             c.class          ?? c.character_class         ?? null,
             c.spec           ?? c.active_spec_name        ?? null,
@@ -96,13 +146,25 @@ export async function onRequest({ request, env }) {
             c.status         ?? (c.is_inactive ? 'inactive' : 'active')
           )
           .run();
+
+        // Add initial GP log entry for this character
+        try {
+          await env.DB.prepare(`
+            INSERT INTO gp_log (name, gp, reason, timestamp)
+            VALUES (?, ?, ?, ?)
+          `)
+            .bind(charName, defaultGp, 'Initial GP on roster sync', now)
+            .run();
+        } catch (e) {
+          // gp_log table may not exist yet; ignore
+        }
       }
 
       return new Response(
         JSON.stringify({
           success: true,
           count: chars.length,
-          message: `Synced ${chars.length} characters from WoWAudit`,
+          message: `Synced ${chars.length} characters from WoWAudit with ${defaultGp} GP each`,
         }),
         { headers }
       );

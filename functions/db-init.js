@@ -74,7 +74,9 @@ async function initializeDatabase(env) {
     );
 
     INSERT OR REPLACE INTO settings (key, value)
-    VALUES ('wowaudit_api_key', '62581957225650bd6cd7902ea6f45b3d175a372c524083d3eb30696260bc672d');
+    VALUES
+      ('wowaudit_api_key', '62581957225650bd6cd7902ea6f45b3d175a372c524083d3eb30696260bc672d'),
+      ('default_gp', '2');
 
     INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES
       ('Head',      0),
@@ -87,12 +89,12 @@ async function initializeDatabase(env) {
       ('Waist',     0),
       ('Legs',      0),
       ('Feet',      0),
-      ('Ring 1',    0),
-      ('Ring 2',    0),
-      ('Trinket 1', 0),
-      ('Trinket 2', 0),
+      ('Ring',      0),
+      ('Trinket',   0),
       ('Main Hand', 0),
-      ('Off Hand',  0);
+      ('Off Hand',  0),
+      ('Tier',      0),
+      ('Ranged',    0);
   `;
 
   // Execute each statement separately

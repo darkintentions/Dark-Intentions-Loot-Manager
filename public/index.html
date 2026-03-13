@@ -79,16 +79,19 @@
         <table id="roster-table" class="data-table sortable">
           <thead>
             <tr>
+              <th class="sortable-header" data-sort="pr">PR</th>
               <th class="sortable-header" data-sort="name">Name</th>
               <th class="sortable-header" data-sort="realm">Realm</th>
               <th class="sortable-header" data-sort="class">Class</th>
               <th class="sortable-header" data-sort="role">Role</th>
+              <th class="sortable-header" data-sort="ep">EP</th>
+              <th class="sortable-header" data-sort="gp">GP</th>
               <th class="sortable-header" data-sort="status">Status</th>
             </tr>
           </thead>
           <tbody id="roster-tbody">
             <tr class="empty-row">
-              <td colspan="5">No roster data. Click "Sync from WoWAudit" to load characters.</td>
+              <td colspan="8">No roster data. Click "Sync from WoWAudit" to load characters.</td>
             </tr>
           </tbody>
         </table>
@@ -229,6 +232,34 @@
           <h2 class="section-title">Add Custom EP Button</h2>
           <button id="open-custom-ep-btn" class="btn btn-primary">
             <span class="btn-icon">➕</span> Create New Button
+          </button>
+        </section>
+
+        <section class="admin-section">
+          <h2 class="section-title">Default GP Setting</h2>
+          <div class="form-group">
+            <label for="default-gp-input">Default GP for New Characters:</label>
+            <input
+              type="number"
+              id="default-gp-input"
+              class="form-input"
+              placeholder="Default GP value..."
+              min="0"
+            >
+            <small class="form-hint">
+              This value is assigned to new characters when synced from WoWAudit.
+              Current default: 2 GP
+            </small>
+          </div>
+          <button id="save-default-gp-btn" class="btn btn-primary">
+            <span class="btn-icon">💾</span> Save Default GP
+          </button>
+        </section>
+
+        <section class="admin-section">
+          <h2 class="section-title">Danger Zone</h2>
+          <button id="delete-roster-btn" class="btn btn-danger" title="This will delete everyone in the roster and wipe all data related to them in the database">
+            <span class="btn-icon">🗑️</span> Permanently Delete Roster
           </button>
         </section>
       </div>

@@ -49,16 +49,16 @@ function classCss(className) {
   return CLASS_CSS[className.toLowerCase()] || '';
 }
 
-// ── All 16 WoW gear slots (display order) ───────────────────────
+// ── All 15 WoW gear slots (display order) ───────────────────────
 const GEAR_SLOTS = [
   'Head',      'Neck',
   'Shoulder',  'Back',
   'Chest',     'Wrist',
   'Hands',     'Waist',
   'Legs',      'Feet',
-  'Ring 1',    'Ring 2',
-  'Trinket 1', 'Trinket 2',
+  'Ring',      'Trinket',
   'Main Hand', 'Off Hand',
+  'Tier',      'Ranged',
 ];
 
 // ================================================================
@@ -153,23 +153,74 @@ async function loadRoster() {
 function renderRoster(roster) {
   const tbody = $('#roster-tbody');
   if (roster.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No matching roster members.</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No matching roster members.</td></tr>';
     return;
   }
 
   tbody.innerHTML = roster.map(c => {
     const css    = classCss(c.class);
     const status = (c.status || 'active').toLowerCase();
+    const ep = c.ep ?? 0;
+    const gp = c.gp ?? 0;
+    const pr = gp > 0 ? (ep / gp).toFixed(2) : '—';
+    const charId = `roster-char-${escHtml(c.name)}`;
 
     return `
-      <tr>
+      <tr class="roster-row" data-character="${escHtml(c.name)}">
+        <td>${pr}</td>
         <td><span class="char-name ${css}">${escHtml(c.name)}</span></td>
         <td>${escHtml(c.realm || '—')}</td>
         <td class="${css}">${escHtml(c.class || '—')}</td>
         <td>${escHtml(c.role || '—')}</td>
+        <td>${ep}</td>
+        <td>${gp}</td>
         <td><span class="status-badge status-${escHtml(status)}">${escHtml(status)}</span></td>
+      </tr>
+      <tr class="roster-detail-row hidden" id="${charId}">
+        <td colspan="8">
+          <div class="detail-content">
+            <h4>${escHtml(c.name)}</h4>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Earned Points (EP):</span>
+                <span class="detail-value">${ep}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Gear Points (GP):</span>
+                <span class="detail-value">${gp}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Priority Ratio:</span>
+                <span class="detail-value">${pr}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Realm:</span>
+                <span class="detail-value">${escHtml(c.realm || '—')}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Class:</span>
+                <span class="detail-value ${css}">${escHtml(c.class || '—')}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Role:</span>
+                <span class="detail-value">${escHtml(c.role || '—')}</span>
+              </div>
+            </div>
+          </div>
+        </td>
       </tr>`;
   }).join('');
+
+  // Add click handlers for expandable rows
+  $$('.roster-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const charName = row.dataset.character;
+      const detailRow = $(`#roster-char-${charName}`);
+      if (detailRow) {
+        detailRow.classList.toggle('hidden');
+      }
+    });
+  });
 }
 
 function sortRoster(key) {
@@ -186,8 +237,31 @@ function sortRoster(key) {
 
   // Sort data
   const sorted = [...rosterData].sort((a, b) => {
-    const aVal = String(a[key] || '').toLowerCase();
-    const bVal = String(b[key] || '').toLowerCase();
+    let aVal, bVal;
+
+    // Handle PR (Priority Ratio) calculation
+    if (key === 'pr') {
+      const aEp = a.ep ?? 0;
+      const aGp = a.gp ?? 0;
+      const bEp = b.ep ?? 0;
+      const bGp = b.gp ?? 0;
+      aVal = aGp > 0 ? aEp / aGp : -1;
+      bVal = bGp > 0 ? bEp / bGp : -1;
+      const cmp = aVal - bVal;
+      return rosterSortDir === 'asc' ? cmp : -cmp;
+    }
+
+    // Handle numeric fields
+    if (key === 'ep' || key === 'gp') {
+      aVal = a[key] ?? 0;
+      bVal = b[key] ?? 0;
+      const cmp = aVal - bVal;
+      return rosterSortDir === 'asc' ? cmp : -cmp;
+    }
+
+    // Default string sorting
+    aVal = String(a[key] || '').toLowerCase();
+    bVal = String(b[key] || '').toLowerCase();
     const cmp = aVal.localeCompare(bVal);
     return rosterSortDir === 'asc' ? cmp : -cmp;
   });
@@ -461,8 +535,11 @@ async function loadAdminSettings() {
     if (data.api_key) {
       $('#api-key-input').value = data.api_key;
     }
+    if (data.default_gp) {
+      $('#default-gp-input').value = data.default_gp;
+    }
   } catch {
-    // Key may just not be set yet; fail silently
+    // Settings may just not be set yet; fail silently
   }
 }
 
@@ -497,6 +574,83 @@ $('#save-admin-btn').addEventListener('click', async () => {
       showMessage('admin', 'success', `✓ ${data.message}`);
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
+    }
+  } catch (err) {
+    showMessage('admin', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// Save default GP setting
+$('#save-default-gp-btn').addEventListener('click', async () => {
+  const btn = $('#save-default-gp-btn');
+  const defaultGp = $('#default-gp-input').value.trim();
+
+  if (!defaultGp || isNaN(defaultGp) || parseInt(defaultGp) < 0) {
+    showMessage('admin', 'error', '✗ Default GP must be a non-negative number.');
+    return;
+  }
+
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'default_gp', value: defaultGp }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('admin', 'success', `✓ Default GP updated to ${defaultGp}`);
+    } else {
+      showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
+    }
+  } catch (err) {
+    showMessage('admin', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// Delete roster with confirmation
+$('#delete-roster-btn').addEventListener('click', async () => {
+  const confirmed = window.confirm(
+    'Are you absolutely sure?\n\n' +
+    'This will:\n' +
+    '• Delete ALL characters from the roster\n' +
+    '• Delete ALL EP/GP transaction logs\n' +
+    '• Permanently wipe all roster-related data\n\n' +
+    'This action CANNOT be undone.\n\n' +
+    'Type "DELETE" to confirm:'
+  );
+
+  if (!confirmed) return;
+
+  // Prompt for confirmation word
+  const confirmWord = window.prompt('Type "DELETE" to permanently delete the roster:');
+  if (confirmWord !== 'DELETE') {
+    showMessage('admin', 'error', '✗ Deletion cancelled. Type "DELETE" to confirm.');
+    return;
+  }
+
+  const btn = $('#delete-roster-btn');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/roster-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('admin', 'success', `✓ ${data.message}`);
+      // Reload roster to show empty state
+      loadRoster();
+    } else {
+      showMessage('admin', 'error', `✗ ${data.error || 'Deletion failed'}`);
     }
   } catch (err) {
     showMessage('admin', 'error', `✗ Network error: ${err.message}`);
