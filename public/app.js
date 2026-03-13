@@ -93,16 +93,36 @@ if (window.innerWidth <= 768) {
 }
 
 // ================================================================
-//  TAB SWITCHING
+//  TAB SWITCHING & UNSAVED CHANGES
 // ================================================================
 const tabLoaded = {};
+let unsavedChanges = false;
+
+function markUnsavedChanges() {
+  unsavedChanges = true;
+}
+
+function clearUnsavedChanges() {
+  unsavedChanges = false;
+}
 
 function switchTab(name) {
+  // Check for unsaved changes before switching
+  if (unsavedChanges) {
+    const confirmed = window.confirm(
+      'You have unsaved changes. Do you want to leave without saving?'
+    );
+    if (!confirmed) return;
+  }
+
   $$('.nav-item').forEach(li => li.classList.remove('active'));
   $$('.tab-panel').forEach(panel => panel.classList.remove('active'));
 
   $(`.nav-item[data-tab="${name}"]`).classList.add('active');
   $(`#tab-${name}`).classList.add('active');
+
+  // Clear unsaved flag when switching tabs
+  clearUnsavedChanges();
 
   // Lazy-load tab data on first visit
   if (!tabLoaded[name]) {
@@ -115,6 +135,15 @@ function switchTab(name) {
 
 $$('.nav-item').forEach(li => {
   li.addEventListener('click', () => switchTab(li.dataset.tab));
+});
+
+// Warn before closing/reloading if there are unsaved changes
+window.addEventListener('beforeunload', (e) => {
+  if (unsavedChanges) {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
 });
 
 // ================================================================
@@ -560,6 +589,7 @@ $('#save-epgp-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('epgp', 'success', `✓ ${data.message}`);
+      clearUnsavedChanges();
     } else {
       showMessage('epgp', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -607,6 +637,7 @@ $('#edit-ep-btn').addEventListener('click', async () => {
       $('#ep-name-select').value = '';
       $('#ep-value-input').value = '';
       $('#ep-reason-input').value = '';
+      clearUnsavedChanges();
     } else {
       showMessage('epgp', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -654,6 +685,7 @@ $('#edit-gp-btn').addEventListener('click', async () => {
       $('#gp-name-select').value = '';
       $('#gp-value-input').value = '';
       $('#gp-reason-input').value = '';
+      clearUnsavedChanges();
     } else {
       showMessage('epgp', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -711,6 +743,7 @@ $('#save-admin-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('admin', 'success', `✓ ${data.message}`);
+      clearUnsavedChanges();
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -743,6 +776,7 @@ $('#save-default-gp-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('admin', 'success', `✓ Default GP updated to ${defaultGp}`);
+      clearUnsavedChanges();
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
     }
@@ -1015,6 +1049,7 @@ saveEditTransactionBtn.addEventListener('click', async () => {
     if (data.success) {
       showMessage('roster', 'success', '✓ Transaction updated');
       editTransactionModal.classList.add('hidden');
+      clearUnsavedChanges();
       // Reload history modal
       await openTransactionHistoryModal(characterName);
     } else {
@@ -1025,6 +1060,43 @@ saveEditTransactionBtn.addEventListener('click', async () => {
   } finally {
     saveEditTransactionBtn.disabled = false;
   }
+});
+
+// ================================================================
+//  UNSAVED CHANGES — Form Input Listeners
+// ================================================================
+// Track changes in EPGP forms
+['#ep-name-select', '#ep-value-input', '#ep-reason-input',
+ '#gp-name-select', '#gp-value-input', '#gp-reason-input'].forEach(sel => {
+  const el = $(sel);
+  if (el) {
+    el.addEventListener('change', markUnsavedChanges);
+    el.addEventListener('input', markUnsavedChanges);
+  }
+});
+
+// Track changes in Admin forms
+['#api-key-input', '#default-gp-input'].forEach(sel => {
+  const el = $(sel);
+  if (el) {
+    el.addEventListener('change', markUnsavedChanges);
+    el.addEventListener('input', markUnsavedChanges);
+  }
+});
+
+// Track changes in transaction edit modal
+['#edit-transaction-amount', '#edit-transaction-reason', '#edit-transaction-timestamp'].forEach(sel => {
+  const el = $(sel);
+  if (el) {
+    el.addEventListener('change', markUnsavedChanges);
+    el.addEventListener('input', markUnsavedChanges);
+  }
+});
+
+// Track changes in EPGP gear slot inputs
+$$('table.gear-table input').forEach(input => {
+  input.addEventListener('change', markUnsavedChanges);
+  input.addEventListener('input', markUnsavedChanges);
 });
 
 // ================================================================
