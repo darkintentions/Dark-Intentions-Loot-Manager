@@ -661,7 +661,8 @@ $('#edit-gp-btn').addEventListener('click', async () => {
   const btn = $('#edit-gp-btn');
   const name = $('#gp-name-select').value.trim();
   const gp = parseInt($('#gp-value-input').value, 10);
-  const reason = $('#gp-reason-input').value.trim();
+  const itemId = $('#gp-item-id-input').value.trim();
+  let reason = $('#gp-reason-input').value.trim();
 
   if (!name) {
     showMessage('epgp', 'error', '✗ Please select a character');
@@ -671,6 +672,12 @@ $('#edit-gp-btn').addEventListener('click', async () => {
   if (isNaN(gp)) {
     showMessage('epgp', 'error', '✗ Please enter a valid GP value');
     return;
+  }
+
+  // If item ID is provided, create WoWhead link
+  if (itemId) {
+    const itemLink = `<a href="https://www.wowhead.com/item=${itemId}" target="_blank">${itemId}</a>`;
+    reason = itemLink + (reason ? ` - ${reason}` : '');
   }
 
   btn.disabled = true;
@@ -692,6 +699,7 @@ $('#edit-gp-btn').addEventListener('click', async () => {
       showMessage('epgp', 'success', `✓ ${data.message}`);
       $('#gp-name-select').value = '';
       $('#gp-value-input').value = '';
+      $('#gp-item-id-input').value = '';
       $('#gp-reason-input').value = '';
       // Reload roster to update PR values
       await loadRoster();
