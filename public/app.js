@@ -643,19 +643,19 @@ $('#export-pr-btn').addEventListener('click', () => {
     return;
   }
 
-  // Build TSV lines: "Name-Realm\tPR"
+  // Build CSV lines: "Name-Realm,PR"
   const lines = rosterData.map(c => {
     const ep = c.ep ?? 0;
     const gp = c.gp ?? 0;
     const pr = gp > 0 ? (ep / gp).toFixed(2) : '0.00';
     const realm = c.realm || 'Unknown';
-    return `${c.name}-${realm}\t${pr}`;
+    return `${c.name}-${realm},${pr}`;
   });
 
-  const tsv = lines.join('\n');
+  const csv = lines.join('\n');
 
-  // Open a styled modal window with the TSV content
-  showExportModal(tsv);
+  // Open a styled modal window with the CSV content
+  showExportModal(csv);
 });
 
 function showExportModal(content) {
