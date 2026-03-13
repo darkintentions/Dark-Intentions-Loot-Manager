@@ -163,9 +163,10 @@ function renderRoster(roster) {
     const ep = c.ep ?? 0;
     const gp = c.gp ?? 0;
     const pr = gp > 0 ? (ep / gp).toFixed(2) : '—';
+    const charId = `roster-char-${escHtml(c.name)}`;
 
     return `
-      <tr>
+      <tr class="roster-row" data-character="${escHtml(c.name)}">
         <td>${pr}</td>
         <td><span class="char-name ${css}">${escHtml(c.name)}</span></td>
         <td>${escHtml(c.realm || '—')}</td>
@@ -174,8 +175,52 @@ function renderRoster(roster) {
         <td>${ep}</td>
         <td>${gp}</td>
         <td><span class="status-badge status-${escHtml(status)}">${escHtml(status)}</span></td>
+      </tr>
+      <tr class="roster-detail-row hidden" id="${charId}">
+        <td colspan="8">
+          <div class="detail-content">
+            <h4>${escHtml(c.name)}</h4>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Earned Points (EP):</span>
+                <span class="detail-value">${ep}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Gear Points (GP):</span>
+                <span class="detail-value">${gp}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Priority Ratio:</span>
+                <span class="detail-value">${pr}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Realm:</span>
+                <span class="detail-value">${escHtml(c.realm || '—')}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Class:</span>
+                <span class="detail-value ${css}">${escHtml(c.class || '—')}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Role:</span>
+                <span class="detail-value">${escHtml(c.role || '—')}</span>
+              </div>
+            </div>
+          </div>
+        </td>
       </tr>`;
   }).join('');
+
+  // Add click handlers for expandable rows
+  $$('.roster-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const charName = row.dataset.character;
+      const detailRow = $(`#roster-char-${charName}`);
+      if (detailRow) {
+        detailRow.classList.toggle('hidden');
+      }
+    });
+  });
 }
 
 function sortRoster(key) {
