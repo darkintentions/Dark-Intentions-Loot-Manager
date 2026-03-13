@@ -117,21 +117,8 @@ export async function onRequest({ request, env }) {
         .first();
       const defaultGp = defaultGpRow?.value ? parseInt(defaultGpRow.value) : 2;
 
-      // Replace roster with fresh data, clearing all related logs
+      // Replace roster with fresh data
       await env.DB.prepare('DELETE FROM roster').run();
-
-      // Clear old GP and EP logs (will be repopulated with defaults)
-      try {
-        await env.DB.prepare('DELETE FROM gp_log').run();
-      } catch (e) {
-        // gp_log table may not exist yet; ignore
-      }
-
-      try {
-        await env.DB.prepare('DELETE FROM ep_log').run();
-      } catch (e) {
-        // ep_log table may not exist yet; ignore
-      }
 
       const stmt = env.DB.prepare(`
         INSERT INTO roster

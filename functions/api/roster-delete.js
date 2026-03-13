@@ -18,32 +18,49 @@ export async function onRequest({ request, env }) {
   // ── POST — delete all roster data ────────────────────────────
   if (request.method === 'POST') {
     try {
-      // Delete all entries from the logs
+      let deletedCounts = {};
+
+      // Delete all entries from ep_log
       try {
-        await env.DB.prepare('DELETE FROM ep_log').run();
+        const epResult = await env.DB.prepare('DELETE FROM ep_log').run();
+        deletedCounts.ep_log = epResult.meta.changes ?? 0;
       } catch (e) {
         // ep_log table may not exist yet; ignore
+        deletedCounts.ep_log = 0;
       }
 
+      // Delete all entries from gp_log
       try {
-        await env.DB.prepare('DELETE FROM gp_log').run();
+        const gpResult = await env.DB.prepare('DELETE FROM gp_log').run();
+        deletedCounts.gp_log = gpResult.meta.changes ?? 0;
       } catch (e) {
         // gp_log table may not exist yet; ignore
+        deletedCounts.gp_log = 0;
       }
 
       // Delete all characters from roster
-      await env.DB.prepare('DELETE FROM roster').run();
+      try {
+        const rosterResult = await env.DB.prepare('DELETE FROM roster').run();
+        deletedCounts.roster = rosterResult.meta.changes ?? 0;
+      } catch (e) {
+        deletedCounts.roster = 0;
+        throw new Error(`Failed to delete roster: ${e.message}`);
+      }
 
       return new Response(
         JSON.stringify({
           success: true,
           message: '✓ Roster and all related data permanently deleted',
+          deleted: deletedCounts,
         }),
         { headers }
       );
     } catch (err) {
       return new Response(
-        JSON.stringify({ error: err.message }),
+        JSON.stringify({
+          success: false,
+          error: err.message
+        }),
         { status: 500, headers }
       );
     }
