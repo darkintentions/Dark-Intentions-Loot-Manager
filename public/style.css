@@ -723,7 +723,8 @@ body {
   align-items: flex-end;
 }
 
-.epgp-log-form .form-input {
+.epgp-log-form .form-input,
+.epgp-log-form .form-select {
   flex: 1;
   min-width: 120px;
 }

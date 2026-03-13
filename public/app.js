@@ -601,22 +601,28 @@ function populateRosterDropdowns() {
   const epSelect = $('#ep-name-select');
   const gpSelect = $('#gp-name-select');
 
-  // Clear existing options except the default one
-  while (epSelect.children.length > 1) epSelect.removeChild(epSelect.lastChild);
-  while (gpSelect.children.length > 1) gpSelect.removeChild(gpSelect.lastChild);
+  // Clear existing options
+  epSelect.innerHTML = '<option value="">— Select a character —</option>';
+  gpSelect.innerHTML = '<option value="">— Select a character —</option>';
 
-  // Add roster members
-  rosterData.forEach(member => {
-    const epOption = document.createElement('option');
-    epOption.value = member.name;
-    epOption.textContent = member.name;
-    epSelect.appendChild(epOption);
+  // Add roster members, sorted alphabetically, excluding Social rank
+  if (rosterData && rosterData.length > 0) {
+    const characters = rosterData
+      .filter(c => c.rank && c.rank.toLowerCase() !== 'social')
+      .sort((a, b) => a.name.localeCompare(b.name));
 
-    const gpOption = document.createElement('option');
-    gpOption.value = member.name;
-    gpOption.textContent = member.name;
-    gpSelect.appendChild(gpOption);
-  });
+    characters.forEach(member => {
+      const epOption = document.createElement('option');
+      epOption.value = member.name;
+      epOption.textContent = member.name;
+      epSelect.appendChild(epOption);
+
+      const gpOption = document.createElement('option');
+      gpOption.value = member.name;
+      gpOption.textContent = member.name;
+      gpSelect.appendChild(gpOption);
+    });
+  }
 }
 
 function renderEpgpTable(gearValues) {
