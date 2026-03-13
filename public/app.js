@@ -327,7 +327,7 @@ function populateHistoryModal(transactions, characterName) {
         <div class="transaction-content">
           <span class="transaction-type-badge ${badgeClass}">${badge}</span>
           <div class="transaction-details">
-            <span class="transaction-amount">${amount > 0 ? '+' : ''}${amount} points</span>
+            <span class="transaction-amount">${amount > 0 ? '+' : ''}${amount}</span>
             <span class="transaction-reason">${escHtml(t.reason || '(no reason)')}</span>
             <span class="transaction-timestamp">${formattedTime}</span>
           </div>
