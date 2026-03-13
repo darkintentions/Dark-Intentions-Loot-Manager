@@ -192,6 +192,10 @@ function renderRoster(roster) {
                 <span class="detail-label">Gear Points (GP):</span>
                 <span class="detail-value">${gp}</span>
               </div>
+              <div class="detail-item">
+                <span class="detail-label">History:</span>
+                <button class="btn btn-secondary view-history-btn" data-character="${escHtml(c.name)}" style="padding: 8px 16px; font-size: 12px;">📜 View History</button>
+              </div>
             </div>
           </div>
         </td>
@@ -206,6 +210,15 @@ function renderRoster(roster) {
       if (detailRow) {
         detailRow.classList.toggle('hidden');
       }
+    });
+  });
+
+  // Add click handlers for View History buttons
+  $$('.view-history-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const characterName = btn.dataset.character;
+      await openTransactionHistoryModal(characterName);
     });
   });
 }
@@ -267,6 +280,148 @@ function filterRoster(query) {
   );
 
   renderRoster(filtered);
+}
+
+// ── Transaction History Functions ──────────────────────────────────
+
+async function loadTransactionHistory(characterName) {
+  try {
+    const res = await fetch(`/api/transaction-history?name=${encodeURIComponent(characterName)}`);
+    const data = await res.json();
+    if (data.transactions) {
+      return data.transactions;
+    } else {
+      showMessage('roster', 'error', '✗ Failed to load transaction history');
+      return [];
+    }
+  } catch (err) {
+    showMessage('roster', 'error', `✗ Network error: ${err.message}`);
+    return [];
+  }
+}
+
+async function openTransactionHistoryModal(characterName) {
+  const modal = $('#transaction-history-modal');
+  const transactions = await loadTransactionHistory(characterName);
+  populateHistoryModal(transactions, characterName);
+  modal.classList.remove('hidden');
+}
+
+function populateHistoryModal(transactions, characterName) {
+  const titleEl = $('#transaction-history-title');
+  const listEl = $('#transaction-list');
+
+  titleEl.textContent = `Transaction History — ${escHtml(characterName)}`;
+
+  if (transactions.length === 0) {
+    listEl.innerHTML = '<div class="transaction-list-empty">No transaction history for this character</div>';
+    return;
+  }
+
+  listEl.innerHTML = transactions.map(t => {
+    const badge = t.type.toUpperCase();
+    const badgeClass = t.type === 'ep' ? 'ep' : 'gp';
+    const formattedTime = new Date(t.timestamp).toLocaleString();
+    const amount = t.amount ?? 0;
+
+    return `
+      <div class="transaction-item" data-transaction-id="${t.id}" data-transaction-type="${t.type}">
+        <button class="transaction-icon-btn edit-transaction-btn" data-transaction-id="${t.id}" data-transaction-type="${t.type}" title="Edit">✎</button>
+        <div class="transaction-content">
+          <span class="transaction-type-badge ${badgeClass}">${badge}</span>
+          <div class="transaction-details">
+            <span class="transaction-amount">${amount > 0 ? '+' : ''}${amount} points</span>
+            <span class="transaction-reason">${escHtml(t.reason || '(no reason)')}</span>
+            <span class="transaction-timestamp">${formattedTime}</span>
+          </div>
+        </div>
+        <button class="transaction-icon-btn delete-btn delete-transaction-btn" data-transaction-id="${t.id}" data-transaction-type="${t.type}" title="Delete">🗑</button>
+      </div>
+    `;
+  }).join('');
+
+  // Attach event listeners to edit buttons
+  $$('.edit-transaction-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.transactionId;
+      const type = btn.dataset.transactionType;
+      const transItem = $(`.transaction-item[data-transaction-id="${id}"][data-transaction-type="${type}"]`);
+      if (transItem) {
+        const amount = transItem.querySelector('.transaction-amount').textContent.replace(/[^\d-]/g, '');
+        const reason = transItem.querySelector('.transaction-reason').textContent;
+        const timestamp = transItem.querySelector('.transaction-timestamp').textContent;
+        openEditTransactionModal(id, type, { amount, reason, timestamp }, characterName);
+      }
+    });
+  });
+
+  // Attach event listeners to delete buttons
+  $$('.delete-transaction-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.transactionId;
+      const type = btn.dataset.transactionType;
+      deleteTransaction(id, type, characterName);
+    });
+  });
+}
+
+function openEditTransactionModal(transactionId, transactionType, transaction, characterName) {
+  const modal = $('#edit-transaction-modal');
+  const amountInput = $('#edit-transaction-amount');
+  const reasonInput = $('#edit-transaction-reason');
+  const timestampInput = $('#edit-transaction-timestamp');
+
+  // Pre-fill form with current values
+  amountInput.value = transaction.amount || 0;
+  reasonInput.value = transaction.reason || '';
+
+  // Format timestamp for datetime-local input
+  if (transaction.timestamp) {
+    const date = new Date(transaction.timestamp);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    timestampInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+  } else {
+    timestampInput.value = '';
+  }
+
+  // Store data for submission
+  modal.dataset.transactionId = transactionId;
+  modal.dataset.transactionType = transactionType;
+  modal.dataset.characterName = characterName;
+
+  modal.classList.remove('hidden');
+}
+
+async function deleteTransaction(transactionId, transactionType, characterName) {
+  if (!window.confirm('Delete this transaction? This cannot be undone.')) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/transaction-history/${transactionId}/${transactionType}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('roster', 'success', '✓ Transaction deleted');
+      // Reload the history modal
+      const historyModal = $('#transaction-history-modal');
+      if (!historyModal.classList.contains('hidden')) {
+        await openTransactionHistoryModal(characterName);
+      }
+    } else {
+      showMessage('roster', 'error', `✗ ${data.error}`);
+    }
+  } catch (err) {
+    showMessage('roster', 'error', `✗ Network error: ${err.message}`);
+  }
 }
 
 // Sort header listeners
@@ -795,6 +950,83 @@ customEpModal.addEventListener('click', (e) => {
   if (e.target === customEpModal) {
     customEpModal.classList.add('hidden');
     resetCustomEpForm();
+  }
+});
+
+// ================================================================
+//  TRANSACTION HISTORY MODAL
+// ================================================================
+
+// View History button listeners (added dynamically in renderRoster)
+// We set them up after each render call
+
+const transactionHistoryModal = $('#transaction-history-modal');
+const closeTransactionHistoryBtn = $('#close-transaction-history-btn');
+const editTransactionModal = $('#edit-transaction-modal');
+const closeEditTransactionBtn = $('#close-edit-transaction-btn');
+const saveEditTransactionBtn = $('#save-edit-transaction-btn');
+const cancelEditTransactionBtn = $('#cancel-edit-transaction-btn');
+
+closeTransactionHistoryBtn.addEventListener('click', () => {
+  transactionHistoryModal.classList.add('hidden');
+});
+
+transactionHistoryModal.addEventListener('click', (e) => {
+  if (e.target === transactionHistoryModal) {
+    transactionHistoryModal.classList.add('hidden');
+  }
+});
+
+closeEditTransactionBtn.addEventListener('click', () => {
+  editTransactionModal.classList.add('hidden');
+});
+
+cancelEditTransactionBtn.addEventListener('click', () => {
+  editTransactionModal.classList.add('hidden');
+});
+
+editTransactionModal.addEventListener('click', (e) => {
+  if (e.target === editTransactionModal) {
+    editTransactionModal.classList.add('hidden');
+  }
+});
+
+saveEditTransactionBtn.addEventListener('click', async () => {
+  const id = editTransactionModal.dataset.transactionId;
+  const type = editTransactionModal.dataset.transactionType;
+  const characterName = editTransactionModal.dataset.characterName;
+  const amount = $('#edit-transaction-amount').value.trim();
+  const reason = $('#edit-transaction-reason').value.trim();
+  const timestamp = $('#edit-transaction-timestamp').value;
+
+  if (!amount || isNaN(parseInt(amount))) {
+    showMessage('roster', 'error', '✗ Please enter a valid amount');
+    return;
+  }
+
+  saveEditTransactionBtn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/transaction-history/${id}/${type}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: parseInt(amount), reason, timestamp }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('roster', 'success', '✓ Transaction updated');
+      editTransactionModal.classList.add('hidden');
+      // Reload history modal
+      await openTransactionHistoryModal(characterName);
+    } else {
+      showMessage('roster', 'error', `✗ ${data.error}`);
+    }
+  } catch (err) {
+    showMessage('roster', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    saveEditTransactionBtn.disabled = false;
   }
 });
 

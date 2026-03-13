@@ -295,6 +295,47 @@
     </div>
   </div>
 
+  <!-- Transaction History Modal -->
+  <div id="transaction-history-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="transaction-history-title">Transaction History</h2>
+        <button id="close-transaction-history-btn" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="transaction-list" class="transaction-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Transaction Modal -->
+  <div id="edit-transaction-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Edit Transaction</h2>
+        <button id="close-edit-transaction-btn" class="btn-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Amount</label>
+          <input id="edit-transaction-amount" type="number" class="form-input" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Reason</label>
+          <input id="edit-transaction-reason" type="text" class="form-input" placeholder="Enter reason for transaction">
+        </div>
+        <div class="form-group">
+          <label>Timestamp</label>
+          <input id="edit-transaction-timestamp" type="datetime-local" class="form-input">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="save-edit-transaction-btn" class="btn btn-primary">Update Transaction</button>
+        <button id="cancel-edit-transaction-btn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
