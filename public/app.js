@@ -182,28 +182,16 @@ function renderRoster(roster) {
             <h4>${escHtml(c.name)}</h4>
             <div class="detail-grid">
               <div class="detail-item">
+                <span class="detail-label">Priority Ratio:</span>
+                <span class="detail-value">${pr}</span>
+              </div>
+              <div class="detail-item">
                 <span class="detail-label">Earned Points (EP):</span>
                 <span class="detail-value">${ep}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Gear Points (GP):</span>
                 <span class="detail-value">${gp}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Priority Ratio:</span>
-                <span class="detail-value">${pr}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Realm:</span>
-                <span class="detail-value">${escHtml(c.realm || '—')}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Class:</span>
-                <span class="detail-value ${css}">${escHtml(c.class || '—')}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Role:</span>
-                <span class="detail-value">${escHtml(c.role || '—')}</span>
               </div>
             </div>
           </div>
