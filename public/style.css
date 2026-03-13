@@ -1,0 +1,627 @@
+/* ================================================================
+   Dark Intentions Loot Manager — Stylesheet
+   Dark WoW-themed guild management UI
+   ================================================================ */
+
+/* ── Custom Properties ─────────────────────────────────────────── */
+:root {
+  --bg-primary:       #0a0a12;
+  --bg-secondary:     #111120;
+  --bg-sidebar:       #0c0c18;
+  --bg-card:          #16162a;
+  --bg-input:         #1a1a2e;
+
+  --color-gold:       #c8a84b;
+  --color-gold-bright:#f5c842;
+  --color-gold-dim:   #7a6530;
+  --color-gold-glow:  rgba(200, 168, 75, 0.15);
+  --color-gold-border:rgba(200, 168, 75, 0.25);
+
+  --color-text:       #d4d4d8;
+  --color-text-muted: #6b6b80;
+  --color-border:     #222235;
+
+  --color-success:    #4caf73;
+  --color-error:      #e05555;
+
+  --sidebar-width:    260px;
+  --transition:       0.28s ease;
+
+  /* WoW Class Colours */
+  --dk:   #C41E3A;
+  --dh:   #A330C9;
+  --druid:#FF7C0A;
+  --evok: #33937F;
+  --hunt: #AAD372;
+  --mage: #3FC7EB;
+  --monk: #00FF98;
+  --pala: #F48CBA;
+  --pri:  #c8c8c8;
+  --rog:  #FFF468;
+  --sha:  #0070DD;
+  --lock: #8788EE;
+  --warr: #C69B3A;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background: var(--bg-primary);
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── Hamburger ──────────────────────────────────────────────────── */
+.hamburger {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1100;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-gold-border);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.hamburger:hover {
+  background: rgba(200, 168, 75, 0.12);
+  border-color: var(--color-gold);
+}
+
+.hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--color-gold);
+  border-radius: 2px;
+  transition: transform var(--transition), opacity var(--transition);
+}
+
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Sidebar Overlay (mobile) ───────────────────────────────────── */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+
+.sidebar-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────────── */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--color-gold-border);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(0);
+  transition: transform var(--transition);
+  overflow: hidden;
+}
+
+.sidebar.closed {
+  transform: translateX(-100%);
+}
+
+/* Brand */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 16px 18px 64px;
+  border-bottom: 1px solid var(--color-gold-border);
+  background: linear-gradient(180deg, rgba(200,168,75,0.08) 0%, transparent 100%);
+  min-height: 70px;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  font-size: 26px;
+  filter: drop-shadow(0 0 8px rgba(200, 168, 75, 0.6));
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-guild {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-gold-bright);
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 12px rgba(200, 168, 75, 0.4);
+}
+
+.brand-sub {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Nav */
+.nav-menu {
+  list-style: none;
+  padding: 10px 0;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 20px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition);
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
+.nav-item:hover {
+  background: rgba(200, 168, 75, 0.07);
+  color: var(--color-text);
+  border-left-color: rgba(200, 168, 75, 0.2);
+}
+
+.nav-item.active {
+  background: rgba(200, 168, 75, 0.11);
+  color: var(--color-gold-bright);
+  border-left-color: var(--color-gold);
+}
+
+.nav-icon {
+  font-size: 17px;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.nav-label {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  padding: 14px 16px;
+  border-top: 1px solid var(--color-border);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* ── Main Content ───────────────────────────────────────────────── */
+.main-content {
+  height: 100vh;
+  margin-left: 0;
+  transition: margin-left var(--transition);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main-content.sidebar-open {
+  margin-left: var(--sidebar-width);
+}
+
+/* ── Tab Panels ─────────────────────────────────────────────────── */
+.tab-panel {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tab-panel.active {
+  display: flex;
+}
+
+/* Panel header */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--color-gold-border);
+  background: linear-gradient(180deg, rgba(200,168,75,0.05) 0%, transparent 100%);
+  flex-shrink: 0;
+  min-height: 70px;
+}
+
+.panel-header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-gold-bright);
+  letter-spacing: 1px;
+  text-shadow: 0 0 20px rgba(200, 168, 75, 0.25);
+}
+
+/* Scrollable content area */
+.content-scroll {
+  flex: 1;
+  overflow: auto;
+  padding: 20px 28px 28px;
+}
+
+/* ── Message / Alert ────────────────────────────────────────────── */
+.message {
+  margin: 10px 28px 0;
+  padding: 10px 16px;
+  border-radius: 5px;
+  font-size: 13px;
+  border: 1px solid;
+  flex-shrink: 0;
+}
+
+.message.hidden { display: none; }
+
+.message.success {
+  background: rgba(76, 175, 115, 0.1);
+  border-color: rgba(76, 175, 115, 0.3);
+  color: var(--color-success);
+}
+
+.message.error {
+  background: rgba(224, 85, 85, 0.1);
+  border-color: rgba(224, 85, 85, 0.3);
+  color: var(--color-error);
+}
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 5px;
+  border: 1px solid;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #231c0c 0%, #15110a 100%);
+  border-color: var(--color-gold-dim);
+  color: var(--color-gold);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(180deg, #332b14 0%, #231d0e 100%);
+  border-color: var(--color-gold);
+  color: var(--color-gold-bright);
+  box-shadow: 0 0 14px rgba(200, 168, 75, 0.18);
+}
+
+.btn-primary:active { transform: translateY(1px); }
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-icon-only {
+  background: var(--bg-card);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  padding: 9px 13px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.btn-icon-only:hover {
+  border-color: var(--color-gold-dim);
+  color: var(--color-gold);
+}
+
+.btn-icon { font-size: 13px; }
+
+/* ── Data Tables ────────────────────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table thead th {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-gold-border);
+  text-align: left;
+  background: rgba(200, 168, 75, 0.04);
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.12s;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(200, 168, 75, 0.04);
+}
+
+.data-table tbody td {
+  padding: 10px 14px;
+  vertical-align: middle;
+}
+
+.empty-row td {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 48px 14px;
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* Roster: class-coloured names */
+.char-name { font-weight: 600; }
+
+.class-death-knight  { color: var(--dk);    }
+.class-demon-hunter  { color: var(--dh);    }
+.class-druid         { color: var(--druid); }
+.class-evoker        { color: var(--evok);  }
+.class-hunter        { color: var(--hunt);  }
+.class-mage          { color: var(--mage);  }
+.class-monk          { color: var(--monk);  }
+.class-paladin       { color: var(--pala);  }
+.class-priest        { color: var(--pri);   }
+.class-rogue         { color: var(--rog);   }
+.class-shaman        { color: var(--sha);   }
+.class-warlock       { color: var(--lock);  }
+.class-warrior       { color: var(--warr);  }
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-active {
+  background: rgba(76, 175, 115, 0.13);
+  color: var(--color-success);
+  border: 1px solid rgba(76, 175, 115, 0.22);
+}
+
+.status-inactive {
+  background: rgba(107, 107, 128, 0.13);
+  color: var(--color-text-muted);
+  border: 1px solid rgba(107, 107, 128, 0.22);
+}
+
+/* ── EPGP Gear Table ────────────────────────────────────────────── */
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-gold);
+  letter-spacing: 0.5px;
+  margin-bottom: 18px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gear-table {
+  max-width: 720px;
+}
+
+/* Give the 3rd column (right gear slot name) some breathing room */
+.gear-table td:nth-child(3) {
+  padding-left: 32px;
+}
+
+/* Point value cells */
+.gear-table td:nth-child(2),
+.gear-table td:nth-child(4) {
+  width: 130px;
+}
+
+.slot-name {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.gear-input {
+  width: 96px;
+  background: var(--bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: 'Open Sans', sans-serif;
+  text-align: right;
+  transition: border-color 0.18s;
+  -moz-appearance: textfield;
+}
+
+.gear-input::-webkit-outer-spin-button,
+.gear-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.gear-input:focus {
+  outline: none;
+  border-color: var(--color-gold-dim);
+  box-shadow: 0 0 0 2px rgba(200, 168, 75, 0.1);
+}
+
+/* ── Admin Form ─────────────────────────────────────────────────── */
+.admin-section {
+  max-width: 580px;
+}
+
+.form-group {
+  margin-bottom: 22px;
+}
+
+.form-group label {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-gold);
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.form-input {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  color: var(--color-text);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-family: 'Open Sans', sans-serif;
+  transition: border-color 0.18s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-gold-dim);
+  box-shadow: 0 0 0 2px rgba(200, 168, 75, 0.1);
+}
+
+.form-input::placeholder { color: var(--color-text-muted); }
+
+.form-hint {
+  display: block;
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.form-hint code {
+  font-style: normal;
+  background: rgba(200, 168, 75, 0.08);
+  border: 1px solid var(--color-gold-border);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--color-gold);
+}
+
+/* ── Coming Soon ────────────────────────────────────────────────── */
+.coming-soon {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px;
+  color: var(--color-text-muted);
+}
+
+.coming-soon-icon {
+  font-size: 52px;
+  opacity: 0.25;
+  margin-bottom: 8px;
+}
+
+.coming-soon h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  color: var(--color-text-muted);
+}
+
+.coming-soon p { font-size: 13px; }
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb {
+  background: rgba(200, 168, 75, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-gold-dim); }
+
+/* ── Loading pulse ──────────────────────────────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.loading {
+  color: var(--color-text-muted);
+  font-style: italic;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .main-content.sidebar-open { margin-left: 0; }
+  .panel-header { padding: 14px 16px; }
+  .content-scroll { padding: 16px; }
+  .message { margin: 8px 16px 0; }
+  .gear-table { font-size: 12px; }
+  .gear-input { width: 80px; }
+}
+
+@media (max-width: 480px) {
+  .panel-header h1 { font-size: 16px; }
+  .btn { padding: 8px 12px; font-size: 10px; }
+}

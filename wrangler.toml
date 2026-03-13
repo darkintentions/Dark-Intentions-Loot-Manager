@@ -1,0 +1,20 @@
+# Dark Intentions Loot Manager — Cloudflare Pages + D1
+#
+# Setup steps:
+#   1. npm install
+#   2. npx wrangler login
+#   3. npm run db:create          → copy the database_id output below
+#   4. Replace YOUR_DATABASE_ID_HERE with the id from step 3
+#   5. npm run db:init:remote     → seeds the remote D1 database
+#   6. Push to GitHub → connect repo in Cloudflare Pages dashboard
+#   7. In Pages project settings → Functions → D1 Database Bindings
+#      add binding: DB → dilm
+
+name = "dark-intentions-loot-manager"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding      = "DB"
+database_name = "dilm"
+database_id   = "9f4675d4-7508-42e2-a2dc-9a3300e4a418"

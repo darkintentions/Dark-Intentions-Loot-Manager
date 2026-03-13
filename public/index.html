@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a12">
+  <title>Dark Intentions — Loot Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Hamburger toggle button -->
+  <button id="hamburger" class="hamburger" aria-label="Toggle navigation">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Mobile overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- ═══════════════════════════════════════
+       Sidebar Navigation
+  ════════════════════════════════════════ -->
+  <nav id="sidebar" class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">⚔</div>
+      <div class="brand-text">
+        <span class="brand-guild">Dark Intentions</span>
+        <span class="brand-sub">Loot Manager</span>
+      </div>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item active" data-tab="roster">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Roster</span>
+      </li>
+      <li class="nav-item" data-tab="loot">
+        <span class="nav-icon">💎</span>
+        <span class="nav-label">Loot</span>
+      </li>
+      <li class="nav-item" data-tab="epgp">
+        <span class="nav-icon">⚖️</span>
+        <span class="nav-label">EPGP</span>
+      </li>
+      <li class="nav-item" data-tab="admin">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">Admin</span>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <span id="sidebar-status">Dark Intentions &mdash; US</span>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════
+       Main Content
+  ════════════════════════════════════════ -->
+  <main id="main-content" class="main-content sidebar-open">
+
+    <!-- ── Roster Tab ─────────────────────────── -->
+    <div id="tab-roster" class="tab-panel active">
+      <div class="panel-header">
+        <h1>Guild Roster</h1>
+        <button id="sync-roster-btn" class="btn btn-primary">
+          <span class="btn-icon">🔄</span> Sync from WoWAudit
+        </button>
+      </div>
+      <div id="roster-message" class="message hidden"></div>
+      <div class="content-scroll">
+        <table id="roster-table" class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Realm</th>
+              <th>Class</th>
+              <th>Spec</th>
+              <th>Role</th>
+              <th>Rank</th>
+              <th>iLvl</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="roster-tbody">
+            <tr class="empty-row">
+              <td colspan="8">No roster data. Click "Sync from WoWAudit" to load characters.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Loot Tab ───────────────────────────── -->
+    <div id="tab-loot" class="tab-panel">
+      <div class="panel-header">
+        <h1>Loot History</h1>
+      </div>
+      <div class="coming-soon">
+        <div class="coming-soon-icon">💎</div>
+        <h2>Coming Soon</h2>
+        <p>Loot tracking and distribution history will be available in a future update.</p>
+      </div>
+    </div>
+
+    <!-- ── EPGP Tab ───────────────────────────── -->
+    <div id="tab-epgp" class="tab-panel">
+      <div class="panel-header">
+        <h1>EPGP</h1>
+        <button id="save-epgp-btn" class="btn btn-primary">
+          <span class="btn-icon">💾</span> Save Values
+        </button>
+      </div>
+      <div id="epgp-message" class="message hidden"></div>
+      <div class="content-scroll">
+        <h2 class="section-title">Gear Slot Point Value</h2>
+        <table id="epgp-table" class="data-table gear-table">
+          <thead>
+            <tr>
+              <th>Gear Slot</th>
+              <th>Point Value</th>
+              <th>Gear Slot</th>
+              <th>Point Value</th>
+            </tr>
+          </thead>
+          <tbody id="epgp-tbody">
+            <!-- Populated by app.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Admin Tab ──────────────────────────── -->
+    <div id="tab-admin" class="tab-panel">
+      <div class="panel-header">
+        <h1>Administration</h1>
+      </div>
+      <div id="admin-message" class="message hidden"></div>
+      <div class="content-scroll">
+        <section class="admin-section">
+          <h2 class="section-title">API Configuration</h2>
+          <div class="form-group">
+            <label for="api-key-input">WoW Audit API Key:</label>
+            <div class="input-group">
+              <input
+                type="password"
+                id="api-key-input"
+                class="form-input"
+                placeholder="Enter WoWAudit API key..."
+                autocomplete="off"
+                spellcheck="false"
+              >
+              <button class="btn btn-icon-only" id="toggle-api-key" title="Toggle visibility">
+                👁
+              </button>
+            </div>
+            <small class="form-hint">
+              Used in the <code>Authorization</code> header for all WoWAudit API requests.
+              Stored in the D1 database.
+            </small>
+          </div>
+          <button id="save-admin-btn" class="btn btn-primary">
+            <span class="btn-icon">💾</span> Save Settings
+          </button>
+        </section>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "dark-intentions-loot-manager",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev":            "wrangler pages dev public --d1=DB",
+    "deploy":         "wrangler pages deploy public",
+    "db:create":      "wrangler d1 create dilm",
+    "db:init":        "wrangler d1 execute dilm --file=./schema.sql",
+    "db:init:remote": "wrangler d1 execute dilm --remote --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
