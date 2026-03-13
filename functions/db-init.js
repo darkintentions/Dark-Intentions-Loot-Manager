@@ -65,6 +65,14 @@ async function initializeDatabase(env) {
       timestamp TEXT DEFAULT ''
     );
 
+    CREATE TABLE IF NOT EXISTS custom_ep_buttons (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      name        TEXT NOT NULL UNIQUE,
+      description TEXT DEFAULT '',
+      ep          INTEGER NOT NULL DEFAULT 0,
+      created_at  TEXT DEFAULT (datetime('now'))
+    );
+
     INSERT OR REPLACE INTO settings (key, value)
     VALUES ('wowaudit_api_key', '62581957225650bd6cd7902ea6f45b3d175a372c524083d3eb30696260bc672d');
 

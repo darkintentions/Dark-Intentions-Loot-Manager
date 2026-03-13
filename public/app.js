@@ -254,6 +254,7 @@ async function loadEpgp() {
     if (data.error) throw new Error(data.error);
     renderEpgpTable(data.gear_values || []);
     populateRosterDropdowns();
+    await loadCustomEpButtons();
   } catch (err) {
     showMessage('epgp', 'error', `✗ Error loading EPGP data: ${err.message}`);
     renderEpgpTable([]);
@@ -501,6 +502,158 @@ $('#save-admin-btn').addEventListener('click', async () => {
     showMessage('admin', 'error', `✗ Network error: ${err.message}`);
   } finally {
     btn.disabled = false;
+  }
+});
+
+// ================================================================
+//  CUSTOM EP BUTTONS
+// ================================================================
+let customEpButtons = [];
+
+async function loadCustomEpButtons() {
+  try {
+    const res = await fetch('/api/custom-ep-buttons');
+    const data = await res.json();
+    customEpButtons = data;
+    renderCustomEpButtons();
+  } catch (err) {
+    console.error('Error loading custom EP buttons:', err);
+  }
+}
+
+function renderCustomEpButtons() {
+  const container = $('#custom-ep-buttons-container');
+  if (!container) return;
+
+  if (customEpButtons.length === 0) {
+    container.innerHTML = '<p class="color-text-muted">No custom buttons created yet. Create one in the Admin tab.</p>';
+    return;
+  }
+
+  container.innerHTML = customEpButtons.map(button => `
+    <div class="custom-ep-button-row">
+      <select class="form-input ep-char-select" data-button-id="${button.id}">
+        <option value="">Select Character</option>
+        ${rosterData.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+      </select>
+      <button class="btn btn-primary award-custom-ep-btn" data-button-id="${button.id}" data-button-name="${escHtml(button.name)}" data-button-ep="${button.ep}" title="${escHtml(button.description)}">
+        <span class="btn-icon">⭐</span> ${escHtml(button.name)}
+      </button>
+    </div>
+  `).join('');
+
+  // Attach event listeners to award buttons
+  $$('.award-custom-ep-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const buttonId = btn.dataset.buttonId;
+      const buttonName = btn.dataset.buttonName;
+      const buttonEp = parseInt(btn.dataset.buttonEp);
+      const charSelect = $(`.ep-char-select[data-button-id="${buttonId}"]`);
+      const selectedChar = charSelect.value;
+
+      if (!selectedChar) {
+        showMessage('epgp', 'error', '✗ Please select a character');
+        return;
+      }
+
+      btn.disabled = true;
+
+      try {
+        const timestamp = new Date().toISOString();
+        const res = await fetch('/api/ep-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: selectedChar,
+            ep: buttonEp,
+            reason: buttonName,
+            timestamp: timestamp,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          showMessage('epgp', 'success', `✓ Awarded ${buttonEp} EP to ${selectedChar}`);
+          charSelect.value = '';
+        } else {
+          showMessage('epgp', 'error', `✗ ${data.error || 'Failed to award EP'}`);
+        }
+      } catch (err) {
+        showMessage('epgp', 'error', `✗ Network error: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+// Modal for creating custom EP buttons
+const customEpModal = $('#custom-ep-modal');
+const openCustomEpBtn = $('#open-custom-ep-btn');
+const closeCustomEpModalBtn = $('#close-custom-ep-modal');
+const saveCustomEpBtn = $('#save-custom-ep-btn');
+const cancelCustomEpBtn = $('#cancel-custom-ep-btn');
+
+openCustomEpBtn.addEventListener('click', () => {
+  customEpModal.classList.remove('hidden');
+});
+
+closeCustomEpModalBtn.addEventListener('click', () => {
+  customEpModal.classList.add('hidden');
+  resetCustomEpForm();
+});
+
+cancelCustomEpBtn.addEventListener('click', () => {
+  customEpModal.classList.add('hidden');
+  resetCustomEpForm();
+});
+
+function resetCustomEpForm() {
+  $('#custom-ep-name').value = '';
+  $('#custom-ep-description').value = '';
+  $('#custom-ep-points').value = '0';
+}
+
+saveCustomEpBtn.addEventListener('click', async () => {
+  const name = $('#custom-ep-name').value.trim();
+  const description = $('#custom-ep-description').value.trim();
+  const ep = $('#custom-ep-points').value;
+
+  if (!name) {
+    alert('Button name is required');
+    return;
+  }
+
+  saveCustomEpBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/custom-ep-buttons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, description, ep: parseInt(ep) || 0 }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showMessage('admin', 'success', '✓ Custom EP button created');
+      customEpModal.classList.add('hidden');
+      resetCustomEpForm();
+      await loadCustomEpButtons();
+    } else {
+      showMessage('admin', 'error', `✗ ${data.error || 'Failed to create button'}`);
+    }
+  } catch (err) {
+    showMessage('admin', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    saveCustomEpBtn.disabled = false;
+  }
+});
+
+// Close modal when clicking outside
+customEpModal.addEventListener('click', (e) => {
+  if (e.target === customEpModal) {
+    customEpModal.classList.add('hidden');
+    resetCustomEpForm();
   }
 });
 
