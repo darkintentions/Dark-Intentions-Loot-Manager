@@ -209,6 +209,7 @@ async function switchTab(name) {
     if (name === 'roster') loadRoster();
     if (name === 'loot')   loadLootHistory();
     if (name === 'epgp')   loadEpgp();
+    if (name === 'attendance') loadAttendance(getCurrentWeekCode());
     if (name === 'admin')  loadAdminSettings();
   }
 }
@@ -1543,6 +1544,119 @@ $('#sync-loot-btn').addEventListener('click', async () => {
     btn.innerHTML = '<span class="btn-icon">🔄</span> Sync Loot from WoWAudit';
   }
 });
+
+// ================================================================
+//  ATTENDANCE TAB — Fetch and Display Raid Signups
+// ================================================================
+function getWeekCodeForDate(date) {
+  // March 16, 2026 = week code 2538856
+  // Each week after that increases by 1
+  const baseDate = new Date('2026-03-16');
+  const baseWeekCode = 2538856;
+  const timeDiff = date.getTime() - baseDate.getTime();
+  const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  const weeksDiff = Math.floor(daysDiff / 7);
+  return baseWeekCode + weeksDiff;
+}
+
+function getCurrentWeekCode() {
+  return getWeekCodeForDate(new Date());
+}
+
+async function syncAttendance() {
+  try {
+    const weekCode = getCurrentWeekCode();
+    const res = await fetch(`/api/attendance-sync?week_code=${weekCode}`, { method: 'POST' });
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text();
+      throw new Error(`${res.status} - ${text || 'No response'}`);
+    }
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Sync failed');
+    }
+    return { weekCode, data };
+  } catch (err) {
+    throw new Error(`Failed to sync attendance: ${err.message}`);
+  }
+}
+
+async function loadAttendance(weekCode) {
+  try {
+    const res = await fetch(`/api/attendance?week_code=${weekCode}`);
+    const data = await res.json();
+    const records = data.attendance || [];
+    renderAttendanceTable(records);
+    return records;
+  } catch (err) {
+    showMessage('attendance', 'error', `✗ Error loading attendance: ${err.message}`);
+    renderAttendanceTable([]);
+    return [];
+  }
+}
+
+function getStatusClass(status) {
+  if (!status || status === 'Unknown') return 'status-unknown';
+  if (status === 'Present') return 'status-present';
+  if (status === 'Absent') return 'status-absent';
+  if (status === 'Tentative') return 'status-tentative';
+  return 'status-tentative'; // default to yellow for other statuses
+}
+
+function getStatusDisplay(status) {
+  if (!status || status === 'Unknown') return 'SIGN UP!';
+  return status;
+}
+
+function renderAttendanceTable(records) {
+  const tbody = $('#attendance-tbody');
+  if (!tbody) return;
+
+  if (records.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No attendance data. Click "Sync Attendance" to load.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = records.map(record => {
+    const statusClass = getStatusClass(record.status);
+    const statusDisplay = getStatusDisplay(record.status);
+    return `
+      <tr>
+        <td><strong>${escHtml(record.character_name)}</strong></td>
+        <td>${escHtml(record.realm || '—')}</td>
+        <td>${escHtml(record.class || '—')}</td>
+        <td>${escHtml(record.role || '—')}</td>
+        <td class="${statusClass}">${escHtml(statusDisplay)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+const syncAttendanceBtn = $('#sync-attendance-btn');
+if (syncAttendanceBtn) {
+  syncAttendanceBtn.addEventListener('click', async () => {
+    syncAttendanceBtn.disabled = true;
+    syncAttendanceBtn.innerHTML = '<span class="btn-icon">⏳</span> Syncing…';
+
+    try {
+      const { weekCode, data } = await syncAttendance();
+
+      if (data.inserted === 0) {
+        showAlert('No raid signups found for this week.', 'No Data');
+      } else {
+        showMessage('attendance', 'success', `✓ ${data.message}`);
+      }
+
+      await loadAttendance(weekCode);
+    } catch (err) {
+      showMessage('attendance', 'error', `✗ ${err.message}`);
+    } finally {
+      syncAttendanceBtn.disabled = false;
+      syncAttendanceBtn.innerHTML = '<span class="btn-icon">🔄</span> Sync Attendance';
+    }
+  });
+}
 
 // ================================================================
 //  COLLAPSIBLE SECTIONS

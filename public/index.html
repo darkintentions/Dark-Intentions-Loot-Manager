@@ -49,6 +49,10 @@
         <span class="nav-icon">⚖️</span>
         <span class="nav-label">EPGP</span>
       </li>
+      <li class="nav-item" data-tab="attendance">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Attendance</span>
+      </li>
       <li class="nav-item" data-tab="admin">
         <span class="nav-icon">⚙️</span>
         <span class="nav-label">Admin</span>
@@ -216,6 +220,39 @@
               <!-- Populated by app.js -->
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Attendance Tab ─────────────────────── -->
+    <div id="tab-attendance" class="tab-panel">
+      <div class="panel-header">
+        <h1>Raid Attendance</h1>
+        <div class="panel-header-actions">
+          <button id="sync-attendance-btn" class="btn btn-primary">
+            <span class="btn-icon">🔄</span> Sync Attendance
+          </button>
+        </div>
+      </div>
+      <div id="attendance-message" class="message hidden"></div>
+      <div class="content-scroll">
+        <div class="attendance-container">
+          <table class="attendance-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Realm</th>
+                <th>Class</th>
+                <th>Role</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-tbody">
+              <tr class="empty-row">
+                <td colspan="5">No attendance data. Click "Sync Attendance" to load.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

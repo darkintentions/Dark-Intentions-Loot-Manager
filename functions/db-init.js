@@ -9,10 +9,10 @@
  */
 export async function ensureTablesExist(env) {
   try {
-    // Check if the newest table exists (loot_history)
+    // Check if the newest table exists (attendance)
     // If it doesn't, run initialization — all statements use IF NOT EXISTS so it's safe
     const result = await env.DB
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='loot_history'")
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='attendance'")
       .first();
 
     if (!result) {
@@ -107,6 +107,23 @@ async function initializeDatabase(env) {
       old_items               TEXT,
       wish_data               TEXT,
       updated_at              TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS attendance (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      week_code    INTEGER NOT NULL,
+      raid_date    TEXT NOT NULL,
+      raid_instance TEXT,
+      character_id INTEGER,
+      character_name TEXT NOT NULL,
+      realm        TEXT,
+      class        TEXT,
+      role         TEXT,
+      status       TEXT,
+      selected     BOOLEAN DEFAULT 0,
+      comment      TEXT,
+      updated_at   TEXT DEFAULT (datetime('now')),
+      UNIQUE(week_code, character_name)
     );
 
     INSERT OR REPLACE INTO settings (key, value)
