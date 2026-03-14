@@ -604,6 +604,17 @@ body {
   min-width: 120px !important;
 }
 
+/* Remove spinner arrows from number input */
+.bonus-ep-input::-webkit-outer-spin-button,
+.bonus-ep-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bonus-ep-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 .gear-input {
   width: 96px;
   background: var(--bg-input);
