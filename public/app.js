@@ -1566,29 +1566,23 @@ function getWeekCodeForDate(date) {
 }
 
 function getUpcomingWeekCode() {
-  // Get the week code for the upcoming Monday
-  // If today is Monday-Sunday, this returns the week starting on the upcoming Monday
+  // Get the week code for the NEXT Monday
+  // Every Monday, show the following week
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
-  let daysUntilMonday;
-  if (dayOfWeek === 1) {
-    // Today is Monday - upcoming week is this week
-    daysUntilMonday = 0;
-  } else if (dayOfWeek === 0) {
-    // Today is Sunday - Monday is tomorrow
-    daysUntilMonday = 1;
-  } else {
-    // Today is Tue-Sat - Monday is next week
-    daysUntilMonday = 8 - dayOfWeek;
-  }
+  // Calculate days until next Monday
+  // Monday = 1, so if today is Monday, next Monday is 7 days away
+  // If today is Sunday = 0, next Monday is 1 day away
+  // If today is Tuesday = 2, next Monday is 6 days away, etc.
+  const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
 
-  const upcomingMonday = new Date(today);
-  upcomingMonday.setDate(upcomingMonday.getDate() + daysUntilMonday);
+  const nextMonday = new Date(today);
+  nextMonday.setDate(nextMonday.getDate() + daysUntilNextMonday);
 
-  return getWeekCodeForDate(upcomingMonday);
+  return getWeekCodeForDate(nextMonday);
 }
 
 async function syncAttendance() {
