@@ -797,14 +797,25 @@ function populateOnTimeBonus() {
       .filter(c => c.rank && c.rank.toLowerCase() !== 'social')
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    characters.forEach(member => {
+    // Create 4-column layout (2 character pairs per row)
+    for (let i = 0; i < characters.length; i += 2) {
+      const leftChar = characters[i];
+      const rightChar = characters[i + 1];
+
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td><input type="checkbox" class="bonus-checkbox" value="${member.name}"></td>
-        <td>${escHtml(member.name)}</td>
+        <td><input type="checkbox" class="bonus-checkbox" value="${leftChar.name}"></td>
+        <td>${escHtml(leftChar.name)}</td>
+        ${rightChar ? `
+          <td><input type="checkbox" class="bonus-checkbox" value="${rightChar.name}"></td>
+          <td>${escHtml(rightChar.name)}</td>
+        ` : `
+          <td></td>
+          <td></td>
+        `}
       `;
       tbody.appendChild(row);
-    });
+    }
   }
 }
 

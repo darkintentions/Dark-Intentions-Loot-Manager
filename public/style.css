@@ -579,12 +579,14 @@ body {
 }
 
 .on-time-bonus-table {
-  max-width: 500px;
+  max-width: 800px;
 }
 
-.on-time-bonus-table tbody tr td:first-child {
+.on-time-bonus-table td:nth-child(1),
+.on-time-bonus-table td:nth-child(3) {
   text-align: center;
   padding: 8px;
+  width: 40px;
 }
 
 .on-time-bonus-table input[type="checkbox"] {
