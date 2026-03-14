@@ -752,6 +752,7 @@ async function loadEpgp() {
     if (data.error) throw new Error(data.error);
     renderEpgpTable(data.gear_values || []);
     populateRosterDropdowns();
+    populateOnTimeBonus();
     await loadCustomEpButtons();
   } catch (err) {
     showMessage('epgp', 'error', `✗ Error loading EPGP data: ${err.message}`);
@@ -783,6 +784,26 @@ function populateRosterDropdowns() {
       gpOption.value = member.name;
       gpOption.textContent = member.name;
       gpSelect.appendChild(gpOption);
+    });
+  }
+}
+
+function populateOnTimeBonus() {
+  const tbody = $('#on-time-bonus-tbody');
+  tbody.innerHTML = '';
+
+  if (rosterData && rosterData.length > 0) {
+    const characters = rosterData
+      .filter(c => c.rank && c.rank.toLowerCase() !== 'social')
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    characters.forEach(member => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input type="checkbox" class="bonus-checkbox" value="${member.name}"></td>
+        <td>${escHtml(member.name)}</td>
+      `;
+      tbody.appendChild(row);
     });
   }
 }
@@ -968,6 +989,69 @@ $('#edit-gp-btn').addEventListener('click', async () => {
       clearUnsavedChanges();
     } else {
       showMessage('epgp', 'error', `✗ ${data.error || 'Save failed'}`);
+    }
+  } catch (err) {
+    showMessage('epgp', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// On Time Bonus - Select All Checkbox
+$('#select-all-bonus-checkbox').addEventListener('change', (e) => {
+  const isChecked = e.target.checked;
+  $$('.bonus-checkbox').forEach(checkbox => {
+    checkbox.checked = isChecked;
+  });
+});
+
+// On Time Bonus - Give Bonus Button
+$('#give-bonus-btn').addEventListener('click', async () => {
+  const btn = $('#give-bonus-btn');
+  const bonusEp = parseInt($('#bonus-ep-input').value, 10);
+
+  if (isNaN(bonusEp) || bonusEp <= 0) {
+    showMessage('epgp', 'error', '✗ Please enter a valid EP amount');
+    return;
+  }
+
+  const selectedCharacters = $$('.bonus-checkbox:checked')
+    .map(checkbox => checkbox.value);
+
+  if (selectedCharacters.length === 0) {
+    showMessage('epgp', 'error', '✗ Please select at least one character');
+    return;
+  }
+
+  btn.disabled = true;
+
+  try {
+    // Award EP to each selected character
+    const promises = selectedCharacters.map(name =>
+      fetch('/api/ep-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          ep: bonusEp,
+          reason: 'On Time Bonus',
+          timestamp: new Date().toISOString(),
+        }),
+      }).then(r => r.json())
+    );
+
+    const results = await Promise.all(promises);
+    const allSuccess = results.every(r => r.success);
+
+    if (allSuccess) {
+      showMessage('epgp', 'success', `✓ On Time Bonus awarded to ${selectedCharacters.length} member(s)`);
+      $('#bonus-ep-input').value = '';
+      $$('.bonus-checkbox').forEach(checkbox => { checkbox.checked = false; });
+      $('#select-all-bonus-checkbox').checked = false;
+      await loadRoster();
+      clearUnsavedChanges();
+    } else {
+      showMessage('epgp', 'error', '✗ Some members failed to receive bonus');
     }
   } catch (err) {
     showMessage('epgp', 'error', `✗ Network error: ${err.message}`);

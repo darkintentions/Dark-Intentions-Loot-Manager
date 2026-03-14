@@ -571,6 +571,29 @@ body {
   font-weight: 500;
 }
 
+/* ── On Time Bonus Section ──────────────────────────────────────── */
+.on-time-bonus-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.on-time-bonus-table {
+  max-width: 500px;
+}
+
+.on-time-bonus-table tbody tr td:first-child {
+  text-align: center;
+  padding: 8px;
+}
+
+.on-time-bonus-table input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-gold);
+}
+
 .gear-input {
   width: 96px;
   background: var(--bg-input);

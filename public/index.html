@@ -145,28 +145,29 @@
       <div id="epgp-message" class="message hidden"></div>
       <div class="content-scroll">
         <div class="collapsible-section">
-          <button class="collapsible-header" data-target="gear-slot-content">
+          <button class="collapsible-header" data-target="on-time-bonus-content">
             <span class="collapse-icon">▼</span>
-            <h2 class="section-title">Gear Slot Point Value</h2>
+            <h2 class="section-title">On Time Bonus</h2>
           </button>
-          <div id="gear-slot-content" class="collapsible-content">
-            <div class="gear-table-wrapper">
-              <table id="epgp-table" class="data-table gear-table">
+          <div id="on-time-bonus-content" class="collapsible-content">
+            <div class="on-time-bonus-wrapper">
+              <table class="data-table on-time-bonus-table">
                 <thead>
                   <tr>
-                    <th>Gear Slot</th>
-                    <th>Point Value</th>
-                    <th>Gear Slot</th>
-                    <th>Point Value</th>
+                    <th style="width: 40px;"><input type="checkbox" id="select-all-bonus-checkbox"></th>
+                    <th>Character</th>
                   </tr>
                 </thead>
-                <tbody id="epgp-tbody">
+                <tbody id="on-time-bonus-tbody">
                   <!-- Populated by app.js -->
                 </tbody>
               </table>
-              <button id="save-epgp-btn" class="btn btn-primary">
-                <span class="btn-icon">💾</span> Save Values
-              </button>
+              <div class="epgp-log-form">
+                <input type="number" id="bonus-ep-input" class="form-input" placeholder="EP Points" min="0">
+                <button id="give-bonus-btn" class="btn btn-primary">
+                  <span class="btn-icon">⭐</span> Give Selected Members On Time Bonus
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -218,6 +219,33 @@
           <div id="award-ep-content" class="collapsible-content">
             <div id="custom-ep-buttons-container" class="custom-buttons-container">
               <!-- Populated by app.js -->
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible-section">
+          <button class="collapsible-header" data-target="gear-slot-content">
+            <span class="collapse-icon">▼</span>
+            <h2 class="section-title">Gear Slot Point Value</h2>
+          </button>
+          <div id="gear-slot-content" class="collapsible-content">
+            <div class="gear-table-wrapper">
+              <table id="epgp-table" class="data-table gear-table">
+                <thead>
+                  <tr>
+                    <th>Gear Slot</th>
+                    <th>Point Value</th>
+                    <th>Gear Slot</th>
+                    <th>Point Value</th>
+                  </tr>
+                </thead>
+                <tbody id="epgp-tbody">
+                  <!-- Populated by app.js -->
+                </tbody>
+              </table>
+              <button id="save-epgp-btn" class="btn btn-primary">
+                <span class="btn-icon">💾</span> Save Values
+              </button>
             </div>
           </div>
         </div>
