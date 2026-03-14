@@ -1050,7 +1050,7 @@ $('#give-bonus-btn').addEventListener('click', async () => {
     return;
   }
 
-  const selectedCharacters = $$('.bonus-checkbox:checked')
+  const selectedCharacters = Array.from($$('.bonus-checkbox:checked'))
     .map(checkbox => checkbox.value);
 
   if (selectedCharacters.length === 0) {
