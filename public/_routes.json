@@ -1,21 +1,5 @@
 {
   "version": 1,
-  "routes": [
-    {
-      "pattern": "/api/*",
-      "methods": ["GET", "POST", "PUT", "DELETE"],
-      "origin": {
-        "landings": []
-      }
-    },
-    {
-      "pattern": "/*",
-      "methods": ["GET"],
-      "origin": {
-        "landings": []
-      }
-    }
-  ],
-  "account_id": "",
-  "env": "production"
+  "include": ["/*"],
+  "exclude": ["/favicon.ico", "/robots.txt"]
 }
