@@ -753,6 +753,7 @@ async function loadEpgp() {
     renderEpgpTable(data.gear_values || []);
     populateRosterDropdowns();
     populateOnTimeBonus();
+    populateGpBulk();
     await loadCustomEpButtons();
   } catch (err) {
     showMessage('epgp', 'error', `✗ Error loading EPGP data: ${err.message}`);
@@ -824,6 +825,53 @@ function populateOnTimeBonus() {
         `}
         ${char4 ? `
           <td><input type="checkbox" class="bonus-checkbox" value="${char4.name}"></td>
+          <td>${escHtml(char4.name)}</td>
+        ` : `
+          <td></td>
+          <td></td>
+        `}
+      `;
+      tbody.appendChild(row);
+    }
+  }
+}
+
+function populateGpBulk() {
+  const tbody = $('#edit-gp-bulk-tbody');
+  tbody.innerHTML = '';
+
+  if (rosterData && rosterData.length > 0) {
+    const characters = rosterData
+      .filter(c => c.rank && c.rank.toLowerCase() !== 'social')
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Create 8-column layout (4 characters per row)
+    for (let i = 0; i < characters.length; i += 4) {
+      const char1 = characters[i];
+      const char2 = characters[i + 1];
+      const char3 = characters[i + 2];
+      const char4 = characters[i + 3];
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input type="checkbox" class="gp-bulk-checkbox" value="${char1.name}"></td>
+        <td>${escHtml(char1.name)}</td>
+        ${char2 ? `
+          <td><input type="checkbox" class="gp-bulk-checkbox" value="${char2.name}"></td>
+          <td>${escHtml(char2.name)}</td>
+        ` : `
+          <td></td>
+          <td></td>
+        `}
+        ${char3 ? `
+          <td><input type="checkbox" class="gp-bulk-checkbox" value="${char3.name}"></td>
+          <td>${escHtml(char3.name)}</td>
+        ` : `
+          <td></td>
+          <td></td>
+        `}
+        ${char4 ? `
+          <td><input type="checkbox" class="gp-bulk-checkbox" value="${char4.name}"></td>
           <td>${escHtml(char4.name)}</td>
         ` : `
           <td></td>
@@ -1090,6 +1138,84 @@ $('#give-bonus-btn').addEventListener('click', async () => {
       $('#bonus-reason-input').value = '';
       $$('.bonus-checkbox').forEach(checkbox => { checkbox.checked = false; });
       $('#select-everyone-btn').innerHTML = '<span class="btn-icon">✓</span> Select Everyone';
+      await loadRoster();
+      clearUnsavedChanges();
+    } else {
+      showMessage('epgp', 'error', '✗ Some members failed to receive points');
+    }
+  } catch (err) {
+    showMessage('epgp', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// Edit GP - Select/Unselect Everyone Button
+$('#select-everyone-gp-btn').addEventListener('click', () => {
+  const btn = $('#select-everyone-gp-btn');
+  const isSelecting = btn.textContent.includes('Select');
+
+  $$('.gp-bulk-checkbox').forEach(checkbox => {
+    checkbox.checked = isSelecting;
+  });
+
+  if (isSelecting) {
+    btn.innerHTML = '<span class="btn-icon">✕</span> Unselect Everyone';
+  } else {
+    btn.innerHTML = '<span class="btn-icon">✓</span> Select Everyone';
+  }
+});
+
+// Edit GP - Give Points Button
+$('#give-gp-btn').addEventListener('click', async () => {
+  const btn = $('#give-gp-btn');
+  const gpAmount = parseInt($('#bulk-gp-input').value, 10);
+  const reason = $('#bulk-gp-reason-input').value.trim();
+
+  if (isNaN(gpAmount) || gpAmount <= 0) {
+    showMessage('epgp', 'error', '✗ Please enter a valid GP amount');
+    return;
+  }
+
+  if (!reason) {
+    showMessage('epgp', 'error', '✗ Please enter a reason');
+    return;
+  }
+
+  const selectedCharacters = Array.from($$('.gp-bulk-checkbox:checked'))
+    .map(checkbox => checkbox.value);
+
+  if (selectedCharacters.length === 0) {
+    showMessage('epgp', 'error', '✗ Please select at least one character');
+    return;
+  }
+
+  btn.disabled = true;
+
+  try {
+    // Award GP to each selected character
+    const promises = selectedCharacters.map(name =>
+      fetch('/api/gp-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          gp: gpAmount,
+          reason: reason,
+          timestamp: new Date().toISOString(),
+        }),
+      }).then(r => r.json())
+    );
+
+    const results = await Promise.all(promises);
+    const allSuccess = results.every(r => r.success);
+
+    if (allSuccess) {
+      showMessage('epgp', 'success', `✓ GP awarded to ${selectedCharacters.length} member(s)`);
+      $('#bulk-gp-input').value = '';
+      $('#bulk-gp-reason-input').value = '';
+      $$('.gp-bulk-checkbox').forEach(checkbox => { checkbox.checked = false; });
+      $('#select-everyone-gp-btn').innerHTML = '<span class="btn-icon">✓</span> Select Everyone';
       await loadRoster();
       clearUnsavedChanges();
     } else {

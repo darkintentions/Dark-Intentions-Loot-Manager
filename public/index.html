@@ -183,6 +183,44 @@
         </div>
 
         <div class="collapsible-section">
+          <button class="collapsible-header" data-target="edit-gp-bulk-content">
+            <span class="collapse-icon">▼</span>
+            <h2 class="section-title">Edit GP</h2>
+          </button>
+          <div id="edit-gp-bulk-content" class="collapsible-content">
+            <div class="on-time-bonus-wrapper">
+              <table class="data-table on-time-bonus-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;"></th>
+                    <th></th>
+                    <th style="width: 40px;"></th>
+                    <th></th>
+                    <th style="width: 40px;"></th>
+                    <th></th>
+                    <th style="width: 40px;"></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="edit-gp-bulk-tbody">
+                  <!-- Populated by app.js -->
+                </tbody>
+              </table>
+              <div class="epgp-log-form">
+                <button id="select-everyone-gp-btn" class="btn btn-secondary">
+                  <span class="btn-icon">✓</span> Select Everyone
+                </button>
+                <input type="number" id="bulk-gp-input" class="form-input bonus-ep-input" placeholder="GP Points" min="0">
+                <input type="text" id="bulk-gp-reason-input" class="form-input" placeholder="Reason">
+                <button id="give-gp-btn" class="btn btn-primary">
+                  <span class="btn-icon">⭐</span> Give selected members points
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible-section">
           <button class="collapsible-header" data-target="edit-ep-content">
             <span class="collapse-icon">▼</span>
             <h2 class="section-title">Edit EP</h2>
