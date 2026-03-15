@@ -1,0 +1,15 @@
+name: Scheduled Historical Activity Sync
+
+on:
+  schedule:
+    - cron: '0 18 * * 2' # Every Tuesday at 6:00 PM UTC
+  workflow_dispatch: # Allows manual trigger from the Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Sync Historical Activity Endpoint
+        run: |
+          curl -X GET "https://dark-intentions-loot-manager.pages.dev/api/sync-historical-activity" \
+          -H "Accept: application/json"

@@ -94,6 +94,59 @@ INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES
   ('Tier',      0),
   ('Ranged',    0);
 
+-- ─── WoWAudit Period ──────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS wowaudit_period (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  period_id   INTEGER NOT NULL UNIQUE,
+  data        TEXT NOT NULL,
+  updated_at  TEXT DEFAULT (datetime('now'))
+);
+
+-- ─── Loot History ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS loot_history (
+  id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+  rclootcouncil_id        TEXT NOT NULL UNIQUE,
+  item_id                 INTEGER NOT NULL,
+  name                    TEXT NOT NULL,
+  icon                    TEXT,
+  slot                    TEXT,
+  quality                 TEXT,
+  character_id            INTEGER NOT NULL,
+  awarded_by_character_id INTEGER,
+  awarded_by_name         TEXT,
+  awarded_at              TEXT,
+  difficulty              TEXT,
+  discarded               BOOLEAN DEFAULT 0,
+  same_response_amount    INTEGER DEFAULT 0,
+  note                    TEXT,
+  wish_value              INTEGER DEFAULT 0,
+  response_type           TEXT,
+  bonus_ids               TEXT,
+  old_items               TEXT,
+  wish_data               TEXT,
+  updated_at              TEXT DEFAULT (datetime('now'))
+);
+
+-- ─── Signups ──────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS signups (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  raid_id        INTEGER NOT NULL,
+  date           TEXT NOT NULL,
+  character_name TEXT NOT NULL,
+  class          TEXT,
+  status         TEXT,
+  ep_awarded     BOOLEAN DEFAULT 0,
+  UNIQUE(raid_id, character_name)
+);
+
+-- ─── Historical Activity ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS historical_activity (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  period_id   INTEGER NOT NULL UNIQUE,
+  data        TEXT NOT NULL,
+  updated_at  TEXT DEFAULT (datetime('now'))
+);
+
 -- ─── System Logs ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS system_logs (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
