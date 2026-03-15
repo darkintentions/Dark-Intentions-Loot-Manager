@@ -19,5 +19,3 @@ binding      = "DB"
 database_name = "dilm"
 database_id   = "9f4675d4-7508-42e2-a2dc-9a3300e4a418"
 
-[triggers]
-crons = ["0 6 * * 1"] # run every Monday at 6am UTC
