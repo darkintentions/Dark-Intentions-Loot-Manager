@@ -1,0 +1,15 @@
+name: Scheduled Signups Sync
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Every Monday at 6:00 AM UTC
+  workflow_dispatch: # Allows manual trigger from the Actions tab
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Sync Signups Endpoint
+        run: |
+          curl -X GET "https://dark-intentions-loot-manager.pages.dev/api/sync-signups" \
+          -H "Accept: application/json"
