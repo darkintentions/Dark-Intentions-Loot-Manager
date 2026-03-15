@@ -9,10 +9,10 @@
  */
 export async function ensureTablesExist(env) {
   try {
-    // Check if the newest table exists (signups)
+    // Check if the newest table exists (historical_activity)
     // If it doesn't, run initialization — all statements use IF NOT EXISTS so it's safe
     const result = await env.DB
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='signups'")
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='historical_activity'")
       .first();
 
     if (!result) {
@@ -142,6 +142,13 @@ async function initializeDatabase(env) {
       ('Off Hand',  0),
       ('Tier',      0),
       ('Ranged',    0);
+
+    CREATE TABLE IF NOT EXISTS historical_activity (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      period_id   INTEGER NOT NULL UNIQUE,
+      data        TEXT NOT NULL,
+      updated_at  TEXT DEFAULT (datetime('now'))
+    );
 
     CREATE TABLE IF NOT EXISTS system_logs (
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
