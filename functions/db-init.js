@@ -150,6 +150,20 @@ async function initializeDatabase(env) {
       updated_at  TEXT DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS users (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      username      TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      is_admin      BOOLEAN DEFAULT 0,
+      created_at    TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      token         TEXT PRIMARY KEY,
+      user_id       INTEGER NOT NULL,
+      expires_at    TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS system_logs (
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
       timestamp  TEXT DEFAULT (datetime('now')),
@@ -165,7 +179,27 @@ async function initializeDatabase(env) {
     try {
       await env.DB.prepare(statement.trim()).run();
     } catch (err) {
-      // Ignore errors (likely duplicate key errors on INSERT OR IGNORE)
+      // Ignore errors
     }
+  }
+
+  // Seed default admin if no users exist
+  try {
+    const userCheck = await env.DB.prepare("SELECT COUNT(*) as count FROM users").first();
+    if (userCheck && userCheck.count === 0) {
+      // Create SHA-256 hash for 'ewjnamewj'
+      const pass = 'ewjnamewj';
+      const myText = new TextEncoder().encode(pass);
+      const myDigest = await crypto.subtle.digest({name: 'SHA-256'}, myText);
+      const hashArray = Array.from(new Uint8Array(myDigest));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      await env.DB.prepare(
+        "INSERT INTO users (username, password_hash, is_admin) VALUES (?, ?, 1)"
+      ).bind('Yajinni', hashHex).run();
+      console.log('Seeded default admin account.');
+    }
+  } catch (err) {
+    console.error('Failed to seed admin account:', err);
   }
 }

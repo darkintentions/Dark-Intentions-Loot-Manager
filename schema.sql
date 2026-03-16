@@ -147,6 +147,21 @@ CREATE TABLE IF NOT EXISTS historical_activity (
   updated_at  TEXT DEFAULT (datetime('now'))
 );
 
+-- ─── Authentication & Users ───────────────────────────────────
+CREATE TABLE IF NOT EXISTS users (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  username      TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  is_admin      BOOLEAN DEFAULT 0,
+  created_at    TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  token         TEXT PRIMARY KEY,
+  user_id       INTEGER NOT NULL,
+  expires_at    TEXT NOT NULL
+);
+
 -- ─── System Logs ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS system_logs (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,

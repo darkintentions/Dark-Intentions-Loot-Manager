@@ -8,6 +8,31 @@
 const $  = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+// ── Auth Handling ────────────────────────────────────────────────
+let currentUser = null;
+let authToken = localStorage.getItem('auth_token');
+
+async function apiFetch(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  if (authToken) {
+    headers.set('Authorization', `Bearer ${authToken}`);
+  }
+  options.headers = headers;
+  const response = await fetch(url, options);
+  
+  if (response.status === 401) {
+    // Session expired or invalid
+    authToken = null;
+    currentUser = null;
+    localStorage.removeItem('auth_token');
+    updateAuthUI();
+    if (['epgp', 'admin', 'logs', 'users'].includes(activeTab)) {
+      switchTab('roster');
+    }
+  }
+  return response;
+}
+
 // ── Custom alert modal ──────────────────────────────────────────
 function showAlert(message, title = 'Notice') {
   const modal = $('#alert-modal');
@@ -253,7 +278,7 @@ async function loadRoster() {
   tbody.innerHTML = '<tr class="empty-row"><td colspan="5" class="loading">Loading roster…</td></tr>';
 
   try {
-    const res  = await fetch('/api/roster');
+    const res  = await apiFetch('/api/roster');
     const data = await res.json();
 
     if (data.error) throw new Error(data.error);
@@ -407,7 +432,7 @@ function filterRoster(query) {
 
 async function loadTransactionHistory(characterName) {
   try {
-    const res = await fetch(`/api/transaction-history?name=${encodeURIComponent(characterName)}`);
+    const res = await apiFetch(`/api/transaction-history?name=${encodeURIComponent(characterName)}`);
     const data = await res.json();
     if (data.transactions) {
       return data.transactions;
@@ -459,7 +484,7 @@ async function formatReasonWithLinks(reason) {
   const itemNames = {};
   try {
     const namePromises = itemIds.map(id =>
-      fetch(`/api/item-info?id=${id}`)
+      apiFetch(`/api/item-info?id=${id}`)
         .then(r => r.json())
         .then(data => {
           itemNames[id] = data.name || id;
@@ -613,7 +638,7 @@ async function deleteTransaction(transactionId, transactionType, characterName) 
   if (!confirmed) return;
 
   try {
-    const res = await fetch(`/api/transaction-history?id=${transactionId}&type=${transactionType}`, {
+    const res = await apiFetch(`/api/transaction-history?id=${transactionId}&type=${transactionType}`, {
       method: 'DELETE',
     });
 
@@ -731,7 +756,7 @@ $('#sync-roster-btn').addEventListener('click', async () => {
   btn.innerHTML = '<span class="btn-icon">⏳</span> Syncing…';
 
   try {
-    const res  = await fetch('/api/roster', { method: 'POST' });
+    const res  = await apiFetch('/api/roster', { method: 'POST' });
     const data = await res.json();
 
     if (data.success) {
@@ -755,7 +780,7 @@ $('#sync-roster-btn').addEventListener('click', async () => {
 // ================================================================
 async function loadEpgp() {
   try {
-    const res  = await fetch('/api/epgp');
+    const res  = await apiFetch('/api/epgp');
     const data = await res.json();
 
     if (data.error) throw new Error(data.error);
@@ -924,7 +949,7 @@ $('#save-epgp-btn').addEventListener('click', async () => {
   }));
 
   try {
-    const res  = await fetch('/api/epgp', {
+    const res  = await apiFetch('/api/epgp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ gear_values }),
@@ -989,7 +1014,7 @@ $('#give-bonus-btn').addEventListener('click', async () => {
   try {
     // Award EP to each selected character
     const promises = selectedCharacters.map(name =>
-      fetch('/api/ep-log', {
+      apiFetch('/api/ep-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1067,7 +1092,7 @@ $('#give-gp-btn').addEventListener('click', async () => {
   try {
     // Award GP to each selected character
     const promises = selectedCharacters.map(name =>
-      fetch('/api/gp-log', {
+      apiFetch('/api/gp-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1105,7 +1130,7 @@ $('#give-gp-btn').addEventListener('click', async () => {
 // ================================================================
 async function loadAdminSettings() {
   try {
-    const res  = await fetch('/api/settings');
+    const res  = await apiFetch('/api/settings');
     const data = await res.json();
     if (data.api_key) {
       $('#api-key-input').value = data.api_key;
@@ -1147,7 +1172,7 @@ $('#save-admin-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
-    const res  = await fetch('/api/settings', {
+    const res  = await apiFetch('/api/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ key: 'wowaudit_api_key', value: apiKey }),
@@ -1180,7 +1205,7 @@ $('#save-default-gp-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
-    const res = await fetch('/api/settings', {
+    const res = await apiFetch('/api/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ key: 'default_gp', value: defaultGp }),
@@ -1215,7 +1240,7 @@ $('#save-logging-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
-    const res = await fetch('/api/settings', {
+    const res = await apiFetch('/api/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ key: 'enable_logging', value: String(isEnabled) }),
@@ -1244,7 +1269,7 @@ async function populateCharacterDeleteSelect() {
   const select = $('#delete-character-select');
 
   try {
-    const res = await fetch('/api/roster');
+    const res = await apiFetch('/api/roster');
     const data = await res.json();
 
     select.innerHTML = '<option value="">— Select a character —</option>';
@@ -1295,7 +1320,7 @@ $('#delete-character-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
-    const res = await fetch(`/api/character-delete?name=${encodeURIComponent(characterName)}`, {
+    const res = await apiFetch(`/api/character-delete?name=${encodeURIComponent(characterName)}`, {
       method: 'POST',
     });
 
@@ -1343,7 +1368,7 @@ $('#delete-roster-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
-    const res = await fetch('/api/roster-delete', {
+    const res = await apiFetch('/api/roster-delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -1370,7 +1395,7 @@ let customEpButtons = [];
 
 async function loadCustomEpButtons() {
   try {
-    const res = await fetch('/api/custom-ep-buttons');
+    const res = await apiFetch('/api/custom-ep-buttons');
     const data = await res.json();
     customEpButtons = data;
     renderCustomEpButtons();
@@ -1419,7 +1444,7 @@ function renderCustomEpButtons() {
 
       try {
         const timestamp = new Date().toISOString();
-        const res = await fetch('/api/ep-log', {
+        const res = await apiFetch('/api/ep-log', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1489,7 +1514,7 @@ saveCustomEpBtn.addEventListener('click', async () => {
   saveCustomEpBtn.disabled = true;
 
   try {
-    const res = await fetch('/api/custom-ep-buttons', {
+    const res = await apiFetch('/api/custom-ep-buttons', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, description, ep: parseInt(ep) || 0 }),
@@ -1573,7 +1598,7 @@ saveEditTransactionBtn.addEventListener('click', async () => {
   saveEditTransactionBtn.disabled = true;
 
   try {
-    const res = await fetch(`/api/transaction-history?id=${id}&type=${type}`, {
+    const res = await apiFetch(`/api/transaction-history?id=${id}&type=${type}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount: parseInt(amount), reason, timestamp }),
@@ -1633,7 +1658,7 @@ saveEditTransactionBtn.addEventListener('click', async () => {
 // ================================================================
 async function syncWowAuditPeriod() {
   try {
-    const res = await fetch('/api/wowaudit-period');
+    const res = await apiFetch('/api/wowaudit-period');
     const data = await res.json();
     if (!data.success) {
       throw new Error(data.error || 'Failed to sync period');
@@ -1646,7 +1671,7 @@ async function syncWowAuditPeriod() {
 
 async function syncLootFromWoWAudit() {
   try {
-    const res = await fetch('/api/sync-loot-from-wowaudit', { method: 'POST' });
+    const res = await apiFetch('/api/sync-loot-from-wowaudit', { method: 'POST' });
     const data = await res.json();
     if (!data.success) {
       throw new Error(data.error || 'Sync failed');
@@ -1659,7 +1684,7 @@ async function syncLootFromWoWAudit() {
 
 async function loadLootHistory() {
   try {
-    const res = await fetch('/api/loot-history');
+    const res = await apiFetch('/api/loot-history');
     const data = await res.json();
     const items = data.history_items || [];
     renderLootTable(items);
@@ -1726,7 +1751,7 @@ async function loadSignups() {
   container.innerHTML = '<div class="empty-row text-center" style="padding: 20px;">Loading sign ups...</div>';
 
   try {
-    const res = await fetch(`/api/signups`);
+    const res = await apiFetch(`/api/signups`);
     const data = await res.json();
     
     if (!data.success) {
@@ -1859,7 +1884,7 @@ async function loadLogs() {
   tbody.innerHTML = '<tr class="empty-row"><td colspan="5" class="loading">Loading logs...</td></tr>';
   
   try {
-    const res = await fetch('/api/logs');
+    const res = await apiFetch('/api/logs');
     const data = await res.json();
     if (data.success) {
       systemLogs = data.logs || [];
@@ -1934,9 +1959,245 @@ $('#log-details-modal').addEventListener('click', (e) => {
 });
 
 // ================================================================
+//  AUTHENTICATION & USER MANAGEMENT
+// ================================================================
+
+async function loadSession() {
+  if (!authToken) return updateAuthUI();
+  try {
+    const res = await apiFetch('/api/auth/me');
+    if (res.ok) {
+      const data = await res.json();
+      currentUser = data.user;
+    } else {
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem('auth_token');
+    }
+  } catch (err) {
+    console.error('Failed to validate session:', err);
+  }
+  updateAuthUI();
+}
+
+function updateAuthUI() {
+  const loginBtn = $('#auth-login-btn');
+  const logoutBtn = $('#auth-logout-btn');
+  const nameLabel = $('#auth-user-name');
+
+  if (currentUser) {
+    loginBtn.classList.add('hidden');
+    logoutBtn.classList.remove('hidden');
+    nameLabel.textContent = currentUser.username;
+    nameLabel.classList.remove('hidden');
+    
+    if (currentUser.is_admin) {
+      $$('.admin-only').forEach(el => el.classList.remove('hidden'));
+    }
+  } else {
+    loginBtn.classList.remove('hidden');
+    logoutBtn.classList.add('hidden');
+    nameLabel.classList.add('hidden');
+    $$('.admin-only').forEach(el => el.classList.add('hidden'));
+  }
+}
+
+// ── Login / Logout Handlers ─────────────────────────────────────
+$('#auth-login-btn').addEventListener('click', () => {
+  $('#login-username').value = '';
+  $('#login-password').value = '';
+  $('#login-message').classList.add('hidden');
+  $('#login-modal').classList.remove('hidden');
+  $('#login-username').focus();
+});
+
+$('#auth-logout-btn').addEventListener('click', async () => {
+  if (authToken) {
+    await apiFetch('/api/auth/logout', { method: 'POST' });
+  }
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('auth_token');
+  updateAuthUI();
+  if (['epgp', 'admin', 'logs', 'users'].includes(activeTab)) {
+    switchTab('roster');
+  }
+});
+
+$('#close-login-modal-btn').addEventListener('click', () => $('#login-modal').classList.add('hidden'));
+
+$('#login-submit-btn').addEventListener('click', async () => {
+  const username = $('#login-username').value.trim();
+  const password = $('#login-password').value;
+  const msg = $('#login-message');
+
+  if (!username || !password) {
+    msg.textContent = 'Please enter both username and password';
+    msg.className = 'message error';
+    return;
+  }
+
+  try {
+    const res = await apiFetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      authToken = data.token;
+      currentUser = data.user;
+      localStorage.setItem('auth_token', authToken);
+      $('#login-modal').classList.add('hidden');
+      updateAuthUI();
+    } else {
+      msg.textContent = data.error || 'Login failed';
+      msg.className = 'message error';
+    }
+  } catch (err) {
+    msg.textContent = 'Network error during login';
+    msg.className = 'message error';
+  }
+});
+
+// ── Users Tab Logic ─────────────────────────────────────────────
+async function loadUsers() {
+  const tbody = $('#users-tbody');
+  const msg = $('#users-message');
+  msg.classList.add('hidden');
+  tbody.innerHTML = '<tr><td colspan="4" class="text-center">Loading accounts...</td></tr>';
+
+  try {
+    const res = await apiFetch('/api/users');
+    const data = await res.json();
+    
+    if (!res.ok) throw new Error(data.error || 'Failed to load users');
+
+    if (data.users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center">No accounts found</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.users.map(u => `
+      <tr>
+        <td><strong>${escHtml(u.username)}</strong></td>
+        <td>${new Date(u.created_at).toLocaleString()}</td>
+        <td>
+          <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 20px;">
+            <input type="checkbox" class="toggle-admin-cb" data-id="${u.id}" ${u.is_admin ? 'checked' : ''} ${u.id === currentUser.id ? 'disabled' : ''} style="opacity: 0; width: 0; height: 0;">
+            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+          </label>
+        </td>
+        <td>
+          <button class="btn btn-danger btn-sm delete-user-btn" data-id="${u.id}" ${u.id === currentUser.id ? 'disabled' : ''}>Delete</button>
+        </td>
+      </tr>
+    `).join('');
+
+    // Attach Toggle Listeners
+    $$('.toggle-admin-cb').forEach(cb => {
+      cb.addEventListener('change', async (e) => {
+        const id = e.target.dataset.id;
+        const isAdmin = e.target.checked;
+        try {
+          const ures = await apiFetch(`/api/users/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_admin: isAdmin })
+          });
+          if (!ures.ok) {
+            e.target.checked = !isAdmin; // revert
+            showMessage('users', 'error', 'Failed to update admin status');
+          }
+        } catch (err) {
+          e.target.checked = !isAdmin; // revert
+        }
+      });
+    });
+
+    // Attach Delete Listeners
+    $$('.delete-user-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        const confirmed = await showConfirm({
+          title: 'Delete User',
+          message: 'Are you sure you want to permanently delete this account?'
+        });
+        if (!confirmed) return;
+        
+        try {
+          const dres = await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
+          if (dres.ok) {
+            loadUsers();
+            showMessage('users', 'success', 'Account deleted');
+          } else {
+            const errData = await dres.json();
+            showMessage('users', 'error', errData.error || 'Failed to delete');
+          }
+        } catch(err) {
+          showMessage('users', 'error', 'Network error');
+        }
+      });
+    });
+
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-error">Failed to load</td></tr>';
+    showMessage('users', 'error', err.message);
+  }
+}
+
+// Create User Modal Handlers
+$('#create-user-btn').addEventListener('click', () => {
+  $('#new-username').value = '';
+  $('#new-password').value = '';
+  $('#new-is-admin').checked = false;
+  $('#create-user-message').classList.add('hidden');
+  $('#create-user-modal').classList.remove('hidden');
+  $('#new-username').focus();
+});
+
+$('#close-user-modal-btn').addEventListener('click', () => $('#create-user-modal').classList.add('hidden'));
+$('#cancel-user-modal-btn').addEventListener('click', () => $('#create-user-modal').classList.add('hidden'));
+
+$('#create-user-submit-btn').addEventListener('click', async () => {
+  const username = $('#new-username').value.trim();
+  const password = $('#new-password').value;
+  const isAdmin = $('#new-is-admin').checked;
+  const msg = $('#create-user-message');
+
+  if (!username || !password) {
+    msg.textContent = 'Username and password required';
+    msg.className = 'message error';
+    return;
+  }
+
+  try {
+    const res = await apiFetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, is_admin: isAdmin })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      $('#create-user-modal').classList.add('hidden');
+      showMessage('users', 'success', 'Account created successfully');
+      loadUsers();
+    } else {
+      msg.textContent = data.error || 'Failed to create account';
+      msg.className = 'message error';
+    }
+  } catch (err) {
+    msg.textContent = 'Network error';
+    msg.className = 'message error';
+  }
+});
+
+// ================================================================
 //  INIT — load default tab
 // ================================================================
-(function init() {
+async function init() {
+  await loadSession();
   tabLoaded.roster = true;
   loadRoster();
-})();
+}
+init();
