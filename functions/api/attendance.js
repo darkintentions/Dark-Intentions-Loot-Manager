@@ -48,6 +48,16 @@ export async function onRequest({ request, env }) {
             VALUES (?, ?, ?, ?)
           `).bind(char.name, char.realm, snapshotDate, attended)
         );
+
+        // Award +1 EP for being present
+        if (attended) {
+          statements.push(
+            env.DB.prepare(`
+              INSERT INTO ep_log (name, ep, reason, timestamp)
+              VALUES (?, 1, ?, ?)
+            `).bind(char.name, `On Time ${snapshotDate}`, snapshotDate)
+          );
+        }
       }
 
       await env.DB.batch(statements);
