@@ -406,9 +406,9 @@
           <h2 class="section-title">System Logging</h2>
           <div class="form-group form-group-no-top-margin">
             <div class="input-group" style="align-items: center; gap: 12px;">
-              <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 20px;">
-                <input type="checkbox" id="enable-logging-toggle" style="opacity: 0; width: 0; height: 0;">
-                <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+              <label class="switch">
+                <input type="checkbox" id="wowaudit-use-attendance">
+                <span class="slider"></span>
               </label>
               <span id="enable-logging-label" style="font-size: 14px; font-weight: 600; color: #e05555;">Disabled</span>
               <button id="save-logging-btn" class="btn btn-primary" style="margin-left: auto;">
@@ -644,20 +644,20 @@
       </div>
       <div class="modal-body">
         <div id="create-user-message" class="message hidden" style="margin-bottom: 15px;"></div>
-        <div class="form-group">
+        <div class="form-group" style="text-align: center;">
           <label for="new-username">Username</label>
-          <input type="text" id="new-username" class="form-input" autocomplete="off">
+          <input type="text" id="new-username" class="form-input" style="text-align: center;" autocomplete="off">
         </div>
-        <div class="form-group">
+        <div class="form-group" style="text-align: center;">
           <label for="new-password">Password</label>
-          <input type="password" id="new-password" class="form-input" autocomplete="new-password">
+          <input type="password" id="new-password" class="form-input" style="text-align: center;" autocomplete="new-password">
         </div>
-        <div class="form-group">
-          <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 20px;">
-            <input type="checkbox" id="new-is-admin" style="opacity: 0; width: 0; height: 0;">
-            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+        <div class="form-group" style="text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <label class="switch">
+            <input type="checkbox" id="new-is-admin">
+            <span class="slider"></span>
           </label>
-          <span style="font-size: 14px; font-weight: 600; margin-left: 10px;">Is Admin</span>
+          <span style="font-size: 14px; font-weight: 600;">Is Admin</span>
         </div>
       </div>
       <div class="modal-footer">
