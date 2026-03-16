@@ -26,23 +26,16 @@ export async function onRequest({ request, env }) {
       return new Response('Method Not Allowed', { status: 405 });
     }
 
-    const { oldName, newName, newRealm } = await request.json();
+    const { oldName, newName } = await request.json();
 
     if (!oldName || !newName) {
-      return new Response(JSON.stringify({ error: 'Current name and new name are required' }), { status: 400, headers });
+      return new Response(JSON.stringify({ error: 'Source (orphan) and target (roster) names are required' }), { status: 400, headers });
     }
 
     // Start a transaction-like sequence (Cloudflare D1 batch)
-    // 1. Update Roster
-    // 2. Update EP Log
-    // 3. Update GP Log
-    // 4. Update Signups
+    // We ONLY update logs because 'oldName' is an orphan and 'newName' already exists in the roster.
     
     const statements = [
-      // Update roster
-      env.DB.prepare("UPDATE roster SET name = ?, realm = ?, last_updated = datetime('now') WHERE name = ?")
-        .bind(newName, newRealm || null, oldName),
-      
       // Update EP logs
       env.DB.prepare("UPDATE ep_log SET name = ? WHERE name = ?")
         .bind(newName, oldName),
@@ -58,11 +51,11 @@ export async function onRequest({ request, env }) {
 
     await env.DB.batch(statements);
 
-    await logEvent(env, 'info', 'Admin', `Character renamed from "${oldName}" to "${newName}" (${newRealm || 'no realm change'}).`);
+    await logEvent(env, 'info', 'Admin', `Merged historical logs from orphan "${oldName}" into "${newName}".`);
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Successfully renamed ${oldName} to ${newName}` 
+      message: `Successfully merged ${oldName}'s history into ${newName}` 
     }), { status: 200, headers });
 
   } catch (err) {

@@ -423,17 +423,24 @@
 
         <hr class="admin-separator">
         <section class="admin-section">
-          <h2 class="section-title">Character Rename / Transfer</h2>
+          <h2 class="section-title">Merge Orphaned History</h2>
           <div class="admin-subsection">
-            <p class="subsection-description">Update a character's name and server. All EP, GP, and signup history will be preserved.</p>
+            <p class="subsection-description">Link historical logs from a character no longer in the roster (Source) to an active roster member (Target).</p>
             <div class="admin-input-group" style="display: flex; flex-direction: column; gap: 15px; max-width: 400px;">
-              <select id="rename-character-select" class="form-select">
-                <option value="">— Select a character —</option>
-              </select>
-              <input type="text" id="rename-new-name" class="form-input" placeholder="New Character Name">
-              <input type="text" id="rename-new-realm" class="form-input" placeholder="New Server / Realm">
+              <div class="form-group">
+                <label for="merge-source-select">Select Orphaned Character (Source)</label>
+                <select id="merge-source-select" class="form-select">
+                  <option value="">— Loading orphans... —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="merge-target-select">Merge into Current Roster (Target)</label>
+                <select id="merge-target-select" class="form-select">
+                  <option value="">— Select a character —</option>
+                </select>
+              </div>
               <button id="rename-character-btn" class="btn btn-primary" style="align-self: flex-start;">
-                <span class="btn-icon">📝</span> Rename Character
+                <span class="btn-icon">🔗</span> Merge History
               </button>
             </div>
           </div>

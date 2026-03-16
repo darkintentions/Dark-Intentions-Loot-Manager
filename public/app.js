@@ -1153,63 +1153,70 @@ async function loadAdminSettings() {
 
   // Populate character dropdowns
   await populateCharacterDeleteSelect();
-  await populateRenameDropdown();
+  await populateMergeDropdowns();
 }
 
-async function populateRenameDropdown() {
-  const select = $('#rename-character-select');
-  if (!select) return;
+async function populateMergeDropdowns() {
+  const sourceSelect = $('#merge-source-select');
+  const targetSelect = $('#merge-target-select');
+  if (!sourceSelect || !targetSelect) return;
 
   try {
-    const res = await apiFetch('/api/roster');
-    const data = await res.json();
+    // 1. Load Roster (Targets)
+    const rosterRes = await apiFetch('/api/roster');
+    const rosterData = await rosterRes.json();
 
-    select.innerHTML = '<option value="">— Select a character —</option>';
-
-    if (data.roster && data.roster.length > 0) {
-      const characters = data.roster
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-      characters.forEach(char => {
-        const option = document.createElement('option');
-        option.value = char.name;
-        option.textContent = char.name;
-        // Store realm as data attribute to auto-fill
-        option.dataset.realm = char.realm || '';
-        select.appendChild(option);
-      });
+    targetSelect.innerHTML = '<option value="">— Select active character —</option>';
+    if (rosterData.roster && rosterData.roster.length > 0) {
+      rosterData.roster
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach(char => {
+          const option = document.createElement('option');
+          option.value = char.name;
+          option.textContent = char.name;
+          targetSelect.appendChild(option);
+        });
     }
+
+    // 2. Load Orphans (Sources)
+    const orphanRes = await apiFetch('/api/roster/orphans');
+    const orphanData = await orphanRes.json();
+
+    if (orphanData.success && orphanData.orphans) {
+      sourceSelect.innerHTML = '<option value="">— Select orphaned character —</option>';
+      if (orphanData.orphans.length === 0) {
+        sourceSelect.innerHTML = '<option value="">(No orphans found)</option>';
+      } else {
+        orphanData.orphans.forEach(name => {
+          const option = document.createElement('option');
+          option.value = name;
+          option.textContent = name;
+          sourceSelect.appendChild(option);
+        });
+      }
+    } else {
+      sourceSelect.innerHTML = '<option value="">Error loading</option>';
+    }
+
   } catch (err) {
-    select.innerHTML = '<option value="">Error loading characters</option>';
+    console.error('Failed to populate merge dropdowns:', err);
   }
 }
 
-$('#rename-character-select').addEventListener('change', (e) => {
-  const selected = e.target.options[e.target.selectedIndex];
-  if (selected && selected.value) {
-    $('#rename-new-name').value = selected.value;
-    $('#rename-new-realm').value = selected.dataset.realm || '';
-  } else {
-    $('#rename-new-name').value = '';
-    $('#rename-new-realm').value = '';
-  }
-});
-
 $('#rename-character-btn').addEventListener('click', async () => {
-  const oldName = $('#rename-character-select').value;
-  const newName = $('#rename-new-name').value.trim();
-  const newRealm = $('#rename-new-realm').value.trim();
+  const oldName = $('#merge-source-select').value;
+  const newName = $('#merge-target-select').value;
   const btn = $('#rename-character-btn');
 
   if (!oldName || !newName) {
-    showMessage('admin', 'error', '✗ Current name and new name are required');
+    showMessage('admin', 'error', '✗ Please select both source and target names');
     return;
   }
 
   const confirmed = await showConfirm({
-    title: 'Rename Character',
-    message: `Rename "${oldName}" to "${newName}"? This will update all their historical EP/GP and Signup logs.`,
-    confirmText: 'Confirm Rename',
+    title: 'Merge Character history',
+    message: `Merge all logs from "${oldName}" into "${newName}"? This action cannot be easily undone.`,
+    confirmText: 'Confirm Merge',
   });
 
   if (!confirmed) return;
@@ -1220,19 +1227,16 @@ $('#rename-character-btn').addEventListener('click', async () => {
     const res = await apiFetch('/api/character-rename', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ oldName, newName, newRealm }),
+      body: JSON.stringify({ oldName, newName }),
     });
 
     const data = await res.json();
     if (data.success) {
       showMessage('admin', 'success', `✓ ${data.message}`);
-      $('#rename-new-name').value = '';
-      $('#rename-new-realm').value = '';
-      await populateRenameDropdown();
-      await populateCharacterDeleteSelect();
+      await populateMergeDropdowns();
       loadRoster();
     } else {
-      showMessage('admin', 'error', `✗ ${data.error || 'Rename failed'}`);
+      showMessage('admin', 'error', `✗ ${data.error || 'Merge failed'}`);
     }
   } catch (err) {
     showMessage('admin', 'error', `✗ Network error: ${err.message}`);
