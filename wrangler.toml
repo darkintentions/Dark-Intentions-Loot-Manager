@@ -10,7 +10,7 @@
 #   7. In Pages project settings → Functions → D1 Database Bindings
 #      add binding: DB → dilm
 
-name = "dark-intentions-loot-manager"
+name = "dark-intentions"
 compatibility_date = "2025-01-01"
 pages_build_output_dir = "public"
 

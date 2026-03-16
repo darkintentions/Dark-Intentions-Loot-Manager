@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: Ping Sync Historical Activity Endpoint
         run: |
-          curl -X GET "https://dark-intentions-loot-manager.pages.dev/api/sync-historical-activity" \
+          curl -X GET "https://dark-intentions.pages.dev/api/sync-historical-activity" \
           -H "Accept: application/json"

@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: Ping Sync Signups Endpoint
         run: |
-          curl -X GET "https://dark-intentions-loot-manager.pages.dev/api/sync-signups" \
+          curl -X GET "https://dark-intentions.pages.dev/api/sync-signups" \
           -H "Accept: application/json"
