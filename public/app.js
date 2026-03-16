@@ -244,6 +244,7 @@ async function switchTab(name) {
     if (name === 'epgp')   loadEpgp();
     if (name === 'admin')  loadAdminSettings();
     if (name === 'logs')   loadLogs();
+    if (name === 'users')  loadUsers();
     if (name === 'attendance') {
       // Future logic for loading attendance
     }
