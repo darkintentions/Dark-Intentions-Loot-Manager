@@ -2087,9 +2087,9 @@ async function loadUsers() {
         <td><strong>${escHtml(u.username)}</strong></td>
         <td>${new Date(u.created_at).toLocaleString()}</td>
         <td>
-          <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 20px;">
-            <input type="checkbox" class="toggle-admin-cb" data-id="${u.id}" ${u.is_admin ? 'checked' : ''} ${u.id === currentUser.id ? 'disabled' : ''} style="opacity: 0; width: 0; height: 0;">
-            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+          <label class="switch">
+            <input type="checkbox" class="toggle-admin-cb" data-id="${u.id}" ${u.is_admin ? 'checked' : ''} ${u.id === currentUser.id ? 'disabled' : ''}>
+            <span class="slider"></span>
           </label>
         </td>
         <td>
