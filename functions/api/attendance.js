@@ -35,6 +35,20 @@ export async function onRequest({ request, env }) {
       // We'll use the date from the first record as the snapshot date
       const snapshotDate = payload.length > 0 ? payload[0].date : new Date().toISOString();
 
+      // Check if this snapshot (by date) has already been processed for anyone
+      // This fulfills the "don't process if character, server, and date already exists" 
+      // by checking the snapshot as a whole.
+      const existingCount = await env.DB.prepare("SELECT COUNT(*) as count FROM attendance WHERE date = ?")
+        .bind(snapshotDate)
+        .first();
+
+      if (existingCount && existingCount.count > 0) {
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: 'Attendance for this snapshot has already been recorded' 
+        }), { status: 200, headers });
+      }
+
       const statements = [];
       const presentNames = new Set(payload.map(p => p.name));
 
@@ -45,28 +59,19 @@ export async function onRequest({ request, env }) {
         
         statements.push(
           env.DB.prepare(`
-            INSERT OR REPLACE INTO attendance (name, realm, date, attended)
+            INSERT INTO attendance (name, realm, date, attended)
             VALUES (?, ?, ?, ?)
           `).bind(char.name, char.realm, snapshotDate, attended)
         );
 
-        // Award +1 EP for being present, but check for duplicates first
+        // Award +1 EP for being present
         if (attended) {
-          // Check if already awarded for this specific snapshot timestamp and reason
-          const existing = await env.DB.prepare(`
-            SELECT id FROM ep_log 
-            WHERE name = ? AND reason = ? AND timestamp = ?
-            LIMIT 1
-          `).bind(char.name, reason, snapshotDate).first();
-
-          if (!existing) {
-            statements.push(
-              env.DB.prepare(`
-                INSERT INTO ep_log (name, ep, reason, timestamp)
-                VALUES (?, 1, ?, ?)
-              `).bind(char.name, reason, snapshotDate)
-            );
-          }
+          statements.push(
+            env.DB.prepare(`
+              INSERT INTO ep_log (name, ep, reason, timestamp)
+              VALUES (?, 1, ?, ?)
+            `).bind(char.name, reason, snapshotDate)
+          );
         }
       }
 
