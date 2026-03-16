@@ -32,20 +32,19 @@ export async function onRequest({ request, env }) {
         return new Response(JSON.stringify({ error: 'Roster is empty. Sync roster first.' }), { status: 400, headers });
       }
 
-      // We'll use the date from the first record as the snapshot date
-      const snapshotDate = payload.length > 0 ? payload[0].date : new Date().toISOString();
+      // Normalize dates
+      const snapshotTimestamp = payload.length > 0 ? payload[0].date : new Date().toISOString();
+      const onlyDate = snapshotTimestamp.split(' ')[0]; // Assumes "YYYY-MM-DD HH:MM:SS"
 
-      // Check if this snapshot (by date) has already been processed for anyone
-      // This fulfills the "don't process if character, server, and date already exists" 
-      // by checking the snapshot as a whole.
-      const existingCount = await env.DB.prepare("SELECT COUNT(*) as count FROM attendance WHERE date = ?")
-        .bind(snapshotDate)
+      // 1. Filter Snapshot re-upload (exactly the same file)
+      const existingSnapshot = await env.DB.prepare("SELECT id FROM attendance WHERE snapshot_timestamp = ? LIMIT 1")
+        .bind(snapshotTimestamp)
         .first();
 
-      if (existingCount && existingCount.count > 0) {
+      if (existingSnapshot) {
         return new Response(JSON.stringify({ 
           success: true, 
-          message: 'Attendance for this snapshot has already been recorded' 
+          message: 'This exact snapshot has already been processed.' 
         }), { status: 200, headers });
       }
 
@@ -54,31 +53,47 @@ export async function onRequest({ request, env }) {
 
       for (const char of roster) {
         const fullName = `${char.name}-${char.realm}`;
-        const attended = presentNames.has(fullName) ? 1 : 0;
-        const reason = `On Time ${snapshotDate}`;
+        const isPresent = presentNames.has(fullName);
+        const attended = isPresent ? 1 : 0;
         
+        // 2. Check if this character already has an entry for this calendar day
+        const existingDaily = await env.DB.prepare(`
+          SELECT id FROM attendance 
+          WHERE name = ? AND realm = ? AND date = ? 
+          LIMIT 1
+        `).bind(char.name, char.realm, onlyDate).first();
+
+        // If a record for this person + day already exists, skip processing them entirely
+        if (existingDaily) continue;
+
+        // Record attendance for this day
         statements.push(
           env.DB.prepare(`
-            INSERT INTO attendance (name, realm, date, attended)
-            VALUES (?, ?, ?, ?)
-          `).bind(char.name, char.realm, snapshotDate, attended)
+            INSERT INTO attendance (name, realm, date, snapshot_timestamp, attended)
+            VALUES (?, ?, ?, ?, ?)
+          `).bind(char.name, char.realm, onlyDate, snapshotTimestamp, attended)
         );
 
-        // Award +1 EP for being present
-        if (attended) {
+        // Award +1 EP for being present (only once per day)
+        if (isPresent) {
           statements.push(
             env.DB.prepare(`
               INSERT INTO ep_log (name, ep, reason, timestamp)
               VALUES (?, 1, ?, ?)
-            `).bind(char.name, reason, snapshotDate)
+            `).bind(char.name, `On Time ${onlyDate}`, onlyDate)
           );
         }
       }
 
-      await env.DB.batch(statements);
-      await logEvent(env, 'info', 'Attendance', `Received attendance snapshot for ${snapshotDate}. ${payload.length} present out of ${roster.length} members.`);
+      if (statements.length > 0) {
+        await env.DB.batch(statements);
+        await logEvent(env, 'info', 'Attendance', `Processed attendance for ${onlyDate}. Snapshot: ${snapshotTimestamp}. ${statements.length / 2} updates made.`);
+      }
 
-      return new Response(JSON.stringify({ success: true, message: 'Attendance recorded' }), { status: 201, headers });
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: statements.length > 0 ? 'Attendance recorded' : 'All members already processed for this day' 
+      }), { status: 201, headers });
     }
 
     // ── GET — Fetch attendance records grouped by date ──────────

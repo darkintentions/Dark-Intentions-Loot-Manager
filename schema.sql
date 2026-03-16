@@ -174,10 +174,11 @@ CREATE TABLE IF NOT EXISTS system_logs (
 
 -- ─── Attendance Tracking ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS attendance (
-  id             INTEGER PRIMARY KEY AUTOINCREMENT,
-  name           TEXT NOT NULL,
-  realm          TEXT NOT NULL,
-  date           TEXT NOT NULL,
-  attended       BOOLEAN NOT NULL,
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  name               TEXT NOT NULL,
+  realm              TEXT NOT NULL,
+  date               TEXT NOT NULL,
+  snapshot_timestamp TEXT,
+  attended           BOOLEAN NOT NULL,
   UNIQUE(name, realm, date)
 );
