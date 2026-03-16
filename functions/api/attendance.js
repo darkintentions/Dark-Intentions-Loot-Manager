@@ -41,6 +41,7 @@ export async function onRequest({ request, env }) {
       for (const char of roster) {
         const fullName = `${char.name}-${char.realm}`;
         const attended = presentNames.has(fullName) ? 1 : 0;
+        const reason = `On Time ${snapshotDate}`;
         
         statements.push(
           env.DB.prepare(`
@@ -49,14 +50,23 @@ export async function onRequest({ request, env }) {
           `).bind(char.name, char.realm, snapshotDate, attended)
         );
 
-        // Award +1 EP for being present
+        // Award +1 EP for being present, but check for duplicates first
         if (attended) {
-          statements.push(
-            env.DB.prepare(`
-              INSERT INTO ep_log (name, ep, reason, timestamp)
-              VALUES (?, 1, ?, ?)
-            `).bind(char.name, `On Time ${snapshotDate}`, snapshotDate)
-          );
+          // Check if already awarded for this specific snapshot timestamp and reason
+          const existing = await env.DB.prepare(`
+            SELECT id FROM ep_log 
+            WHERE name = ? AND reason = ? AND timestamp = ?
+            LIMIT 1
+          `).bind(char.name, reason, snapshotDate).first();
+
+          if (!existing) {
+            statements.push(
+              env.DB.prepare(`
+                INSERT INTO ep_log (name, ep, reason, timestamp)
+                VALUES (?, 1, ?, ?)
+              `).bind(char.name, reason, snapshotDate)
+            );
+          }
         }
       }
 
