@@ -49,6 +49,7 @@ export async function onRequest({ request, env }) {
   // ── POST ─────────────────────────────────────────────────────
   if (request.method === 'POST') {
     try {
+      const { gear_values, vault_settings } = await request.json();
       const statements = [];
       const changeLogs = [];
 
