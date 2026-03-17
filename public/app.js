@@ -2057,8 +2057,8 @@ async function loadSignups() {
 
 function getSignupStatusClass(status) {
   if (!status || status === 'Unknown') return 'status-unknown';
-  if (status === 'Present' || status === 'Accepted') return 'status-present';
-  if (status === 'Absent' || status === 'Declined') return 'status-absent';
+  if (status === 'Present' || status === 'Accepted' || status === 'On time') return 'status-present';
+  if (status === 'Absent' || status === 'Declined' || status === 'Late or Absent') return 'status-absent';
   if (status === 'Tentative' || status === 'Late') return 'status-tentative';
   return 'status-tentative';
 }
@@ -2348,7 +2348,7 @@ async function loadOnTime() {
           if (!m) return '<td></td><td></td><td></td>';
           const className = classCss(m.class);
           const statusClass = m.attended ? 'status-present' : 'status-absent';
-          const statusText = m.attended ? 'Present' : 'Absent';
+          const statusText = m.attended ? 'On time' : 'Late or Absent';
           const epText = m.attended ? '<span style="color: #4CAF50; font-weight: bold;">+1</span>' : '<span style="color: #888; font-size: 0.85em;">—</span>';
 
           return `
@@ -2371,7 +2371,7 @@ async function loadOnTime() {
         <div class="collapsible-section" style="margin-bottom: 10px;">
           <button class="collapsible-header ${collapsedClass}" data-target="attendance-${index}" style="width: 100%; text-align: left; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: #e1e1e6;">
             <span class="collapse-icon">${index === 0 ? '▼' : '▶'}</span>
-            <strong style="margin-left: 10px; font-size: 1.1em;">Raid Date: ${formatDateWithDay(snap.date)} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${presentCount} / ${totalCount} Present)</span></strong>
+            <strong style="margin-left: 10px; font-size: 1.1em;">Raid Date: ${formatDateWithDay(snap.date)} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${presentCount} / ${totalCount} On time)</span></strong>
           </button>
           <div id="attendance-${index}" class="collapsible-content" ${displayStyle}>
             <table class="data-table" style="table-layout: fixed; width: 100%;">
