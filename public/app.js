@@ -647,7 +647,9 @@ async function deleteTransaction(transactionId, transactionType, characterName) 
 
     if (data.success) {
       showMessage('roster', 'success', '✓ Transaction deleted');
-      // Reload the history modal
+      
+      // Reload the roster totals then the history modal
+      await loadRoster();
       const historyModal = $('#transaction-history-modal');
       if (!historyModal.classList.contains('hidden')) {
         await openTransactionHistoryModal(characterName);

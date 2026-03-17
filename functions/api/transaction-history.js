@@ -178,6 +178,7 @@ export async function onRequest({ request, env }) {
 
       // Determine table based on type
       const table = transactionType === 'ep' ? 'ep_log' : 'gp_log';
+      const column = transactionType === 'ep' ? 'ep' : 'gp';
 
       // Verify transaction exists and fetch it for logging
       const existing = await env.DB
