@@ -62,7 +62,7 @@ export async function onRequest({ request, env }) {
       );
 
       const count = rosterWithTotals.length;
-      await logEvent(env, 'info', 'API', `Roster data fetched (${count} character${count === 1 ? '' : 's'} found).`);
+      await logEvent(env, 'info', 'API', `Refreshed roster from database (${count} character${count === 1 ? '' : 's'} found).`);
       return new Response(JSON.stringify({ roster: rosterWithTotals }), { headers });
     } catch (err) {
       return new Response(
