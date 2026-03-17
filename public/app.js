@@ -2163,7 +2163,7 @@ function renderLogs() {
       
     return `
       <tr>
-        <td style="white-space:nowrap; font-size:12px;">${time}</td>
+        <td style="white-space:nowrap;">${time}</td>
         <td><strong>${escHtml(log.category)}</strong></td>
         <td><span class="log-level-badge ${levelClass}">${escHtml(log.level)}</span></td>
         <td style="max-width: 400px; white-space: normal;">${escHtml(log.message)}</td>
