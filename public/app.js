@@ -1229,7 +1229,14 @@ $('#give-bonus-btn').addEventListener('click', async () => {
   try {
     const isSpecial = window.specialReasons && (reason === window.specialReasons.signup || reason === window.specialReasons.ontime);
     const finalReason = reason + (isSpecial ? '' : ' (Manually Modified)');
-    const finalTimestamp = specialDate ? new Date(specialDate).toISOString() : new Date().toISOString();
+    
+    // If a manual date is selected, use T12:00:00 to prevent timezone-related date shifts in history
+    let finalTimestamp;
+    if (specialDate) {
+      finalTimestamp = new Date(specialDate + 'T12:00:00').toISOString();
+    } else {
+      finalTimestamp = new Date().toISOString();
+    }
 
     const allCharacterNames = Array.from($$('.bonus-checkbox')).map(cb => cb.value);
 
@@ -1257,6 +1264,15 @@ $('#give-bonus-btn').addEventListener('click', async () => {
       $('#bonus-date-input').classList.add('hidden');
       $$('.bonus-checkbox').forEach(checkbox => { checkbox.checked = false; });
       $('#select-everyone-btn').innerHTML = '<span class="btn-icon">✓</span> Select Everyone';
+      
+      // Force reload affected tabs if this was a special award
+      if (isSpecial) {
+        tabLoaded.signups = false;
+        tabLoaded.ontime = false;
+        loadSignups();
+        loadOnTime();
+      }
+
       await loadRoster();
       clearUnsavedChanges();
     } else {
