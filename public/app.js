@@ -792,6 +792,9 @@ async function loadEpgp() {
       if ($('#signup-ep-input')) {
         $('#signup-ep-input').value = data.vault_settings.signup_ep || '1';
       }
+      if ($('#signup-reason-input')) {
+        $('#signup-reason-input').value = data.vault_settings.signup_reason || 'On Time';
+      }
       
       // Populate On Time EP
       if ($('#ontime-ep-input')) {
@@ -860,7 +863,8 @@ async function loadEpgp() {
       
       newBtn.addEventListener('click', async () => {
         const vault_settings = {
-          signup_ep: $('#signup-ep-input').value
+          signup_ep: $('#signup-ep-input').value,
+          signup_reason: $('#signup-reason-input').value
         };
 
         newBtn.disabled = true;

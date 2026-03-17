@@ -20,7 +20,7 @@ export async function onRequest({ request, env }) {
     try {
       // Get keys from settings
       const { results: settingsRows } = await env.DB
-        .prepare("SELECT key, value FROM settings WHERE key IN ('wowaudit_api_key', 'signup_ep')")
+        .prepare("SELECT key, value FROM settings WHERE key IN ('wowaudit_api_key', 'signup_ep', 'signup_reason')")
         .all();
 
       const settings = {};
@@ -28,6 +28,7 @@ export async function onRequest({ request, env }) {
       
       const apiKey = settings.wowaudit_api_key;
       const signupEp = parseInt(settings.signup_ep, 10) || 1;
+      const signupReason = settings.signup_reason || 'On Time';
 
       if (!apiKey) {
         return new Response(
@@ -115,7 +116,7 @@ export async function onRequest({ request, env }) {
               if (rosterChar) {
                 // Award Configured EP
                 const newEp = (rosterChar.ep || 0) + signupEp;
-                const reason = `Early Sign Up [${raidDate}]`;
+                const reason = `${signupReason} [${raidDate}]`;
                 
                 await env.DB.prepare(
                   `UPDATE roster SET ep = ? WHERE id = ?`

@@ -129,6 +129,7 @@ async function initializeDatabase(env) {
       ('vault_2_ep', '1'),
       ('vault_3_ep', '1'),
       ('signup_ep', '1'),
+      ('signup_reason', 'On Time'),
       ('on_time_ep', '1'),
       ('on_time_reason', 'Early Sign Up');
 
