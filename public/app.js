@@ -808,6 +808,27 @@ async function loadEpgp() {
       if ($('#default-gp-input')) {
         $('#default-gp-input').value = data.vault_settings.default_gp || '2';
       }
+
+      // Enhanced Manual EP Awards: Populate datalist
+      const reasonList = $('#reason-suggestions');
+      if (reasonList) {
+        reasonList.innerHTML = '';
+        const reasons = [
+          data.vault_settings.signup_reason || 'On Time',
+          data.vault_settings.on_time_reason || 'Early Sign Up'
+        ];
+        reasons.forEach(r => {
+          const option = document.createElement('option');
+          option.value = r;
+          reasonList.appendChild(option);
+        });
+      }
+      
+      // Store special reasons for later comparison
+      window.specialReasons = {
+        signup: data.vault_settings.signup_reason || 'On Time',
+        ontime: data.vault_settings.on_time_reason || 'Early Sign Up'
+      };
     }
 
     populateOnTimeBonus();
@@ -1171,6 +1192,7 @@ $('#give-bonus-btn').addEventListener('click', async () => {
   const btn = $('#give-bonus-btn');
   const bonusEp = parseInt($('#bonus-ep-input').value, 10);
   const reason = $('#bonus-reason-input').value.trim();
+  const specialDate = $('#bonus-date-input').value;
 
   if (isNaN(bonusEp) || bonusEp <= 0) {
     showMessage('epgp', 'error', '✗ Please enter a valid EP amount');
@@ -1201,8 +1223,10 @@ $('#give-bonus-btn').addEventListener('click', async () => {
             body: JSON.stringify({
           name,
           ep: bonusEp,
-          reason: reason + ' (Manually Modified)',
-          timestamp: new Date().toISOString(),
+          reason: reason + (window.specialReasons && (reason === window.specialReasons.signup || reason === window.specialReasons.ontime) ? '' : ' (Manually Modified)'),
+          timestamp: specialDate ? new Date(specialDate).toISOString() : new Date().toISOString(),
+          isSpecial: window.specialReasons && (reason === window.specialReasons.signup || reason === window.specialReasons.ontime),
+          specialDate: specialDate
         }),
       }).then(r => r.json())
     );
@@ -1214,6 +1238,8 @@ $('#give-bonus-btn').addEventListener('click', async () => {
       showMessage('epgp', 'success', `✓ EP awarded to ${selectedCharacters.length} member(s)`);
       $('#bonus-ep-input').value = '';
       $('#bonus-reason-input').value = '';
+      $('#bonus-date-input').value = '';
+      $('#bonus-date-input').classList.add('hidden');
       $$('.bonus-checkbox').forEach(checkbox => { checkbox.checked = false; });
       $('#select-everyone-btn').innerHTML = '<span class="btn-icon">✓</span> Select Everyone';
       await loadRoster();
@@ -1227,6 +1253,21 @@ $('#give-bonus-btn').addEventListener('click', async () => {
     btn.disabled = false;
   }
 });
+
+// Enhanced Manual EP Awards: Toggle date picker
+if ($('#bonus-reason-input') && $('#bonus-date-input')) {
+  $('#bonus-reason-input').addEventListener('input', () => {
+    const val = $('#bonus-reason-input').value.trim();
+    if (window.specialReasons && (val === window.specialReasons.signup || val === window.specialReasons.ontime)) {
+      $('#bonus-date-input').classList.remove('hidden');
+      if (!$('#bonus-date-input').value) {
+        $('#bonus-date-input').value = new Date().toISOString().split('T')[0];
+      }
+    } else {
+      $('#bonus-date-input').classList.add('hidden');
+    }
+  });
+}
 
 // Edit GP - Select/Unselect Everyone Button
 $('#select-everyone-gp-btn').addEventListener('click', () => {

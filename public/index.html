@@ -190,7 +190,11 @@
                   <span class="btn-icon">✓</span> Select Everyone
                 </button>
                 <input type="number" id="bonus-ep-input" class="form-input bonus-ep-input" placeholder="EP Points" min="0">
-                <input type="text" id="bonus-reason-input" class="form-input" placeholder="Reason">
+                <input type="text" id="bonus-reason-input" class="form-input" placeholder="Reason" list="reason-suggestions">
+                <datalist id="reason-suggestions">
+                  <!-- Populated by app.js -->
+                </datalist>
+                <input type="date" id="bonus-date-input" class="form-input hidden" title="Select date for this award">
                 <button id="give-bonus-btn" class="btn btn-primary">
                   <span class="btn-icon">⭐</span> Give selected members points
                 </button>
