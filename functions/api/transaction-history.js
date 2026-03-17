@@ -201,7 +201,8 @@ export async function onRequest({ request, env }) {
 
       const typeLabel = transactionType.toUpperCase();
       const amountVal = existing[column];
-      await logEvent(env, 'warning', 'Admin', `Deleted ${typeLabel} for ${existing.name}: ${amountVal} ${typeLabel}, Reason: "${existing.reason || ''}", Timestamp: "${existing.timestamp}"`);
+      const humanTimestamp = new Date(existing.timestamp).toLocaleString();
+      await logEvent(env, 'warning', 'Admin', `Deleted ${typeLabel} for ${existing.name}: ${amountVal} ${typeLabel}, Reason: "${existing.reason || ''}", Timestamp: "${humanTimestamp}"`);
 
       return new Response(
         JSON.stringify({
