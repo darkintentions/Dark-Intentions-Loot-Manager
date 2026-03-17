@@ -14,30 +14,40 @@ export async function onRequest({ request, env }) {
   // ── POST ─────────────────────────────────────────────────────
   if (request.method === 'POST') {
     try {
-      const { name, gp, reason, timestamp } = await request.json();
+      const { name, names, gp, reason, timestamp } = await request.json();
 
-      if (!name || gp === undefined) {
+      if ((!name && !names) || gp === undefined) {
         return new Response(
-          JSON.stringify({ error: 'Name and GP value are required' }),
+          JSON.stringify({ error: 'Name(s) and GP value are required' }),
           { status: 400, headers }
         );
       }
 
-      await env.DB
-        .prepare(
-          'INSERT INTO gp_log (name, gp, reason, timestamp) VALUES (?, ?, ?, ?)'
-        )
-        .bind(name, gp, reason || '', timestamp || new Date().toISOString())
-        .run();
+      const targetNames = names || [name];
+      const statements = [];
 
-      await logEvent(env, 'success', 'EPGP', `Added ${gp} GP to ${name} (Reason: ${reason || 'Manual Update'})`, { reason, timestamp });
+      for (const charName of targetNames) {
+        statements.push(
+          env.DB.prepare(
+            'INSERT INTO gp_log (name, gp, reason, timestamp) VALUES (?, ?, ?, ?)'
+          ).bind(charName, gp, reason || '', timestamp || new Date().toISOString())
+        );
+      }
+
+      await env.DB.batch(statements);
+
+      const logMsg = targetNames.length > 1
+        ? `Added ${gp} GP to ${targetNames.length} characters (Reason: ${reason || 'Manual Update'})`
+        : `Added ${gp} GP to ${targetNames[0]} (Reason: ${reason || 'Manual Update'})`;
+
+      await logEvent(env, 'success', 'EPGP', logMsg, { names: targetNames, reason, timestamp });
 
       return new Response(
-        JSON.stringify({ success: true, message: 'GP entry added successfully' }),
+        JSON.stringify({ success: true, message: 'GP entries added successfully' }),
         { headers }
       );
     } catch (err) {
-      await logEvent(env, 'error', 'API', `Failed to add GP to ${name || 'Unknown'}`, { error: err.message });
+      await logEvent(env, 'error', 'API', `Failed to add GP to bulk characters`, { error: err.message });
       return new Response(
         JSON.stringify({ error: err.message }),
         { status: 500, headers }

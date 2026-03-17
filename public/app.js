@@ -1215,26 +1215,26 @@ $('#give-bonus-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
-    // Award EP to each selected character
-    const promises = selectedCharacters.map(name =>
-      apiFetch('/api/ep-log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-          name,
-          ep: bonusEp,
-          reason: reason + (window.specialReasons && (reason === window.specialReasons.signup || reason === window.specialReasons.ontime) ? '' : ' (Manually Modified)'),
-          timestamp: specialDate ? new Date(specialDate).toISOString() : new Date().toISOString(),
-          isSpecial: window.specialReasons && (reason === window.specialReasons.signup || reason === window.specialReasons.ontime),
-          specialDate: specialDate
-        }),
-      }).then(r => r.json())
-    );
+    const isSpecial = window.specialReasons && (reason === window.specialReasons.signup || reason === window.specialReasons.ontime);
+    const finalReason = reason + (isSpecial ? '' : ' (Manually Modified)');
+    const finalTimestamp = specialDate ? new Date(specialDate).toISOString() : new Date().toISOString();
 
-    const results = await Promise.all(promises);
-    const allSuccess = results.every(r => r.success);
+    const response = await apiFetch('/api/ep-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        names: selectedCharacters,
+        ep: bonusEp,
+        reason: finalReason,
+        timestamp: finalTimestamp,
+        isSpecial: isSpecial,
+        specialDate: specialDate
+      }),
+    });
 
-    if (allSuccess) {
+    const data = await response.json();
+
+    if (data.success) {
       showMessage('epgp', 'success', `✓ EP awarded to ${selectedCharacters.length} member(s)`);
       $('#bonus-ep-input').value = '';
       $('#bonus-reason-input').value = '';
@@ -1245,7 +1245,7 @@ $('#give-bonus-btn').addEventListener('click', async () => {
       await loadRoster();
       clearUnsavedChanges();
     } else {
-      showMessage('epgp', 'error', '✗ Some members failed to receive points');
+      showMessage('epgp', 'error', `✗ ${data.error || 'Failed to award EP'}`);
     }
   } catch (err) {
     showMessage('epgp', 'error', `✗ Network error: ${err.message}`);
@@ -1312,24 +1312,20 @@ $('#give-gp-btn').addEventListener('click', async () => {
   btn.disabled = true;
 
   try {
-    // Award GP to each selected character
-    const promises = selectedCharacters.map(name =>
-      apiFetch('/api/gp-log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-          name,
-          gp: gpAmount,
-          reason: reason + ' (Manually Modified)',
-          timestamp: new Date().toISOString(),
-        }),
-      }).then(r => r.json())
-    );
+    const response = await apiFetch('/api/gp-log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        names: selectedCharacters,
+        gp: gpAmount,
+        reason: reason + ' (Manually Modified)',
+        timestamp: new Date().toISOString(),
+      }),
+    });
 
-    const results = await Promise.all(promises);
-    const allSuccess = results.every(r => r.success);
+    const data = await response.json();
 
-    if (allSuccess) {
+    if (data.success) {
       showMessage('epgp', 'success', `✓ GP awarded to ${selectedCharacters.length} member(s)`);
       $('#bulk-gp-input').value = '';
       $('#bulk-gp-reason-input').value = '';
@@ -1338,7 +1334,7 @@ $('#give-gp-btn').addEventListener('click', async () => {
       await loadRoster();
       clearUnsavedChanges();
     } else {
-      showMessage('epgp', 'error', '✗ Some members failed to receive points');
+      showMessage('epgp', 'error', `✗ ${data.error || 'Failed to award GP'}`);
     }
   } catch (err) {
     showMessage('epgp', 'error', `✗ Network error: ${err.message}`);

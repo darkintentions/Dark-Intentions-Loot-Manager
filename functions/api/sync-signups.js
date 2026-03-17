@@ -74,10 +74,9 @@ export async function onRequest({ request, env }) {
       let insertedCount = 0;
       let bonusesAwarded = 0;
 
+      const rewardedNames = [];
       // Currently, we process the upcoming raids returned by the V1 API
       for (const raid of raids) {
-        // Only process raids in the future (optional filtering if needed)
-        // or just process the ones returned.
         const raidId = raid.id;
         const raidDate = raid.date;
         const signups = raid.signups || [];
@@ -132,6 +131,7 @@ export async function onRequest({ request, env }) {
                 ).bind(signupEp, raidId, character.name).run();
                 
                 bonusesAwarded++;
+                rewardedNames.push(character.name);
               }
             }
 
@@ -151,7 +151,8 @@ export async function onRequest({ request, env }) {
       }
 
       const msg = `✓ Updated ${insertedCount} signups. Awarded ${bonusesAwarded} Early Sign Up Bonuses!`;
-      await logEvent(env, 'success', 'Roster', `Signups Synced: Processed ${insertedCount} entries, awarded ${bonusesAwarded} bonuses.`, { inserted: insertedCount, bonuses: bonusesAwarded });
+      const logMsg = `Awarded ${signupEp} EP to ${bonusesAwarded} characters (Reason: ${signupReason})`;
+      await logEvent(env, 'success', 'Roster', logMsg, { names: rewardedNames, inserted: insertedCount, bonuses: bonusesAwarded });
 
       return new Response(
         JSON.stringify({
