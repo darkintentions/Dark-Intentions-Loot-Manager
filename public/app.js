@@ -797,6 +797,9 @@ async function loadEpgp() {
       if ($('#ontime-ep-input')) {
         $('#ontime-ep-input').value = data.vault_settings.on_time_ep || '1';
       }
+      if ($('#ontime-reason-input')) {
+        $('#ontime-reason-input').value = data.vault_settings.on_time_reason || 'Early Sign Up';
+      }
       
       // Populate Default GP
       if ($('#default-gp-input')) {
@@ -893,7 +896,8 @@ async function loadEpgp() {
       
       newBtn.addEventListener('click', async () => {
         const vault_settings = {
-          on_time_ep: $('#ontime-ep-input').value
+          on_time_ep: $('#ontime-ep-input').value,
+          on_time_reason: $('#ontime-reason-input').value
         };
 
         newBtn.disabled = true;

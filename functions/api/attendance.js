@@ -80,18 +80,19 @@ export async function onRequest({ request, env }) {
             env.DB.prepare(`
               INSERT INTO ep_log (name, ep, reason, timestamp)
               VALUES (?, ?, ?, ?)
-            `).bind(char.name, onTimeEp, `On Time ${onlyDate}`, onlyDate)
+            `).bind(char.name, onTimeEp, `${onTimeReason} ${onlyDate}`, onlyDate)
           );
         }
       }
 
       // Fetch settings
       const { results: settingsRows } = await env.DB
-        .prepare("SELECT key, value FROM settings WHERE key IN ('on_time_ep')")
+        .prepare("SELECT key, value FROM settings WHERE key IN ('on_time_ep', 'on_time_reason')")
         .all();
       const settings = {};
       settingsRows.forEach(row => settings[row.key] = row.value);
       const onTimeEp = parseInt(settings.on_time_ep, 10) || 1;
+      const onTimeReason = settings.on_time_reason || 'Early Sign Up';
 
       if (statements.length > 0) {
         await env.DB.batch(statements);
