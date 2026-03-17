@@ -275,6 +275,38 @@
             </div>
           </div>
         </div>
+
+        <div class="collapsible-section">
+          <button class="collapsible-header collapsed" data-target="vault-ep-content">
+            <span class="collapse-icon">▼</span>
+            <h2 class="section-title">Keys Vault Points</h2>
+          </button>
+          <div id="vault-ep-content" class="collapsible-content">
+            <div class="epgp-log-form vault-settings-form" style="flex-wrap: wrap;">
+              <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="min-vault-level-input">Minimum Vault Level</label>
+                <input type="number" id="min-vault-level-input" class="form-input" placeholder="272">
+              </div>
+              <div class="form-group" style="flex: 1; min-width: 100px;">
+                <label for="vault-1-ep-input">Vault 1 EP</label>
+                <input type="number" id="vault-1-ep-input" class="form-input" placeholder="1">
+              </div>
+              <div class="form-group" style="flex: 1; min-width: 100px;">
+                <label for="vault-2-ep-input">Vault 2 EP</label>
+                <input type="number" id="vault-2-ep-input" class="form-input" placeholder="1">
+              </div>
+              <div class="form-group" style="flex: 1; min-width: 100px;">
+                <label for="vault-3-ep-input">Vault 3 EP</label>
+                <input type="number" id="vault-3-ep-input" class="form-input" placeholder="1">
+              </div>
+              <div style="width: 100%; display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button id="save-vault-settings-btn" class="btn btn-primary">
+                  <span class="btn-icon">💾</span> Save Vault Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

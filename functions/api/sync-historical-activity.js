@@ -18,11 +18,19 @@ export async function onRequest({ request, env }) {
   // Allow GET and POST for cron/testing flexibility
   if (request.method === 'POST' || request.method === 'GET') {
     try {
-      // 1. Get WoWAudit API key
-      const settingsRow = await env.DB
-        .prepare("SELECT value FROM settings WHERE key = 'wowaudit_api_key'")
-        .first();
-      const apiKey = settingsRow?.value;
+      // 1. Get WoWAudit API key and Vault Settings
+      const { results: settingsRows } = await env.DB
+        .prepare("SELECT key, value FROM settings WHERE key IN ('wowaudit_api_key', 'min_vault_level', 'vault_1_ep', 'vault_2_ep', 'vault_3_ep')")
+        .all();
+      
+      const settings = {};
+      settingsRows.forEach(row => settings[row.key] = row.value);
+      
+      const apiKey = settings.wowaudit_api_key;
+      const minVaultLevel = parseInt(settings.min_vault_level, 10) || 272;
+      const v1Ep = parseInt(settings.vault_1_ep, 10) || 1;
+      const v2Ep = parseInt(settings.vault_2_ep, 10) || 1;
+      const v3Ep = parseInt(settings.vault_3_ep, 10) || 1;
 
       if (!apiKey) {
         return new Response(JSON.stringify({ error: 'WoWAudit API key not configured' }), { status: 400, headers });
@@ -86,14 +94,24 @@ export async function onRequest({ request, env }) {
       for (const char of characters) {
         const dungeons = char.data?.vault_options?.dungeons || {};
         let epToAward = 0;
+        let filledSlots = 0;
 
-        // Check option_1, option_2, option_3 for value 272
-        if (dungeons.option_1 === 272) epToAward++;
-        if (dungeons.option_2 === 272) epToAward++;
-        if (dungeons.option_3 === 272) epToAward++;
+        // Check options against minVaultLevel
+        if (dungeons.option_1 >= minVaultLevel) {
+          epToAward += v1Ep;
+          filledSlots++;
+        }
+        if (dungeons.option_2 >= minVaultLevel) {
+          epToAward += v2Ep;
+          filledSlots++;
+        }
+        if (dungeons.option_3 >= minVaultLevel) {
+          epToAward += v3Ep;
+          filledSlots++;
+        }
 
         const reason = epToAward > 0 
-          ? `${epToAward} Maxed Dungeon Vault Slots Filled` 
+          ? `${filledSlots} max slots filled` 
           : "No level 10 Keys Ran";
 
         // Award EP if character is in roster

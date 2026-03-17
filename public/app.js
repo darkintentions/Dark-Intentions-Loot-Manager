@@ -792,9 +792,59 @@ async function loadEpgp() {
 
     if (data.error) throw new Error(data.error);
     renderEpgpTable(data.gear_values || []);
+    
+    // Populate Vault Settings
+    if (data.vault_settings) {
+      $('#min-vault-level-input').value = data.vault_settings.min_vault_level || '272';
+      $('#vault-1-ep-input').value = data.vault_settings.vault_1_ep || '1';
+      $('#vault-2-ep-input').value = data.vault_settings.vault_2_ep || '1';
+      $('#vault-3-ep-input').value = data.vault_settings.vault_3_ep || '1';
+    }
+
     populateOnTimeBonus();
     populateGpBulk();
     await loadCustomEpButtons();
+    
+    // Add Vault Settings save listener
+    const saveVaultBtn = $('#save-vault-settings-btn');
+    if (saveVaultBtn) {
+      // Remove old listener if exists
+      const newBtn = saveVaultBtn.cloneNode(true);
+      saveVaultBtn.parentNode.replaceChild(newBtn, saveVaultBtn);
+      
+      newBtn.addEventListener('click', async () => {
+        const vault_settings = {
+          min_vault_level: $('#min-vault-level-input').value,
+          vault_1_ep: $('#vault-1-ep-input').value,
+          vault_2_ep: $('#vault-2-ep-input').value,
+          vault_3_ep: $('#vault-3-ep-input').value
+        };
+
+        newBtn.disabled = true;
+        const originalHtml = newBtn.innerHTML;
+        newBtn.innerHTML = '<span class="btn-spinner"></span> Saving…';
+
+        try {
+          const sRes = await apiFetch('/api/epgp', {
+            method: 'POST',
+            body: JSON.stringify({ vault_settings })
+          });
+          const sData = await sRes.json();
+          if (sData.success) {
+            showMessage('epgp', 'success', '✓ Vault settings saved successfully');
+            clearUnsavedChanges();
+          } else {
+            throw new Error(sData.error || 'Failed to save vault settings');
+          }
+        } catch (err) {
+          showMessage('epgp', 'error', `✗ Error: ${err.message}`);
+        } finally {
+          newBtn.disabled = false;
+          newBtn.innerHTML = originalHtml;
+        }
+      });
+    }
+
   } catch (err) {
     showMessage('epgp', 'error', `✗ Error loading EPGP data: ${err.message}`);
     renderEpgpTable([]);
