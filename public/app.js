@@ -120,6 +120,18 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+function formatDateWithDay(dateString) {
+  if (!dateString) return '';
+  // Ensure we handle both YYYY-MM-DD and full ISO/Local strings
+  const date = new Date(dateString.includes(' ') ? dateString : dateString + 'T12:00:00'); 
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = days[date.getDay()];
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${dayName}, ${yyyy}-${mm}-${dd}`;
+}
+
 function showMessage(tabId, type, text) {
   const el = $(`#${tabId}-message`);
   if (!el) return;
@@ -2080,7 +2092,7 @@ function renderSignups(signups) {
       <div class="collapsible-section" style="margin-bottom: 10px;">
         <button class="collapsible-header ${collapsedClass}" data-target="signups-${date}" style="width: 100%; text-align: left; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: #e1e1e6;">
           <span class="collapse-icon">${i === 0 ? '▼' : '▶'}</span>
-          <strong style="margin-left: 10px; font-size: 1.1em;">Raid Date: ${date} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${records.length} Signups)</span></strong>
+          <strong style="margin-left: 10px; font-size: 1.1em;">Raid Date: ${formatDateWithDay(date)} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${records.length} Signups)</span></strong>
         </button>
         <div id="signups-${date}" class="collapsible-content" ${displayStyle}>
           <table class="data-table" style="table-layout: fixed; width: 100%;">
@@ -2356,7 +2368,7 @@ async function loadOnTime() {
         <div class="collapsible-section" style="margin-bottom: 10px;">
           <button class="collapsible-header ${collapsedClass}" data-target="attendance-${index}" style="width: 100%; text-align: left; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: #e1e1e6;">
             <span class="collapse-icon">${index === 0 ? '▼' : '▶'}</span>
-            <strong style="margin-left: 10px; font-size: 1.1em;">Snapshot Date: ${dateStr} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${presentCount} / ${totalCount} Present)</span></strong>
+            <strong style="margin-left: 10px; font-size: 1.1em;">Snapshot Date: ${formatDateWithDay(snap.date)} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${presentCount} / ${totalCount} Present)</span></strong>
           </button>
           <div id="attendance-${index}" class="collapsible-content" ${displayStyle}>
             <table class="data-table" style="table-layout: fixed; width: 100%;">
