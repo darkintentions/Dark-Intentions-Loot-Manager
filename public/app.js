@@ -2087,27 +2087,44 @@ function renderSignups(signups) {
             <thead>
               <tr>
                 <th>Character</th>
-                <th>Class</th>
                 <th>Status</th>
-                <th>Bonus Status</th>
+                <th>EP</th>
+                <th style="border-left: 2px solid rgba(255,255,255,0.1)">Character</th>
+                <th>Status</th>
+                <th>EP</th>
               </tr>
             </thead>
             <tbody>
-              ${records.map(r => {
-                const statusClass = getSignupStatusClass(r.status);
-                const epBadge = r.ep_awarded 
-                  ? '<span style="color: #4CAF50; font-size: 0.9em;">✔️ +1 EP Awarded</span>' 
-                  : (r.status !== 'Unknown' ? '<span style="color: #FFC107; font-size: 0.9em;">Pending</span>' : '<span style="color: #888; font-size: 0.9em;">N/A</span>');
-                const classCssName = classCss(r.class);
-                return `
-                  <tr>
-                    <td><strong class="${classCssName}">${escHtml(r.character_name)}</strong></td>
-                    <td class="${classCssName}">${escHtml(r.class || '—')}</td>
-                    <td class="${statusClass}">${escHtml(r.status)}</td>
-                    <td>${epBadge}</td>
-                  </tr>
-                `;
-              }).join('')}
+              ${(() => {
+                let rows = '';
+                for (let j = 0; j < records.length; j += 2) {
+                  const r1 = records[j];
+                  const r2 = records[j + 1];
+
+                  const getCellHtml = (r) => {
+                    const statusClass = r ? getSignupStatusClass(r.status) : '';
+                    const epBadge = r ? (r.ep_awarded 
+                      ? `<span style="color: #4CAF50; font-weight: bold;">+${r.ep_awarded}</span>` 
+                      : (r.status !== 'Unknown' ? '<span style="color: #FFC107; font-size: 0.85em;">Pending</span>' : '<span style="color: #888; font-size: 0.85em;">—</span>')) : '';
+                    const classCssName = r ? classCss(r.class) : '';
+                    
+                    return `
+                      <td>${r ? `<strong class="${classCssName}">${escHtml(r.character_name)}</strong>` : ''}</td>
+                      <td class="${statusClass}">${r ? escHtml(r.status) : ''}</td>
+                      <td>${epBadge}</td>
+                    `;
+                  };
+
+                  rows += `
+                    <tr>
+                      ${getCellHtml(r1)}
+                      <td style="border-left: 2px solid rgba(255,255,255,0.1); padding: 0; width: 0;"></td>
+                      ${getCellHtml(r2)}
+                    </tr>
+                  `;
+                }
+                return rows;
+              })()}
             </tbody>
           </table>
         </div>
