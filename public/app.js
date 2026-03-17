@@ -2083,13 +2083,22 @@ function renderSignups(signups) {
           <strong style="margin-left: 10px; font-size: 1.1em;">Raid Date: ${date} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${records.length} Signups)</span></strong>
         </button>
         <div id="signups-${date}" class="collapsible-content" ${displayStyle}>
-          <table class="data-table">
+          <table class="data-table" style="table-layout: fixed; width: 100%;">
+            <colgroup>
+              <col style="width: 25%;">
+              <col style="width: 15%;">
+              <col style="width: 10%;">
+              <col style="width: 2px;">
+              <col style="width: 25%;">
+              <col style="width: 15%;">
+              <col style="width: 10%;">
+            </colgroup>
             <thead>
               <tr>
                 <th>Character</th>
                 <th>Status</th>
                 <th>EP</th>
-                <th style="border-left: 2px solid rgba(255,255,255,0.1); padding: 0; width: 0;"></th>
+                <th style="border-left: 2px solid rgba(255,255,255,0.1); padding: 0;"></th>
                 <th>Character</th>
                 <th>Status</th>
                 <th>EP</th>
