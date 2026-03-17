@@ -1463,8 +1463,19 @@ $('#rename-character-btn').addEventListener('click', async () => {
     const data = await res.json();
     if (data.success) {
       showMessage('admin', 'success', `✓ ${data.message}`);
+      
+      // Force reload of affected tabs
+      tabLoaded.roster = false;
+      tabLoaded.signups = false;
+      tabLoaded.ontime = false;
+      tabLoaded.loot = false;
+
+      // Reload data
       await populateMergeDropdowns();
       loadRoster();
+      loadSignups();
+      loadOnTime();
+      loadLootHistory();
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Merge failed'}`);
     }
@@ -1626,12 +1637,17 @@ $('#delete-character-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('admin', 'success', `✓ ${data.message}`);
-      // Reload roster and refill the select dropdown
-      await populateCharacterDeleteSelect();
-      select.value = '';
-      btn.disabled = true;
-      // Reload roster to update display
+      // Force reload of affected tabs
+      tabLoaded.roster = false;
+      tabLoaded.signups = false;
+      tabLoaded.ontime = false;
+      tabLoaded.loot = false;
+
+      // Reload data
       loadRoster();
+      loadSignups();
+      loadOnTime();
+      loadLootHistory();
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Deletion failed'}`);
     }
@@ -1666,8 +1682,20 @@ $('#delete-roster-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('admin', 'success', `✓ ${data.message}`);
-      // Reload roster to show empty state
+      
+      // Force reload of all affected tabs
+      tabLoaded.roster = false;
+      tabLoaded.signups = false;
+      tabLoaded.ontime = false;
+      tabLoaded.loot = false;
+      tabLoaded.logs = false;
+
+      // Reload data
       loadRoster();
+      loadSignups();
+      loadOnTime();
+      loadLootHistory();
+      loadLogs();
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Deletion failed'}`);
     }
