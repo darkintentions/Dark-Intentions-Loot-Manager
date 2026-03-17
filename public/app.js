@@ -2368,7 +2368,7 @@ async function loadOnTime() {
         <div class="collapsible-section" style="margin-bottom: 10px;">
           <button class="collapsible-header ${collapsedClass}" data-target="attendance-${index}" style="width: 100%; text-align: left; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: #e1e1e6;">
             <span class="collapse-icon">${index === 0 ? '▼' : '▶'}</span>
-            <strong style="margin-left: 10px; font-size: 1.1em;">Snapshot Date: ${formatDateWithDay(snap.date)} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${presentCount} / ${totalCount} Present)</span></strong>
+            <strong style="margin-left: 10px; font-size: 1.1em;">Raid Date: ${formatDateWithDay(snap.date)} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${presentCount} / ${totalCount} Present)</span></strong>
           </button>
           <div id="attendance-${index}" class="collapsible-content" ${displayStyle}>
             <table class="data-table" style="table-layout: fixed; width: 100%;">
