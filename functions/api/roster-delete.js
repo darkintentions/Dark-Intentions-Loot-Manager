@@ -8,6 +8,7 @@
  * - All entries from gp_log table
  */
 import { ensureTablesExist } from '../db-init.js';
+import { logEvent } from '../utils/logger.js';
 
 export async function onRequest({ request, env }) {
   const headers = { 'Content-Type': 'application/json' };
@@ -38,7 +39,6 @@ export async function onRequest({ request, env }) {
         deletedCounts.gp_log = 0;
       }
 
-      // Delete all characters from roster
       try {
         const rosterResult = await env.DB.prepare('DELETE FROM roster').run();
         deletedCounts.roster = rosterResult.meta.changes ?? 0;
@@ -46,6 +46,9 @@ export async function onRequest({ request, env }) {
         deletedCounts.roster = 0;
         throw new Error(`Failed to delete roster: ${e.message}`);
       }
+
+      // Log the mass deletion
+      await logEvent(env, 'warning', 'Admin', `Permanently deleted entire roster (${deletedCounts.roster} characters, ${deletedCounts.ep_log + deletedCounts.gp_log} EP/GP logs)`);
 
       return new Response(
         JSON.stringify({

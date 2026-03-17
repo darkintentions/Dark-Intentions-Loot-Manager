@@ -11,6 +11,7 @@
  * - All entries from gp_log table for that character
  */
 import { ensureTablesExist } from '../db-init.js';
+import { logEvent } from '../utils/logger.js';
 
 export async function onRequest({ request, env }) {
   const headers = {
@@ -83,6 +84,9 @@ export async function onRequest({ request, env }) {
         .bind(characterName)
         .run();
       deletedCounts.roster = rosterResult.meta.changes ?? 0;
+
+      // Log the character deletion
+      await logEvent(env, 'warning', 'Admin', `Permanently deleted character "${characterName}" (${deletedCounts.ep_log + deletedCounts.gp_log} EP/GP logs)`);
 
       return new Response(
         JSON.stringify({
