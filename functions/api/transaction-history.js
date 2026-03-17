@@ -118,8 +118,8 @@ export async function onRequest({ request, env }) {
 
       // Update transaction
       await env.DB
-        .prepare(`UPDATE ${table} SET ${column} = ?, reason = ?, timestamp = ? WHERE id = ?`)
-        .bind(parseInt(amount), reason || '', timestamp || '', parseInt(transactionId))
+        .prepare(`UPDATE ${table} SET ${column} = ?, reason = ? WHERE id = ?`)
+        .bind(parseInt(amount), reason || '', parseInt(transactionId))
         .run();
 
       return new Response(

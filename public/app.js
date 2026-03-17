@@ -610,25 +610,10 @@ function openEditTransactionModal(transactionId, transactionType, transaction, c
   const modal = $('#edit-transaction-modal');
   const amountInput = $('#edit-transaction-amount');
   const reasonInput = $('#edit-transaction-reason');
-  const timestampInput = $('#edit-transaction-timestamp');
 
   // Pre-fill form with current values
   amountInput.value = transaction.amount || 0;
   reasonInput.value = transaction.reason || '';
-
-  // Format timestamp for datetime-local input
-  if (transaction.timestamp) {
-    const date = new Date(transaction.timestamp);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    timestampInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-  } else {
-    timestampInput.value = '';
-  }
-
   // Store data for submission
   modal.dataset.transactionId = transactionId;
   modal.dataset.transactionType = transactionType;
@@ -1831,7 +1816,6 @@ saveEditTransactionBtn.addEventListener('click', async () => {
   const characterName = editTransactionModal.dataset.characterName;
   const amount = $('#edit-transaction-amount').value.trim();
   const reason = $('#edit-transaction-reason').value.trim();
-  const timestamp = $('#edit-transaction-timestamp').value;
 
   if (!amount || isNaN(parseInt(amount))) {
     showMessage('roster', 'error', '✗ Please enter a valid amount');
@@ -1844,7 +1828,7 @@ saveEditTransactionBtn.addEventListener('click', async () => {
     const res = await apiFetch(`/api/transaction-history?id=${id}&type=${type}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: parseInt(amount), reason, timestamp }),
+      body: JSON.stringify({ amount: parseInt(amount), reason }),
     });
 
     const data = await res.json();
