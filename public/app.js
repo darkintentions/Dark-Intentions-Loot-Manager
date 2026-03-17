@@ -2313,13 +2313,15 @@ async function loadOnTime() {
       return;
     }
 
-    container.innerHTML = data.snapshots.map((snap, index) => {
+    let html = '';
+    data.snapshots.forEach((snap, index) => {
       const presentCount = snap.members.filter(m => m.attended).length;
       const totalCount = snap.members.length;
       const dateStr = new Date(snap.date).toLocaleString();
       
       // First one expanded, others collapsed
-      const isHidden = index === 0 ? '' : 'hidden';
+      const collapsedClass = index === 0 ? '' : 'collapsed';
+      const displayStyle = index === 0 ? '' : 'style="display: none;"';
 
       const members = snap.members;
       let rowsHtml = '';
@@ -2331,12 +2333,12 @@ async function loadOnTime() {
           if (!m) return '<td></td><td></td><td></td>';
           const className = classCss(m.class);
           const statusClass = m.attended ? 'status-present' : 'status-absent';
-          const icon = m.attended ? '✅' : '❌';
+          const statusText = m.attended ? 'Present' : 'Absent';
           const epText = m.attended ? '<span style="color: #4CAF50; font-weight: bold;">+1</span>' : '<span style="color: #888; font-size: 0.85em;">—</span>';
 
           return `
             <td><strong class="${className}">${escHtml(m.name)}</strong></td>
-            <td class="${statusClass}">${icon}</td>
+            <td class="${statusClass}">${statusText}</td>
             <td>${epText}</td>
           `;
         };
@@ -2350,14 +2352,14 @@ async function loadOnTime() {
         `;
       }
 
-      return `
-        <div class="attendance-snapshot">
-          <div class="attendance-header" data-index="${index}">
-            <div class="attendance-title">${dateStr}</div>
-            <div class="attendance-summary">${presentCount} / ${totalCount} Present</div>
-          </div>
-          <div id="attendance-body-${index}" class="attendance-body ${isHidden}" style="padding: 0;">
-            <table class="data-table" style="table-layout: fixed; width: 100%; border: none;">
+      html += `
+        <div class="collapsible-section" style="margin-bottom: 10px;">
+          <button class="collapsible-header ${collapsedClass}" data-target="attendance-${index}" style="width: 100%; text-align: left; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: #e1e1e6;">
+            <span class="collapse-icon">${index === 0 ? '▼' : '▶'}</span>
+            <strong style="margin-left: 10px; font-size: 1.1em;">Snapshot Date: ${dateStr} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${presentCount} / ${totalCount} Present)</span></strong>
+          </button>
+          <div id="attendance-${index}" class="collapsible-content" ${displayStyle}>
+            <table class="data-table" style="table-layout: fixed; width: 100%;">
               <colgroup>
                 <col style="width: 25%;">
                 <col style="width: 15%;">
@@ -2385,19 +2387,32 @@ async function loadOnTime() {
           </div>
         </div>
       `;
-    }).join('');
-
-    // Attach click listeners for toggling
-    $$('.attendance-header').forEach(header => {
-      header.addEventListener('click', () => {
-        const index = header.dataset.index;
-        $(`#attendance-body-${index}`).classList.toggle('hidden');
       });
-    });
+      
+      container.innerHTML = html;
 
-  } catch (err) {
-    container.innerHTML = `<div class="empty-row text-center text-error" style="padding: 20px;">Error: ${escHtml(err.message)}</div>`;
-  }
+      // Add click listeners to new collapsible headers
+      container.querySelectorAll('.collapsible-header').forEach(header => {
+        header.addEventListener('click', () => {
+          const isCollapsed = header.classList.contains('collapsed');
+          const targetId = header.getAttribute('data-target');
+          const targetContent = document.getElementById(targetId);
+          
+          if (isCollapsed) {
+            header.classList.remove('collapsed');
+            header.querySelector('.collapse-icon').textContent = '▼';
+            targetContent.style.display = 'block';
+          } else {
+            header.classList.add('collapsed');
+            header.querySelector('.collapse-icon').textContent = '▶';
+            targetContent.style.display = 'none';
+          }
+        });
+      });
+
+    } catch (err) {
+      container.innerHTML = `<div class="empty-row text-center text-error" style="padding: 20px;">Error: ${escHtml(err.message)}</div>`;
+    }
 }
 
 // ================================================================
