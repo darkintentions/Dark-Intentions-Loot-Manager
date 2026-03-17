@@ -150,7 +150,7 @@ export async function onRequest({ request, env }) {
       }
 
       const msg = `✓ Updated ${insertedCount} signups. Awarded ${bonusesAwarded} Early Sign Up Bonuses!`;
-      await logEvent(env, 'success', 'Roster', `Signups Synced`, { inserted: insertedCount, bonuses: bonusesAwarded });
+      await logEvent(env, 'success', 'Roster', `Signups Synced: Processed ${insertedCount} entries, awarded ${bonusesAwarded} bonuses.`, { inserted: insertedCount, bonuses: bonusesAwarded });
 
       return new Response(
         JSON.stringify({

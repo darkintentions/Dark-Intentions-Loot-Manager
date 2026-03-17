@@ -138,7 +138,7 @@ export async function onRequest({ request, env }) {
       }
 
       const summary = `Processed ${charactersProcessed} characters. Total EP Awarded: ${totalEpAwarded}.`;
-      await logEvent(env, 'success', 'Roster', `Historical Activity Sync Complete: Period ${historicalPeriodId}`, { 
+      await logEvent(env, 'success', 'Roster', `Historical Activity Sync Complete: Period ${historicalPeriodId}. ${charactersProcessed} characters processed, ${totalEpAwarded} total EP awarded.`, { 
         period: historicalPeriodId,
         processed: charactersProcessed,
         total_ep: totalEpAwarded
