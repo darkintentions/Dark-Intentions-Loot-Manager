@@ -30,7 +30,7 @@ export async function onRequest({ request, env }) {
         .bind(name, ep, reason || '', timestamp || new Date().toISOString())
         .run();
 
-      await logEvent(env, 'success', 'EPGP', `Awarded ${ep} EP to ${name}`, { reason, timestamp });
+      await logEvent(env, 'success', 'EPGP', `Awarded ${ep} EP to ${name} (Reason: ${reason || 'Manual Update'})`, { reason, timestamp });
 
       return new Response(
         JSON.stringify({ success: true, message: 'EP entry added successfully' }),
