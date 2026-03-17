@@ -116,9 +116,13 @@ export async function onRequest({ request, env }) {
       ).all();
 
       const snapshots = await Promise.all(dates.map(async (row) => {
-        const { results: members } = await env.DB.prepare(
-          "SELECT name, realm, attended FROM attendance WHERE date = ? ORDER BY name ASC"
-        ).bind(row.date).all();
+        const { results: members } = await env.DB.prepare(`
+          SELECT a.name, a.realm, a.attended, r.class 
+          FROM attendance a
+          LEFT JOIN roster r ON a.name = r.name AND (a.realm = r.realm OR a.realm IS NULL OR r.realm IS NULL)
+          WHERE a.date = ? 
+          ORDER BY a.name ASC
+        `).bind(row.date).all();
         
         return {
           date: row.date,
