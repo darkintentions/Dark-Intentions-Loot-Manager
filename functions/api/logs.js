@@ -31,5 +31,20 @@ export async function onRequest({ request, env }) {
     }
   }
 
+  if (request.method === 'DELETE') {
+    try {
+      await env.DB.prepare('DELETE FROM system_logs').run();
+      return new Response(
+        JSON.stringify({ success: true, message: 'System logs cleared' }),
+        { status: 200, headers }
+      );
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ error: err.message || 'Failed to clear logs' }),
+        { status: 500, headers }
+      );
+    }
+  }
+
   return new Response('Method Not Allowed', { status: 405, headers });
 }

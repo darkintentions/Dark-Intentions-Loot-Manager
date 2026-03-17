@@ -2174,6 +2174,38 @@ function renderLogs() {
 }
 
 $('#refresh-logs-btn').addEventListener('click', loadLogs);
+
+$('#clear-logs-btn').addEventListener('click', async () => {
+  const confirmed = await showConfirm({
+    title: 'Clear System Logs',
+    message: 'Are you sure you want to permanently delete all system logs? This cannot be undone.',
+    confirmText: 'Clear Logs',
+    confirmClass: 'btn-danger'
+  });
+
+  if (!confirmed) return;
+
+  const btn = $('#clear-logs-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spinner"></span> Clearing…';
+
+  try {
+    const res = await apiFetch('/api/logs', { method: 'DELETE' });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('logs', 'success', '✓ System logs cleared');
+      await loadLogs();
+    } else {
+      showMessage('logs', 'error', `✗ ${data.error || 'Failed to clear logs'}`);
+    }
+  } catch (err) {
+    showMessage('logs', 'error', `✗ Network error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="btn-icon">🗑</span> Clear Logs';
+  }
+});
 $('#log-category-filter').addEventListener('change', renderLogs);
 
 // Modal handlers
