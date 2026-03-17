@@ -138,7 +138,32 @@ export async function onRequest({ request, env }) {
       }
 
       const summary = `Processed ${charactersProcessed} characters. Total EP Awarded: ${totalEpAwarded}.`;
-      await logEvent(env, 'success', 'Roster', `Historical Activity Sync Complete: Period ${historicalPeriodId}. ${charactersProcessed} characters processed, ${totalEpAwarded} total EP awarded.`, { 
+      
+      // Group by EP amount for aggregated logging
+      const groupedByEp = {};
+      for (const char of characters) {
+          const rosterChar = await env.DB.prepare("SELECT name FROM roster WHERE name = ?").bind(char.name).first();
+          if (rosterChar) {
+              const dungeons = char.data?.vault_options?.dungeons || {};
+              let ep = 0;
+              if (dungeons.option_1 >= minVaultLevel) ep += v1Ep;
+              if (dungeons.option_2 >= minVaultLevel) ep += v2Ep;
+              if (dungeons.option_3 >= minVaultLevel) ep += v3Ep;
+              
+              if (!groupedByEp[ep]) groupedByEp[ep] = [];
+              groupedByEp[ep].push(char.name);
+          }
+      }
+
+      for (const [ep, names] of Object.entries(groupedByEp)) {
+          if (names.length === 0) continue;
+          const filledSlots = (parseInt(ep)/v1Ep); // Simplified assumption that all vX are same, or just for reasoning
+          const reason = parseInt(ep) > 0 ? `${filledSlots} max slots filled` : "No level 10 Keys Ran";
+          const logMsg = `Awarded ${ep} EP to ${names.length} characters (Reason: ${reason})`;
+          await logEvent(env, 'success', 'Roster', logMsg, { names, period: historicalPeriodId });
+      }
+
+      await logEvent(env, 'info', 'Roster', `Historical Activity Sync Complete: Period ${historicalPeriodId}. ${charactersProcessed} characters processed.`, { 
         period: historicalPeriodId,
         processed: charactersProcessed,
         total_ep: totalEpAwarded

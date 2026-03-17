@@ -94,9 +94,12 @@ export async function onRequest({ request, env }) {
       const onTimeEp = parseInt(settings.on_time_ep, 10) || 1;
       const onTimeReason = settings.on_time_reason || 'Early Sign Up';
 
+      const presentNamesList = payload.map(p => p.name);
+
       if (statements.length > 0) {
         await env.DB.batch(statements);
-        await logEvent(env, 'info', 'On Time', `Processed on-time status for ${onlyDate}. Snapshot: ${snapshotTimestamp}. ${statements.length / 2} updates made.`);
+        const logMsg = `Awarded ${onTimeEp} EP to ${presentNamesList.length} characters (Reason: ${onTimeReason} ${onlyDate})`;
+        await logEvent(env, 'info', 'On Time', logMsg, { names: presentNamesList, snapshot: snapshotTimestamp });
       }
 
       return new Response(JSON.stringify({ 
