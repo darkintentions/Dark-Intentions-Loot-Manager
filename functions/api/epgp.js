@@ -22,11 +22,11 @@ export async function onRequest({ request, env }) {
         .all();
 
       // Also get vault settings
-      const settingKeys = ['min_vault_level', 'vault_1_ep', 'vault_2_ep', 'vault_3_ep', 'signup_ep'];
+      const settingKeys = ['min_vault_level', 'vault_1_ep', 'vault_2_ep', 'vault_3_ep', 'signup_ep', 'on_time_ep'];
       const vaultSettings = {};
       
       const { results: settingsRows } = await env.DB
-        .prepare("SELECT key, value FROM settings WHERE key IN (?, ?, ?, ?, ?)")
+        .prepare("SELECT key, value FROM settings WHERE key IN (?, ?, ?, ?, ?, ?)")
         .bind(...settingKeys)
         .all();
 
@@ -67,7 +67,7 @@ export async function onRequest({ request, env }) {
           "INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))"
         );
         for (const [key, value] of Object.entries(vault_settings)) {
-          if (['min_vault_level', 'vault_1_ep', 'vault_2_ep', 'vault_3_ep', 'signup_ep'].includes(key)) {
+          if (['min_vault_level', 'vault_1_ep', 'vault_2_ep', 'vault_3_ep', 'signup_ep', 'on_time_ep'].includes(key)) {
             statements.push(vaultStmt.bind(key, String(value)));
           }
         }

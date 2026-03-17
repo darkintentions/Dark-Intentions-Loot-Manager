@@ -49,9 +49,9 @@
         <span class="nav-icon">📅</span>
         <span class="nav-label">Sign Ups</span>
       </li>
-      <li class="nav-item" data-tab="attendance">
-        <span class="nav-icon">📝</span>
-        <span class="nav-label">Attendance</span>
+      <li class="nav-item" data-tab="on-time">
+        <span class="nav-icon">⏰</span>
+        <span class="nav-label">On Time</span>
       </li>
       <li class="nav-item admin-only hidden" data-tab="epgp">
         <span class="nav-icon">⚖️</span>
@@ -327,6 +327,26 @@
             </div>
           </div>
         </div>
+
+        <div class="collapsible-section">
+          <button class="collapsible-header collapsed" data-target="ontime-ep-content">
+            <span class="collapse-icon">▼</span>
+            <h2 class="section-title">On Time Points</h2>
+          </button>
+          <div id="ontime-ep-content" class="collapsible-content">
+            <div class="epgp-log-form vault-settings-form">
+              <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="ontime-ep-input">On Time EP Bonus</label>
+                <input type="number" id="ontime-ep-input" class="form-input" placeholder="1">
+              </div>
+              <div style="display: flex; align-items: flex-end; padding-bottom: 2px;">
+                <button id="save-ontime-settings-btn" class="btn btn-primary">
+                  <span class="btn-icon">💾</span> Save On Time Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -347,10 +367,10 @@
       </div>
     </div>
 
-    <!-- ── Attendance Tab ────────────────────────── -->
-    <div id="tab-attendance" class="tab-panel">
+    <!-- ── On Time Tab ────────────────────────── -->
+    <div id="tab-on-time" class="tab-panel">
       <div class="panel-header">
-        <h1>Attendance Tracking</h1>
+        <h1>On Time History</h1>
       </div>
       <div id="attendance-message" class="message hidden"></div>
       <div class="content-scroll">

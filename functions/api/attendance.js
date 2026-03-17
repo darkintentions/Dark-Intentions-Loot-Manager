@@ -74,20 +74,28 @@ export async function onRequest({ request, env }) {
           `).bind(char.name, char.realm, onlyDate, snapshotTimestamp, attended)
         );
 
-        // Award +1 EP for being present (only once per day)
+        // Award Configured EP for being present (only once per day)
         if (isPresent) {
           statements.push(
             env.DB.prepare(`
               INSERT INTO ep_log (name, ep, reason, timestamp)
-              VALUES (?, 1, ?, ?)
-            `).bind(char.name, `On Time ${onlyDate}`, onlyDate)
+              VALUES (?, ?, ?, ?)
+            `).bind(char.name, onTimeEp, `On Time ${onlyDate}`, onlyDate)
           );
         }
       }
 
+      // Fetch settings
+      const { results: settingsRows } = await env.DB
+        .prepare("SELECT key, value FROM settings WHERE key IN ('on_time_ep')")
+        .all();
+      const settings = {};
+      settingsRows.forEach(row => settings[row.key] = row.value);
+      const onTimeEp = parseInt(settings.on_time_ep, 10) || 1;
+
       if (statements.length > 0) {
         await env.DB.batch(statements);
-        await logEvent(env, 'info', 'Attendance', `Processed attendance for ${onlyDate}. Snapshot: ${snapshotTimestamp}. ${statements.length / 2} updates made.`);
+        await logEvent(env, 'info', 'On Time', `Processed on-time status for ${onlyDate}. Snapshot: ${snapshotTimestamp}. ${statements.length / 2} updates made.`);
       }
 
       return new Response(JSON.stringify({ 

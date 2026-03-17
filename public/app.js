@@ -239,14 +239,15 @@ async function switchTab(name) {
 
   if (!tabLoaded[name]) {
     tabLoaded[name] = true;
-    if (name === 'roster') loadRoster();
-    if (name === 'loot')   loadLootHistory();
-    if (name === 'epgp')   loadEpgp();
-    if (name === 'admin')  loadAdminSettings();
-    if (name === 'logs')   loadLogs();
-    if (name === 'users')  loadUsers();
-    if (name === 'attendance') {
-      loadAttendance();
+    switch (name) {
+      case 'roster': loadRoster(); break;
+      case 'loot': loadLootHistory(); break;
+      case 'epgp': loadEpgp(); break;
+      case 'admin': loadAdminSettings(); break;
+      case 'logs': loadLogs(); break;
+      case 'users': loadUsers(); break;
+      case 'attendance': loadAttendance(); break;
+      case 'on-time': loadOnTime(); break;
     }
   }
   // Always force reload logs and attendance
@@ -804,6 +805,11 @@ async function loadEpgp() {
       if ($('#signup-ep-input')) {
         $('#signup-ep-input').value = data.vault_settings.signup_ep || '1';
       }
+      
+      // Populate On Time EP
+      if ($('#ontime-ep-input')) {
+        $('#ontime-ep-input').value = data.vault_settings.on_time_ep || '1';
+      }
     }
 
     populateOnTimeBonus();
@@ -874,6 +880,42 @@ async function loadEpgp() {
           const sData = await sRes.json();
           if (sData.success) {
             showMessage('epgp', 'success', '✓ Sign Up settings saved successfully');
+            clearUnsavedChanges();
+          } else {
+            throw new Error(sData.error || 'Failed to save settings');
+          }
+        } catch (err) {
+          showMessage('epgp', 'error', `✗ Error: ${err.message}`);
+        } finally {
+          newBtn.disabled = false;
+          newBtn.innerHTML = originalHtml;
+        }
+      });
+    }
+
+    // Add On Time Settings save listener
+    const saveOntimeBtn = $('#save-ontime-settings-btn');
+    if (saveOntimeBtn) {
+      const newBtn = saveOntimeBtn.cloneNode(true);
+      saveOntimeBtn.parentNode.replaceChild(newBtn, saveOntimeBtn);
+      
+      newBtn.addEventListener('click', async () => {
+        const vault_settings = {
+          on_time_ep: $('#ontime-ep-input').value
+        };
+
+        newBtn.disabled = true;
+        const originalHtml = newBtn.innerHTML;
+        newBtn.innerHTML = '<span class="btn-spinner"></span> Saving…';
+
+        try {
+          const sRes = await apiFetch('/api/epgp', {
+            method: 'POST',
+            body: JSON.stringify({ vault_settings })
+          });
+          const sData = await sRes.json();
+          if (sData.success) {
+            showMessage('epgp', 'success', '✓ On Time settings saved successfully');
             clearUnsavedChanges();
           } else {
             throw new Error(sData.error || 'Failed to save settings');
@@ -2148,10 +2190,14 @@ $('#log-details-modal').addEventListener('click', (e) => {
 });
 
 // ================================================================
-//  ATTENDANCE TAB
+//  ON TIME TAB
 // ================================================================
-async function loadAttendance() {
+/**
+ * Load On Time history
+ */
+async function loadOnTime() {
   const container = $('#attendance-container');
+  if (!container) return;
   container.innerHTML = '<div class="empty-row text-center" style="padding: 20px;">Loading attendance data...</div>';
 
   try {
