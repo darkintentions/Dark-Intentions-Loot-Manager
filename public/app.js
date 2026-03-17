@@ -2321,18 +2321,34 @@ async function loadOnTime() {
       // First one expanded, others collapsed
       const isHidden = index === 0 ? '' : 'hidden';
 
-      const membersHtml = snap.members.map(m => {
-        const className = classCss(m.class);
-        const statusClass = m.attended ? 'status-present' : 'status-absent';
-        const icon = m.attended ? '✅' : '❌';
-        
-        return `
-          <div class="attendance-member ${statusClass}">
-            <span class="attendance-status-icon">${icon}</span>
-            <span class="attendance-member-name ${className}">${escHtml(m.name)}</span>
-          </div>
+      const members = snap.members;
+      let rowsHtml = '';
+      for (let j = 0; j < members.length; j += 2) {
+        const m1 = members[j];
+        const m2 = members[j + 1];
+
+        const getCellHtml = (m) => {
+          if (!m) return '<td></td><td></td><td></td>';
+          const className = classCss(m.class);
+          const statusClass = m.attended ? 'status-present' : 'status-absent';
+          const icon = m.attended ? '✅' : '❌';
+          const epText = m.attended ? '<span style="color: #4CAF50; font-weight: bold;">+1</span>' : '<span style="color: #888; font-size: 0.85em;">—</span>';
+
+          return `
+            <td><strong class="${className}">${escHtml(m.name)}</strong></td>
+            <td class="${statusClass}">${icon}</td>
+            <td>${epText}</td>
+          `;
+        };
+
+        rowsHtml += `
+          <tr>
+            ${getCellHtml(m1)}
+            <td style="border-left: 2px solid rgba(255,255,255,0.1); padding: 0; width: 0;"></td>
+            ${getCellHtml(m2)}
+          </tr>
         `;
-      }).join('');
+      }
 
       return `
         <div class="attendance-snapshot">
@@ -2340,8 +2356,32 @@ async function loadOnTime() {
             <div class="attendance-title">${dateStr}</div>
             <div class="attendance-summary">${presentCount} / ${totalCount} Present</div>
           </div>
-          <div id="attendance-body-${index}" class="attendance-body ${isHidden}">
-            ${membersHtml}
+          <div id="attendance-body-${index}" class="attendance-body ${isHidden}" style="padding: 0;">
+            <table class="data-table" style="table-layout: fixed; width: 100%; border: none;">
+              <colgroup>
+                <col style="width: 25%;">
+                <col style="width: 15%;">
+                <col style="width: 10%;">
+                <col style="width: 2px;">
+                <col style="width: 25%;">
+                <col style="width: 15%;">
+                <col style="width: 10%;">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Character</th>
+                  <th>Status</th>
+                  <th>EP</th>
+                  <th style="border-left: 2px solid rgba(255,255,255,0.1); padding: 0;"></th>
+                  <th>Character</th>
+                  <th>Status</th>
+                  <th>EP</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
           </div>
         </div>
       `;
