@@ -49,9 +49,14 @@ export async function onRequest({ request, env }) {
         .bind(newName, oldName)
     ];
 
-    await env.DB.batch(statements);
+    const results = await env.DB.batch(statements);
 
-    await logEvent(env, 'info', 'Admin', `Merged historical logs from orphan "${oldName}" into "${newName}".`);
+    // results[0] -> EP logs, results[1] -> GP logs, results[2] -> Signups
+    const epChanges = results[0]?.meta?.changes ?? 0;
+    const gpChanges = results[1]?.meta?.changes ?? 0;
+    const signupChanges = results[2]?.meta?.changes ?? 0;
+
+    await logEvent(env, 'info', 'Admin', `Merged historical logs from orphan "${oldName}" into "${newName}" (${epChanges} EP logs, ${gpChanges} GP logs, ${signupChanges} signups).`);
 
     return new Response(JSON.stringify({ 
       success: true, 
