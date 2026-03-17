@@ -1203,10 +1203,10 @@ $('#give-bonus-btn').addEventListener('click', async () => {
       apiFetch('/api/ep-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+            body: JSON.stringify({
           name,
           ep: bonusEp,
-          reason: reason,
+          reason: reason + ' (Manually Modified)',
           timestamp: new Date().toISOString(),
         }),
       }).then(r => r.json())
@@ -1281,10 +1281,10 @@ $('#give-gp-btn').addEventListener('click', async () => {
       apiFetch('/api/gp-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+            body: JSON.stringify({
           name,
           gp: gpAmount,
-          reason: reason,
+          reason: reason + ' (Manually Modified)',
           timestamp: new Date().toISOString(),
         }),
       }).then(r => r.json())
@@ -1690,12 +1690,12 @@ function renderCustomEpButtons() {
         const res = await apiFetch('/api/ep-log', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: selectedChar,
-            ep: buttonEp,
-            reason: buttonDescription || buttonName,
-            timestamp: timestamp,
-          }),
+              body: JSON.stringify({
+          name: selectedChar,
+          ep: buttonEp,
+          reason: (buttonDescription || buttonName) + ' (Manually Modified)',
+          timestamp: timestamp,
+        }),
         });
 
         const data = await res.json();
