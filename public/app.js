@@ -2089,7 +2089,8 @@ function renderSignups(signups) {
                 <th>Character</th>
                 <th>Status</th>
                 <th>EP</th>
-                <th style="border-left: 2px solid rgba(255,255,255,0.1)">Character</th>
+                <th style="border-left: 2px solid rgba(255,255,255,0.1); padding: 0; width: 0;"></th>
+                <th>Character</th>
                 <th>Status</th>
                 <th>EP</th>
               </tr>
