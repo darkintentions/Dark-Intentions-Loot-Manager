@@ -77,7 +77,8 @@ VALUES
   ('min_vault_level', '272'),
   ('vault_1_ep', '1'),
   ('vault_2_ep', '1'),
-  ('vault_3_ep', '1');
+  ('vault_3_ep', '1'),
+  ('signup_ep', '1');
 
 -- ─── Seed: All 15 WoW Gear Slots ─────────────────────────────
 INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES

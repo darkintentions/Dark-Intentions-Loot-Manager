@@ -799,6 +799,11 @@ async function loadEpgp() {
       $('#vault-1-ep-input').value = data.vault_settings.vault_1_ep || '1';
       $('#vault-2-ep-input').value = data.vault_settings.vault_2_ep || '1';
       $('#vault-3-ep-input').value = data.vault_settings.vault_3_ep || '1';
+      
+      // Populate Sign Up EP
+      if ($('#signup-ep-input')) {
+        $('#signup-ep-input').value = data.vault_settings.signup_ep || '1';
+      }
     }
 
     populateOnTimeBonus();
@@ -835,6 +840,43 @@ async function loadEpgp() {
             clearUnsavedChanges();
           } else {
             throw new Error(sData.error || 'Failed to save vault settings');
+          }
+        } catch (err) {
+          showMessage('epgp', 'error', `✗ Error: ${err.message}`);
+        } finally {
+          newBtn.disabled = false;
+          newBtn.innerHTML = originalHtml;
+        }
+      });
+    }
+
+    // Add Sign Up Settings save listener
+    const saveSignupBtn = $('#save-signup-settings-btn');
+    if (saveSignupBtn) {
+      // Remove old listener if exists
+      const newBtn = saveSignupBtn.cloneNode(true);
+      saveSignupBtn.parentNode.replaceChild(newBtn, saveSignupBtn);
+      
+      newBtn.addEventListener('click', async () => {
+        const vault_settings = {
+          signup_ep: $('#signup-ep-input').value
+        };
+
+        newBtn.disabled = true;
+        const originalHtml = newBtn.innerHTML;
+        newBtn.innerHTML = '<span class="btn-spinner"></span> Saving…';
+
+        try {
+          const sRes = await apiFetch('/api/epgp', {
+            method: 'POST',
+            body: JSON.stringify({ vault_settings })
+          });
+          const sData = await sRes.json();
+          if (sData.success) {
+            showMessage('epgp', 'success', '✓ Sign Up settings saved successfully');
+            clearUnsavedChanges();
+          } else {
+            throw new Error(sData.error || 'Failed to save settings');
           }
         } catch (err) {
           showMessage('epgp', 'error', `✗ Error: ${err.message}`);

@@ -9,10 +9,10 @@
  */
 export async function ensureTablesExist(env) {
   try {
-    // Check if the newest table exists (historical_activity)
+    // Check if the newest table exists (attendance)
     // If it doesn't, run initialization — all statements use IF NOT EXISTS so it's safe
     const result = await env.DB
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='historical_activity'")
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='attendance'")
       .first();
 
     if (!result) {
@@ -127,7 +127,8 @@ async function initializeDatabase(env) {
       ('min_vault_level', '272'),
       ('vault_1_ep', '1'),
       ('vault_2_ep', '1'),
-      ('vault_3_ep', '1');
+      ('vault_3_ep', '1'),
+      ('signup_ep', '1');
 
     INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES
       ('Head',      0),

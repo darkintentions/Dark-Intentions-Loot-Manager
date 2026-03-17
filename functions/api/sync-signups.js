@@ -18,12 +18,16 @@ export async function onRequest({ request, env }) {
   // Allow GET and POST for cron/testing flexibility
   if (request.method === 'POST' || request.method === 'GET') {
     try {
-      // Get the WoWAudit API key from settings
-      const settingsRow = await env.DB
-        .prepare("SELECT value FROM settings WHERE key = 'wowaudit_api_key'")
-        .first();
+      // Get keys from settings
+      const { results: settingsRows } = await env.DB
+        .prepare("SELECT key, value FROM settings WHERE key IN ('wowaudit_api_key', 'signup_ep')")
+        .all();
 
-      const apiKey = settingsRow?.value;
+      const settings = {};
+      settingsRows.forEach(row => settings[row.key] = row.value);
+      
+      const apiKey = settings.wowaudit_api_key;
+      const signupEp = parseInt(settings.signup_ep, 10) || 1;
 
       if (!apiKey) {
         return new Response(
@@ -109,8 +113,8 @@ export async function onRequest({ request, env }) {
               ).bind(character.name).first();
 
               if (rosterChar) {
-                // Award 1 EP
-                const newEp = (rosterChar.ep || 0) + 1;
+                // Award Configured EP
+                const newEp = (rosterChar.ep || 0) + signupEp;
                 const reason = `Early Sign Up Bonus [${raidDate}]`;
                 
                 await env.DB.prepare(
@@ -119,12 +123,12 @@ export async function onRequest({ request, env }) {
 
                 await env.DB.prepare(
                   `INSERT INTO ep_log (name, ep, reason, timestamp) VALUES (?, ?, ?, datetime('now'))`
-                ).bind(character.name, 1, reason).run();
+                ).bind(character.name, signupEp, reason).run();
 
                 // Mark EP as awarded for this signup
                 await env.DB.prepare(
-                  `UPDATE signups SET ep_awarded = 1 WHERE raid_id = ? AND character_name = ?`
-                ).bind(raidId, character.name).run();
+                  `UPDATE signups SET ep_awarded = ? WHERE raid_id = ? AND character_name = ?`
+                ).bind(signupEp, raidId, character.name).run();
                 
                 bonusesAwarded++;
               }
