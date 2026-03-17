@@ -347,6 +347,29 @@
             </div>
           </div>
         </div>
+
+        <div class="collapsible-section">
+          <button class="collapsible-header collapsed" data-target="default-gp-content">
+            <span class="collapse-icon">▼</span>
+            <h2 class="section-title">Default GP</h2>
+          </button>
+          <div id="default-gp-content" class="collapsible-content">
+            <div class="epgp-log-form vault-settings-form">
+              <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label for="default-gp-input">Default GP Value</label>
+                <input type="number" id="default-gp-input" class="form-input" placeholder="2">
+              </div>
+              <div style="display: flex; align-items: flex-end; padding-bottom: 2px;">
+                <button id="save-default-gp-btn" class="btn btn-primary">
+                  <span class="btn-icon">💾</span> Save Default GP
+                </button>
+              </div>
+            </div>
+            <small class="form-hint" style="margin-top: 10px; display: block;">
+              This value is assigned to new characters when synced from WoWAudit.
+            </small>
+          </div>
+        </div>
       </div>
     </div>
 
