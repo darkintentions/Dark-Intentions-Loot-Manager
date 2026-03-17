@@ -837,6 +837,12 @@ body {
   box-shadow: 0 0 0 2px rgba(200, 168, 75, 0.1);
 }
 
+/* Make calendar icon white */
+.form-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
 .form-input::placeholder { color: var(--color-text-muted); }
 
 .form-hint {
