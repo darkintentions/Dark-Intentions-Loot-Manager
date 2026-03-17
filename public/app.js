@@ -826,8 +826,8 @@ async function loadEpgp() {
       if (reasonList) {
         reasonList.innerHTML = '';
         const reasons = [
-          data.vault_settings.signup_reason || 'On Time',
-          data.vault_settings.on_time_reason || 'Early Sign Up'
+          data.vault_settings.signup_reason || 'Early Sign Up',
+          data.vault_settings.on_time_reason || 'On Time'
         ];
         reasons.forEach(r => {
           const option = document.createElement('option');
@@ -838,8 +838,8 @@ async function loadEpgp() {
       
       // Store special reasons for later comparison
       window.specialReasons = {
-        signup: data.vault_settings.signup_reason || 'On Time',
-        ontime: data.vault_settings.on_time_reason || 'Early Sign Up'
+        signup: data.vault_settings.signup_reason || 'Early Sign Up',
+        ontime: data.vault_settings.on_time_reason || 'On Time'
       };
     }
 
