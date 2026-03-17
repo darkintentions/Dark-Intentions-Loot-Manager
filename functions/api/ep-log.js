@@ -56,7 +56,7 @@ export async function onRequest({ request, env }) {
                   env.DB.prepare(`
                       INSERT OR REPLACE INTO signups (raid_id, date, character_name, class, status, ep_awarded)
                       VALUES (?, ?, ?, ?, ?, ?)
-                  `).bind(raidId, awardDate, charName, characterRes?.class || 'Unknown', 'On time', 1)
+                  `).bind(raidId, awardDate, charName, characterRes?.class || 'Unknown', 'Present', 1)
               );
           } else if (reason === onTimeReason) {
               statements.push(
@@ -69,17 +69,23 @@ export async function onRequest({ request, env }) {
         }
       }
 
-      // For On Time reason: also write absent records for everyone NOT selected
-      if (isSpecial) {
-        const { results: settingsForOnTime } = await env.DB
-          .prepare("SELECT key, value FROM settings WHERE key = 'on_time_reason'")
-          .all();
-        const onTimeReasonCheck = settingsForOnTime.find(r => r.key === 'on_time_reason')?.value || 'Early Sign Up';
+      // 3. Automated Absentee Logic for Cross-Integration
+      if (isSpecial && allNames && allNames.length > 0) {
+        const selectedSet = new Set(targetNames);
+        const absentNames = allNames.filter(n => !selectedSet.has(n));
 
-        if (reason === onTimeReasonCheck && allNames && allNames.length > 0) {
-          const selectedSet = new Set(targetNames);
-          const absentNames = allNames.filter(n => !selectedSet.has(n));
-
+        if (reason === signupReason) {
+          const raidId = Math.abs(awardDate.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0));
+          for (const absentName of absentNames) {
+            const absentChar = await env.DB.prepare("SELECT name, realm, class FROM roster WHERE name = ?").bind(absentName).first();
+            statements.push(
+              env.DB.prepare(`
+                INSERT OR IGNORE INTO signups (raid_id, date, character_name, class, status, ep_awarded)
+                VALUES (?, ?, ?, ?, ?, 0)
+              `).bind(raidId, awardDate, absentName, absentChar?.class || 'Unknown', 'Absent')
+            );
+          }
+        } else if (reason === onTimeReason) {
           for (const absentName of absentNames) {
             const absentChar = await env.DB.prepare("SELECT name, realm FROM roster WHERE name = ?").bind(absentName).first();
             statements.push(
