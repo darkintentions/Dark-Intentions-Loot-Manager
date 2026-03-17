@@ -810,6 +810,11 @@ async function loadEpgp() {
       if ($('#ontime-ep-input')) {
         $('#ontime-ep-input').value = data.vault_settings.on_time_ep || '1';
       }
+      
+      // Populate Default GP
+      if ($('#default-gp-input')) {
+        $('#default-gp-input').value = data.vault_settings.default_gp || '2';
+      }
     }
 
     populateOnTimeBonus();
@@ -916,6 +921,46 @@ async function loadEpgp() {
           const sData = await sRes.json();
           if (sData.success) {
             showMessage('epgp', 'success', '✓ On Time settings saved successfully');
+            clearUnsavedChanges();
+          } else {
+            throw new Error(sData.error || 'Failed to save settings');
+          }
+        } catch (err) {
+          showMessage('epgp', 'error', `✗ Error: ${err.message}`);
+        } finally {
+          newBtn.disabled = false;
+          newBtn.innerHTML = originalHtml;
+        }
+      });
+    }
+
+    // Add Default GP save listener
+    const saveDefaultGpBtn = $('#save-default-gp-btn');
+    if (saveDefaultGpBtn) {
+      const newBtn = saveDefaultGpBtn.cloneNode(true);
+      saveDefaultGpBtn.parentNode.replaceChild(newBtn, saveDefaultGpBtn);
+      
+      newBtn.addEventListener('click', async () => {
+        const defaultGp = $('#default-gp-input').value.trim();
+        if (!defaultGp || isNaN(defaultGp) || parseInt(defaultGp) < 0) {
+          showMessage('epgp', 'error', '✗ Default GP must be a non-negative number.');
+          return;
+        }
+
+        newBtn.disabled = true;
+        const originalHtml = newBtn.innerHTML;
+        newBtn.innerHTML = '<span class="btn-spinner"></span> Saving…';
+
+        try {
+          const sRes = await apiFetch('/api/epgp', {
+            method: 'POST',
+            body: JSON.stringify({ 
+              vault_settings: { default_gp: defaultGp } 
+            })
+          });
+          const sData = await sRes.json();
+          if (sData.success) {
+            showMessage('epgp', 'success', `✓ Default GP updated to ${defaultGp}`);
             clearUnsavedChanges();
           } else {
             throw new Error(sData.error || 'Failed to save settings');
@@ -1412,39 +1457,6 @@ $('#save-admin-btn').addEventListener('click', async () => {
 
     if (data.success) {
       showMessage('admin', 'success', `✓ ${data.message}`);
-      clearUnsavedChanges();
-    } else {
-      showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
-    }
-  } catch (err) {
-    showMessage('admin', 'error', `✗ Network error: ${err.message}`);
-  } finally {
-    btn.disabled = false;
-  }
-});
-
-// Save default GP setting
-$('#save-default-gp-btn').addEventListener('click', async () => {
-  const btn = $('#save-default-gp-btn');
-  const defaultGp = $('#default-gp-input').value.trim();
-
-  if (!defaultGp || isNaN(defaultGp) || parseInt(defaultGp) < 0) {
-    showMessage('admin', 'error', '✗ Default GP must be a non-negative number.');
-    return;
-  }
-
-  btn.disabled = true;
-
-  try {
-    const res = await apiFetch('/api/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: 'default_gp', value: defaultGp }),
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      showMessage('admin', 'success', `✓ Default GP updated to ${defaultGp}`);
       clearUnsavedChanges();
     } else {
       showMessage('admin', 'error', `✗ ${data.error || 'Save failed'}`);
