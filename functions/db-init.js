@@ -123,7 +123,11 @@ async function initializeDatabase(env) {
     INSERT OR REPLACE INTO settings (key, value)
     VALUES
       ('wowaudit_api_key', '62581957225650bd6cd7902ea6f45b3d175a372c524083d3eb30696260bc672d'),
-      ('default_gp', '2');
+      ('default_gp', '2'),
+      ('min_vault_level', '272'),
+      ('vault_1_ep', '1'),
+      ('vault_2_ep', '1'),
+      ('vault_3_ep', '1');
 
     INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES
       ('Head',      0),
