@@ -56,7 +56,7 @@ export async function onRequest({ request, env }) {
                   env.DB.prepare(`
                       INSERT OR REPLACE INTO signups (raid_id, date, character_name, class, status, ep_awarded)
                       VALUES (?, ?, ?, ?, ?, ?)
-                  `).bind(raidId, awardDate, charName, characterRes?.class || 'Unknown', 'Present', 1)
+                  `).bind(raidId, awardDate, charName, characterRes?.class || 'Unknown', 'On time', 1)
               );
           } else if (reason === onTimeReason) {
               statements.push(
