@@ -61,10 +61,13 @@ export async function onRequest({ request, env }) {
         })
       );
 
+      const { results: settings } = await env.DB.prepare("SELECT * FROM settings WHERE key = 'last_pr_sync'").all();
+      const lastPrSync = settings[0]?.value || null;
+
       const count = rosterWithTotals.length;
       const characterNames = rosterWithTotals.map(c => c.name);
       await logEvent(env, 'info', 'API', `Refreshed roster from database (${count} character${count === 1 ? '' : 's'} found).`, { characters: characterNames });
-      return new Response(JSON.stringify({ roster: rosterWithTotals }), { headers });
+      return new Response(JSON.stringify({ roster: rosterWithTotals, last_pr_sync: lastPrSync }), { headers });
     } catch (err) {
       return new Response(
         JSON.stringify({ error: err.message }),

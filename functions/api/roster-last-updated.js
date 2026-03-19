@@ -17,11 +17,13 @@ export async function onRequest({ request, env }) {
     const rosterRes = await env.DB.prepare('SELECT MAX(last_updated) as t FROM roster').first();
     const epRes = await env.DB.prepare('SELECT MAX(timestamp) as t FROM ep_log').first();
     const gpRes = await env.DB.prepare('SELECT MAX(timestamp) as t FROM gp_log').first();
+    const syncRes = await env.DB.prepare("SELECT value FROM settings WHERE key = 'last_pr_sync'").first();
 
     const timestamps = [
       rosterRes?.t ? new Date(rosterRes.t).getTime() : 0,
       epRes?.t ? new Date(epRes.t).getTime() : 0,
       gpRes?.t ? new Date(gpRes.t).getTime() : 0,
+      syncRes?.value ? new Date(syncRes.value).getTime() : 0,
     ];
 
     const maxTs = Math.max(...timestamps);

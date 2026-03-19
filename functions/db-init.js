@@ -131,7 +131,8 @@ async function initializeDatabase(env) {
       ('signup_ep', '1'),
       ('signup_reason', 'Early Sign Up'),
       ('on_time_ep', '1'),
-      ('on_time_reason', 'On Time');
+      ('on_time_reason', 'On Time'),
+      ('last_pr_sync', null);
 
     // Migration: Align Gear Slots with WoWAudit API
     await env.DB.prepare("UPDATE epgp_gear_values SET slot_name = 'finger' WHERE slot_name = 'Ring'").run();

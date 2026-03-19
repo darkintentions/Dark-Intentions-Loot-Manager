@@ -685,78 +685,31 @@ $('#roster-search').addEventListener('input', (e) => {
   filterRoster(e.target.value);
 });
 
-$('#export-pr-btn').addEventListener('click', () => {
-  if (!rosterData || rosterData.length === 0) {
-    showMessage('roster', 'error', '✗ No roster data to export');
-    return;
+// Sync PRs Signal (Forces DI Monitor to update PRValues)
+$('#sync-prs-btn').addEventListener('click', async () => {
+  const btn = $('#sync-prs-btn');
+  const orgHtml = btn.innerHTML;
+
+  try {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-icon">⏳</span> Syncing…';
+
+    const res = await fetch('/api/sync-prs', { method: 'POST' });
+    const data = await res.json();
+
+    if (data.success) {
+      showMessage('roster', 'success', `✓ PR sync signal sent (${new Date(data.last_pr_sync).toLocaleTimeString()})`);
+    } else {
+      throw new Error(data.error || 'Failed to send sync signal');
+    }
+  } catch (err) {
+    console.error('Sync PRs error:', err);
+    showMessage('roster', 'error', `✗ ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orgHtml;
   }
-
-  // Build CSV lines: "Name-Realm,PR"
-  const lines = rosterData.map(c => {
-    const ep = c.ep ?? 0;
-    const gp = c.gp ?? 0;
-    const pr = gp > 0 ? (ep / gp).toFixed(2) : '0.00';
-    const realm = c.realm || 'Unknown';
-    return `${c.name}-${realm},${pr}`;
-  });
-
-  const csv = lines.join('\n');
-
-  // Open a styled modal window with the CSV content
-  showExportModal(csv);
 });
-
-function showExportModal(content) {
-  // Remove existing export modal if any
-  const existing = $('#export-modal');
-  if (existing) existing.remove();
-
-  const modal = document.createElement('div');
-  modal.id = 'export-modal';
-  modal.className = 'modal';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Export Roster PR</h2>
-        <button id="close-export-modal" class="btn-close">✕</button>
-      </div>
-      <div class="modal-body">
-        <textarea id="export-textarea" class="export-textarea" readonly>${escHtml(content)}</textarea>
-      </div>
-      <div class="modal-footer">
-        <button id="copy-export-btn" class="btn btn-primary">
-          <span class="btn-icon">📋</span> Copy to Clipboard
-        </button>
-        <button id="cancel-export-btn" class="btn btn-secondary">Close</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  // Auto-select all text
-  const textarea = $('#export-textarea');
-  textarea.focus();
-  textarea.select();
-
-  // Copy button
-  $('#copy-export-btn').addEventListener('click', () => {
-    textarea.select();
-    navigator.clipboard.writeText(content).then(() => {
-      $('#copy-export-btn').innerHTML = '<span class="btn-icon">✓</span> Copied!';
-      setTimeout(() => {
-        $('#copy-export-btn').innerHTML = '<span class="btn-icon">📋</span> Copy to Clipboard';
-      }, 2000);
-    });
-  });
-
-  // Close handlers
-  $('#close-export-modal').addEventListener('click', () => modal.remove());
-  $('#cancel-export-btn').addEventListener('click', () => modal.remove());
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.remove();
-  });
-}
 
 $('#sync-roster-btn').addEventListener('click', async () => {
   const btn = $('#sync-roster-btn');
