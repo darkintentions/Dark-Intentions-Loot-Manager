@@ -133,9 +133,6 @@ async function initializeDatabase(env) {
       ('on_time_ep', '1'),
       ('on_time_reason', 'On Time');
 
-    // Migration: Rename 'Ring' to 'Finger' and add missing weapon slots
-    await env.DB.prepare("UPDATE epgp_gear_values SET slot_name = 'Finger' WHERE slot_name = 'Ring'").run();
-
     INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES
       ('Head',      0),
       ('Neck',      0),
@@ -147,12 +144,10 @@ async function initializeDatabase(env) {
       ('Waist',     0),
       ('Legs',      0),
       ('Feet',      0),
-      ('Finger',    0),
+      ('Ring',      0),
       ('Trinket',   0),
       ('Main Hand', 0),
       ('Off Hand',  0),
-      ('two_hand',  0),
-      ('one_hand',  0),
       ('Tier',      0),
       ('Ranged',    0);
 
