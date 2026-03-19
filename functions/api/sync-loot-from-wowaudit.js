@@ -117,8 +117,27 @@ export async function onRequest({ request, env }) {
         );
       }
 
-      // Store each loot item in database
+      // Pre-fetch roster for name lookup (ID -> Name)
+      const { results: rosterRows } = await env.DB.prepare("SELECT character_id, name FROM roster WHERE character_id IS NOT NULL").all();
+      const characterMap = new Map();
+      for (const row of rosterRows) {
+        characterMap.set(Number(row.character_id), row.name);
+      }
+
+      // Pre-fetch gear values for GP lookup (Slot -> Points)
+      const { results: gearRows } = await env.DB.prepare("SELECT slot_name, point_value FROM epgp_gear_values").all();
+      const gearMap = new Map();
+      for (const row of gearRows) {
+        gearMap.set(row.slot_name.toLowerCase(), row.point_value);
+      }
+
+      // Check for already processed items to avoid double charging GP
+      const { results: existingLoot } = await env.DB.prepare("SELECT rclootcouncil_id FROM loot_history").all();
+      const existingIds = new Set(existingLoot.map(l => l.rclootcouncil_id));
+
       let insertedCount = 0;
+      let gpAwardedCount = 0;
+      const now = new Date().toISOString();
 
       for (const item of historyItems) {
         // Skip loot with "Normal" difficulty
@@ -126,7 +145,27 @@ export async function onRequest({ request, env }) {
           continue;
         }
 
+        // Only process and award GP for NEW items
+        if (existingIds.has(item.rclootcouncil_id)) {
+          continue;
+        }
+
         try {
+          const charName = characterMap.get(Number(item.character_id));
+          const slotKey = (item.slot || '').toLowerCase();
+          const gpAmount = gearMap.get(slotKey) || 0;
+
+          // Award GP if we have a character and a non-zero GP value
+          if (charName && gpAmount > 0) {
+            await env.DB.prepare(`
+              INSERT INTO gp_log (name, gp, reason, timestamp)
+              VALUES (?, ?, ?, ?)
+            `)
+              .bind(charName, gpAmount, `Awarded ${item.name} (Loot History)`, now)
+              .run();
+            gpAwardedCount++;
+          }
+
           await env.DB
             .prepare(
               `INSERT OR REPLACE INTO loot_history (
@@ -182,13 +221,14 @@ export async function onRequest({ request, env }) {
         }
       }
 
-      await logEvent(env, 'success', 'Loot', `Synced ${insertedCount} loot items from WoWAudit`, { periodId, insertedCount });
+      await logEvent(env, 'success', 'Loot', `Synced ${insertedCount} loot items from WoWAudit (${gpAwardedCount} GP awards)`, { periodId, insertedCount, gpAwardedCount });
 
       return new Response(
         JSON.stringify({
           success: true,
-          message: `✓ Synced ${insertedCount} loot items from WoWAudit (Period ${periodId})`,
+          message: `✓ Synced ${insertedCount} loot items and awarded GP for ${gpAwardedCount} items (Period ${periodId})`,
           inserted: insertedCount,
+          gpAwarded: gpAwardedCount,
           periodId,
         }),
         { headers }
