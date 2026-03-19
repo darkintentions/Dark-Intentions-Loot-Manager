@@ -92,6 +92,8 @@ export async function onRequest({ request, env }) {
                 awarded_by_name,
                 awarded_at,
                 difficulty,
+                instance,
+                boss,
                 discarded,
                 same_response_amount,
                 note,
@@ -100,7 +102,7 @@ export async function onRequest({ request, env }) {
                 bonus_ids,
                 old_items,
                 wish_data
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             )
             .bind(
               item.rclootcouncil_id,
@@ -114,6 +116,8 @@ export async function onRequest({ request, env }) {
               item.awarded_by_name || '',
               item.awarded_at || '',
               item.difficulty || '',
+              item.instance || '',
+              item.boss || '',
               item.discarded ? 1 : 0,
               item.same_response_amount || 0,
               item.note || '',

@@ -98,6 +98,8 @@ async function initializeDatabase(env) {
       awarded_by_name         TEXT,
       awarded_at              TEXT,
       difficulty              TEXT,
+      instance                TEXT,
+      boss                    TEXT,
       discarded               BOOLEAN DEFAULT 0,
       same_response_amount    INTEGER DEFAULT 0,
       note                    TEXT,

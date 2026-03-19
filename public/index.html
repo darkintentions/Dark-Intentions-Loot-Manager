@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="loot.css">
   <script>const whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true};</script>
   <script src="https://wow.zamimg.com/js/tooltips.js"></script>
 </head>
@@ -127,18 +128,23 @@
     <!-- ── Loot Tab ───────────────────────────── -->
     <div id="tab-loot" class="tab-panel">
       <div class="panel-header">
-        <h1>Loot History</h1>
-        <button id="sync-loot-btn" class="btn btn-primary">
-          <span class="btn-icon">🔄</span> Sync Loot from WoWAudit
-        </button>
+        <h1>Laid Raid History</h1>
+        <div class="panel-header-actions">
+          <div class="view-switch-container">
+            <button id="view-bosses-btn" class="view-switch-btn active" data-view="bosses">
+              <span class="btn-icon">👹</span> Show By Bosses
+            </button>
+            <button id="view-list-btn" class="view-switch-btn" data-view="all">
+              <span class="btn-icon">📜</span> All Loot
+            </button>
+          </div>
+          <button id="sync-loot-btn" class="btn btn-primary">
+            <span class="btn-icon">🔄</span> Sync Loot
+          </button>
+        </div>
       </div>
       <div id="loot-message" class="message hidden"></div>
       <div class="content-scroll">
-        <table id="loot-table" class="data-table sortable">
-          <thead>
-            <tr>
-              <th>Item Name</th>
-              <th>Slot</th>
               <th>Quality</th>
               <th>Character</th>
               <th>Awarded By</th>

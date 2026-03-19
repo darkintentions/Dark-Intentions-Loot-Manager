@@ -263,14 +263,16 @@ async function switchTab(name) {
       case 'on-time': loadOnTime(); break;
     }
   }
-  // Always force reload logs and attendance
-  if (name === 'logs') {
-    tabLoaded.logs = false;
-    loadLogs();
-  }
-  if (name === 'attendance') {
-    tabLoaded.attendance = false;
-    loadAttendance();
+  // Always force reload dynamic tabs
+  if (['logs', 'attendance', 'on-time', 'signups', 'loot'].includes(name)) {
+    tabLoaded[name] = false;
+    switch (name) {
+      case 'logs': loadLogs(); break;
+      case 'attendance': loadAttendance(); break;
+      case 'on-time': loadOnTime(); break;
+      case 'signups': loadSignups(); break;
+      case 'loot': loadLootHistory(); break;
+    }
   }
 }
 
@@ -1977,61 +1979,202 @@ async function syncLootFromWoWAudit() {
   }
 }
 
+let currentLootItems = [];
+let currentLootView = 'bosses'; // 'bosses' or 'all'
+
 async function loadLootHistory() {
+  const container = $('#loot-container');
+  if (!container) return;
+
   try {
     const res = await apiFetch('/api/loot-history');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    const items = data.history_items || [];
-    renderLootTable(items);
+    currentLootItems = data.history_items || [];
+    renderLootContainer();
   } catch (err) {
-    showMessage('loot', 'error', `✗ Error loading loot history: ${err.message}`);
-    renderLootTable([]);
+    console.error('Error loading loot:', err);
+    showMessage('loot', 'error', `✗ Error loading loot: ${err.message}`);
+    container.innerHTML = `<div class="empty-row text-center" style="padding: 20px;">Error: ${err.message}</div>`;
   }
 }
 
-function renderLootTable(items) {
-  const tbody = $('#loot-tbody');
-  if (!tbody) return;
+function renderLootContainer() {
+  const container = $('#loot-container');
+  if (!container) return;
 
-  if (items.length === 0) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No loot history. Click "Sync Loot from WoWAudit" to load data.</td></tr>';
+  if (currentLootItems.length === 0) {
+    container.innerHTML = '<div class="empty-row text-center" style="padding: 40px;">No loot history found. Sync from WoWAudit to get started.</div>';
     return;
   }
 
-  tbody.innerHTML = items.map(item => `
-    <tr>
-      <td><strong>${escHtml(item.name)}</strong></td>
-      <td>${escHtml(item.slot || '—')}</td>
-      <td>${escHtml(item.quality || '—')}</td>
-      <td>${escHtml(item.awarded_by_name || 'Unknown')}</td>
-      <td>${item.awarded_at ? new Date(item.awarded_at).toLocaleDateString() : '—'}</td>
-    </tr>
-  `).join('');
+  // Step 1: Group by Date (YYYY-MM-DD)
+  const groupedByDate = {};
+  currentLootItems.forEach(item => {
+    const date = (item.awarded_at || '1970-01-01').split('T')[0];
+    if (!groupedByDate[date]) groupedByDate[date] = [];
+    groupedByDate[date].push(item);
+  });
+
+  // Sort dates descending
+  const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
+
+  container.innerHTML = sortedDates.map(date => {
+    const items = groupedByDate[date];
+    const dateStr = formatDateWithDay ? formatDateWithDay(date) : date;
+    
+    let contentHtml = '';
+    if (currentLootView === 'bosses') {
+      contentHtml = renderBossesView(items);
+    } else {
+      contentHtml = renderListView(items);
+    }
+
+    return `
+      <div class="raid-date-section" data-date="${date}">
+        <div class="raid-date-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span class="collapse-icon">▼</span>
+          <h2>${dateStr}</h2>
+          <div class="raid-meta">${items.length} items dropped</div>
+        </div>
+        <div class="raid-date-content">
+          ${contentHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Refresh Tooltips
+  if (window.$WowheadPower) window.$WowheadPower.refreshLinks();
 }
 
+function renderBossesView(items) {
+  // Group by Instance -> Boss
+  const bosses = {};
+  items.forEach(item => {
+    const bossKey = `${item.instance || 'Unknown'} - ${item.boss || 'Unknown'}`;
+    if (!bosses[bossKey]) {
+      bosses[bossKey] = {
+        name: item.boss || 'Unknown Boss',
+        instance: item.instance || 'Unknown Instance',
+        difficulty: item.difficulty || 'Normal',
+        items: []
+      };
+    }
+    bosses[bossKey].items.push(item);
+  });
+
+  return `
+    <div class="boss-grid">
+      ${Object.values(bosses).map(boss => `
+        <div class="boss-card">
+          <div class="boss-card-header">
+            <div class="boss-name">${escHtml(boss.name)}</div>
+            <div class="difficulty-badge difficulty-${boss.difficulty.toLowerCase()}">${escHtml(boss.difficulty)}</div>
+          </div>
+          <div class="boss-card-instance" style="font-size: 0.7rem; color: #666; padding: 4px 18px; border-bottom: 1px solid rgba(255,255,255,0.03);">
+            ${escHtml(boss.instance)}
+          </div>
+          <div class="boss-loot-list">
+            ${boss.items.map(item => `
+              <div class="loot-entry">
+                <img src="${item.icon ? 'https://wow.zamimg.com/images/wow/icons/large/' + item.icon + '.jpg' : 'https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'}" class="loot-icon">
+                <div class="loot-info">
+                  <a href="https://www.wowhead.com/item=${item.item_id}" class="loot-item-link quality-${(item.quality || '').toLowerCase()}" data-wh-icon-size="small">
+                    ${escHtml(item.name)}
+                  </a>
+                  <div class="loot-player-info">
+                    <span class="loot-player-name" style="color: ${getClassColor(getRosterMemberClass(item.name))}">${escHtml(item.name === item.awarded_by_name ? 'Disenchanted?' : item.name)}</span>
+                    <span class="loot-response">${escHtml(item.response_type?.label || 'Direct')}</span>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderListView(items) {
+  return `
+    <div class="loot-list-view">
+      <table class="loot-list-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Slot</th>
+            <th>Character</th>
+            <th>Response</th>
+            <th>Boss</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(item => `
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <img src="${item.icon ? 'https://wow.zamimg.com/images/wow/icons/large/' + item.icon + '.jpg' : ''}" style="width: 24px; height: 24px; border-radius: 4px;">
+                  <a href="https://www.wowhead.com/item=${item.item_id}" data-wh-icon-size="small" class="quality-${(item.quality || '').toLowerCase()}" style="text-decoration: none; font-weight: 600;">
+                    ${escHtml(item.name)}
+                  </a>
+                </div>
+              </td>
+              <td style="color: #888;">${escHtml(item.slot || '—')}</td>
+              <td style="font-weight: 600; color: ${getClassColor(getRosterMemberClass(item.name))}">${escHtml(item.name)}</td>
+              <td><span class="loot-response">${escHtml(item.response_type?.label || '—')}</span></td>
+              <td style="font-size: 0.8rem; color: #888;">${escHtml(item.boss)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// Add these to your init logic or global scope
+$('#view-bosses-btn')?.addEventListener('click', () => {
+  currentLootView = 'bosses';
+  $('#view-bosses-btn').classList.add('active');
+  $('#view-list-btn').classList.remove('active');
+  renderLootContainer();
+});
+
+$('#view-list-btn')?.addEventListener('click', () => {
+  currentLootView = 'all';
+  $('#view-list-btn').classList.add('active');
+  $('#view-bosses-btn').classList.remove('active');
+  renderLootContainer();
+});
+
+// Helper for class colors in loot (we need to find the character in roster)
+function getRosterMemberClass(charName) {
+  const member = rosterData.find(c => c.name === charName);
+  return member ? member.class : null;
+}
+
+// Update Sync Button Listener
 $('#sync-loot-btn').addEventListener('click', async () => {
   const btn = $('#sync-loot-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="btn-icon">⏳</span> Syncing…';
 
   try {
-    // Sync loot (endpoint handles period fetch internally)
-    const syncData = await syncLootFromWoWAudit();
-
-    // Check if any loot was actually synced
-    if (syncData.inserted === 0) {
-      showAlert('No loot uploaded to WoWAudit yet!', 'No Loot Found');
+    const res = await apiFetch('/api/sync-loot-from-wowaudit', { method: 'POST' });
+    const data = await res.json();
+    
+    if (data.success) {
+      showMessage('loot', 'success', `✓ ${data.message}`);
+      await loadLootHistory();
     } else {
-      showMessage('loot', 'success', `✓ ${syncData.message}`);
+      throw new Error(data.error || 'Sync failed');
     }
-
-    // Load and display the loot
-    await loadLootHistory();
   } catch (err) {
     showMessage('loot', 'error', `✗ ${err.message}`);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<span class="btn-icon">🔄</span> Sync Loot from WoWAudit';
+    btn.innerHTML = '<span class="btn-icon">🔄</span> Sync Loot';
   }
 });
 

@@ -1,0 +1,246 @@
+/* Loot Tab Specific Styles */
+
+.view-switch-container {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 4px;
+    gap: 4px;
+    margin-right: 15px;
+}
+
+.view-switch-btn {
+    background: transparent;
+    border: none;
+    color: #a0a0b0;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.view-switch-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.view-switch-btn.active {
+    background: #c41e3a; /* Wow Death Knight / Blood Red style */
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(196, 30, 58, 0.3);
+}
+
+/* Raid Date Grouping */
+.raid-date-section {
+    margin-bottom: 30px;
+}
+
+.raid-date-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(30, 30, 45, 0.9) 0%, rgba(15, 15, 25, 0.5) 100%);
+    border-left: 4px solid #c41e3a;
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    border-radius: 0 8px 8px 0;
+    transition: background 0.2s;
+}
+
+.raid-date-header:hover {
+    background: linear-gradient(90deg, rgba(40, 40, 60, 0.9) 0%, rgba(20, 20, 35, 0.5) 100%);
+}
+
+.raid-date-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-family: 'Cinzel', serif;
+    color: #e0e0e0;
+    flex: 1;
+}
+
+.raid-date-header .raid-meta {
+    font-size: 0.85rem;
+    color: #888;
+    margin-right: 15px;
+}
+
+.raid-date-header .collapse-icon {
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.raid-date-header.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.raid-date-section.collapsed .raid-date-content {
+    display: none;
+}
+
+/* Boss Cards View */
+.boss-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 10px 5px;
+}
+
+.boss-card {
+    background: #1e1e2d;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.boss-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    border-color: rgba(196, 30, 58, 0.3);
+}
+
+.boss-card-header {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.boss-card-header .boss-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: #fff;
+}
+
+.boss-card-header .difficulty-badge {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.difficulty-heroic { background: rgba(50, 160, 255, 0.2); color: #4dabff; border: 1px solid rgba(50, 160, 255, 0.3); }
+.difficulty-mythic { background: rgba(163, 53, 238, 0.2); color: #a335ee; border: 1px solid rgba(163, 53, 238, 0.3); }
+
+.boss-loot-list {
+    padding: 10px 0;
+}
+
+.loot-entry {
+    display: flex;
+    align-items: center;
+    padding: 8px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 0.1s;
+}
+
+.loot-entry:last-child {
+    border-bottom: none;
+}
+
+.loot-entry:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.loot-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    margin-right: 12px;
+    border: 1px solid #444;
+}
+
+.loot-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.loot-item-link {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none !important;
+}
+
+.loot-player-info {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.loot-player-name {
+    font-weight: 600;
+}
+
+.loot-response {
+    font-size: 0.7rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    color: #aaa;
+}
+
+/* List View */
+.loot-list-view {
+    width: 100%;
+}
+
+.loot-list-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.loot-list-table th {
+    text-align: left;
+    padding: 10px 15px;
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+    border-bottom: 1px solid #333;
+}
+
+.loot-list-table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.loot-list-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.quality-epic { color: #a335ee; }
+.quality-rare { color: #0070dd; }
+.quality-legendary { color: #ff8000; }
+
+@media (max-width: 768px) {
+    .boss-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .panel-header-actions {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+    
+    .view-switch-container {
+        margin-right: 0;
+    }
+}
