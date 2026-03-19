@@ -66,8 +66,8 @@ export async function onRequest({ request, env }) {
 
       const periodData = await periodResponse.json();
 
-      // Extract season id from WoWAudit response (under current_season.id)
-      const periodId = periodData.current_season?.id;
+      // Extract season id from WoWAudit response (using keystone_season_id for loot mapping)
+      const periodId = periodData.keystone_season_id;
 
       if (!periodId) {
         return new Response(
