@@ -9,17 +9,20 @@
  */
 export async function ensureTablesExist(env) {
   try {
-    // Check if the newest table exists (attendance)
-    // If it doesn't, run initialization — all statements use IF NOT EXISTS so it's safe
-    const result = await env.DB
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='attendance'")
-      .first();
-
-    if (!result) {
-      await initializeDatabase(env);
+    const criticalTables = ['attendance', 'system_logs', 'wowaudit_period'];
+    for (const table of criticalTables) {
+      const result = await env.DB
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
+        .bind(table)
+        .first();
+      
+      if (!result) {
+        console.log(`Table ${table} missing, running initialization...`);
+        await initializeDatabase(env);
+        break; 
+      }
     }
   } catch (err) {
-    // If there's an error, try to initialize
     await initializeDatabase(env);
   }
 }
