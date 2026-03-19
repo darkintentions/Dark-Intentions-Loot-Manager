@@ -70,6 +70,7 @@ export async function onRequest({ request, env }) {
       const periodId = periodData.keystone_season_id;
 
       if (!periodId) {
+        await logEvent(env, 'error', 'API', 'Loot Sync: Could not determine period ID.', { periodData });
         return new Response(
           JSON.stringify({
             error: 'Could not determine period ID from WoWAudit response',
