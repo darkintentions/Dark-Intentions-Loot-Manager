@@ -260,6 +260,7 @@ export async function onRequest({ request, env }) {
           inserted: insertedCount,
           gpAwarded: gpAwardedCount,
           periodId,
+          debug: { periodData }
         }),
         { headers }
       );
