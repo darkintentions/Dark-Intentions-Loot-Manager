@@ -15,10 +15,20 @@ export async function ensureTablesExist(env) {
     const hasOldAwardedCol = tableInfo.results && tableInfo.results.some(c => c.name === 'awarded_by_character_id');
     const hasAwardedByName = tableInfo.results && tableInfo.results.some(c => c.name === 'awarded_by_name');
     const hasTypeCode = tableInfo.results && tableInfo.results.some(c => c.name === 'typeCode');
+    const hasResponse = tableInfo.results && tableInfo.results.some(c => c.name === 'response');
     
-    if (hasName || hasOldAwardedCol || hasAwardedByName || !hasTypeCode) {
+    // Only drop if it's very old. For missing columns, we'll ALTER.
+    if (hasName || hasOldAwardedCol || hasAwardedByName) {
       console.log('Detected old loot_history schema, dropping for recreation...');
       await env.DB.prepare("DROP TABLE loot_history").run();
+    } else {
+      // Incremental migrations
+      if (!hasTypeCode) {
+        try { await env.DB.prepare("ALTER TABLE loot_history ADD COLUMN typeCode TEXT").run(); } catch(e){}
+      }
+      if (!hasResponse) {
+        try { await env.DB.prepare("ALTER TABLE loot_history ADD COLUMN response TEXT").run(); } catch(e){}
+      }
     }
   } catch (e) { /* Table likely doesn't exist yet */ }
 
