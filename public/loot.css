@@ -132,11 +132,23 @@
     letter-spacing: 0.5px;
 }
 
+.difficulty-normal { background: rgba(76, 175, 80, 0.2); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.3); }
 .difficulty-heroic { background: rgba(50, 160, 255, 0.2); color: #4dabff; border: 1px solid rgba(50, 160, 255, 0.3); }
 .difficulty-mythic { background: rgba(163, 53, 238, 0.2); color: #a335ee; border: 1px solid rgba(163, 53, 238, 0.3); }
 
 .boss-loot-list {
     padding: 10px 0;
+}
+
+.loot-slot-tag {
+    font-size: 0.6rem;
+    color: #888;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 5px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .loot-entry {

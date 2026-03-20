@@ -2078,12 +2078,14 @@ function renderBossesView(items) {
             ${boss.items.map(item => `
               <div class="loot-entry">
                 <div class="loot-info">
-                  <a href="https://www.wowhead.com/item=${item.item_id}" class="loot-item-link" data-wh-icon-size="small">
-                    ${escHtml(item.name || `Item #${item.item_id}`)}
-                  </a>
-                  <span class="loot-type-tag" style="font-size: 0.65rem; color: #888; margin-left: 5px;">${escHtml(item.typeCode || '')}</span>
-                  <div class="loot-player-info">
-                    <span class="loot-player-name" style="color: ${getClassColor(getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</span>
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <a href="https://www.wowhead.com/item=${item.item_id}" class="loot-item-link" data-wh-icon-size="small">
+                      ${escHtml(item.name || `Item #${item.item_id}`)}
+                    </a>
+                    <span class="loot-slot-tag" style="font-size: 0.6rem; color: #888; background: rgba(255,255,255,0.05); padding: 1px 4px; border-radius: 3px;">${escHtml(item.slot || item.typeCode || '')}</span>
+                  </div>
+                  <div class="loot-player-info" style="margin-top: 2px;">
+                    <span class="loot-player-name" style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</span>
                   </div>
                   ${item.note ? `<div class="loot-note" style="font-size: 0.65rem; color: #666; font-style: italic; margin-top: 2px;">"${escHtml(item.note)}"</div>` : ''}
                 </div>
@@ -2121,7 +2123,7 @@ function renderListView(items) {
               </td>
               <td style="font-size: 0.75rem; color: #aaa;">${escHtml(item.typeCode || '—')}</td>
               <td style="color: #888;">${escHtml(item.slot || '—')}</td>
-              <td style="font-weight: 600; color: ${getClassColor(getRosterMemberClass(item.character_name))}">
+              <td style="font-weight: 600; color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">
                 ${escHtml(item.character_name || 'Unknown')}
                 ${item.note ? `<div style="font-size: 0.65rem; color: #666; font-style: italic; font-weight: normal;">"${escHtml(item.note)}"</div>` : ''}
               </td>
@@ -2151,6 +2153,7 @@ $('#view-list-btn')?.addEventListener('click', () => {
 
 // Helper for class colors in loot (we need to find the character in roster)
 function getRosterMemberClass(charName) {
+  if (!rosterData) return null;
   const member = rosterData.find(c => c.name === charName);
   return member ? member.class : null;
 }

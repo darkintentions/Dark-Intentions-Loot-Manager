@@ -28,13 +28,19 @@ export async function onRequest({ request, env }) {
       const url = new URL(request.url);
       const characterId = url.searchParams.get('character_id');
 
-      let query = 'SELECT * FROM loot_history ORDER BY awarded_at DESC';
+      let query = `
+        SELECT lh.*, r.name AS character_name, r.class AS character_class
+        FROM loot_history lh
+        LEFT JOIN roster r ON lh.character_id = r.character_id
+      `;
       let params = [];
 
       if (characterId) {
-        query += ' WHERE character_id = ?';
+        query += ' WHERE lh.character_id = ?';
         params = [parseInt(characterId)];
       }
+
+      query += ' ORDER BY lh.awarded_at DESC';
 
       const result = params.length > 0
         ? await env.DB.prepare(query).bind(...params).all()
