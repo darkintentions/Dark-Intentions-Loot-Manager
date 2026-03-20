@@ -245,8 +245,7 @@ export async function onRequest({ request, env }) {
     allStatements.push(env.DB.prepare(`
       DELETE FROM loot_history 
       WHERE (LOWER(difficulty) LIKE '%normal%' AND LOWER(difficulty) NOT LIKE '%heroic%')
-         OR CAST(difficulty AS TEXT) = '14'
-         OR difficulty = 14
+         OR CAST(difficulty AS INTEGER) = 14
          OR response = 'Personal Loot - Non tradeable'
     `));
 
