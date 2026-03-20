@@ -1022,10 +1022,10 @@ body {
   display: inline-block;
   transition: transform 0.18s;
   color: var(--color-gold-bright);
-  font-size: 19px;
-  width: 22px;
+  font-size: 26px;
+  width: 28px;
   text-align: center;
-  margin-right: 2px;
+  margin-right: 6px;
   vertical-align: middle;
 }
 
