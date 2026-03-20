@@ -156,9 +156,9 @@ async function initializeDatabase(env) {
     -- Migrations: Align Gear Slots with User's new naming convention
     UPDATE epgp_gear_values SET slot_name = 'One-Hand' WHERE slot_name = 'one_hand';
     UPDATE epgp_gear_values SET slot_name = 'Two-Hand' WHERE slot_name = 'two_hand';
-    UPDATE epgp_gear_values SET slot_name = 'Tier Token' WHERE slot_name = 'Tier';
-    UPDATE epgp_gear_values SET slot_name = 'Tier Token' WHERE slot_name = 'Tier';
-    DELETE FROM epgp_gear_values WHERE slot_name IN ('TOKEN', 'DECOR');
+    UPDATE epgp_gear_values SET slot_name = 'TOKEN' WHERE slot_name = 'Tier';
+    UPDATE epgp_gear_values SET slot_name = 'TOKEN' WHERE slot_name = 'Tier Token';
+    DELETE FROM epgp_gear_values WHERE slot_name IN ('DECOR');
     INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES ('Held In Off-hand', 0);
 
     INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES
@@ -178,7 +178,7 @@ async function initializeDatabase(env) {
       ('Off Hand',         0),
       ('Two-Hand',         0),
       ('One-Hand',         0),
-      ('Tier Token',       0),
+      ('TOKEN',            0),
       ('Held In Off-hand', 0),
       ('Ranged',           0);
 

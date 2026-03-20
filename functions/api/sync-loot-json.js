@@ -194,7 +194,7 @@ export async function onRequest({ request, env }) {
           // GP Award (Only if character matched AND this is a NEW item)
           // Map both "TOKEN" and "tier token" to the "tier token" key in settings
           const normalizedSlot = (itemSlot || '').toLowerCase();
-          const slotKey = (normalizedSlot === 'token' || normalizedSlot === 'tier token') ? 'tier token' : normalizedSlot;
+          const slotKey = (normalizedSlot === 'token' || normalizedSlot === 'tier token') ? 'token' : normalizedSlot;
           const gpAmount = gearMap.get(slotKey) || 0;
 
           if (isNew && charInfo && gpAmount > 0) {

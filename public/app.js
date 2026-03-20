@@ -195,7 +195,7 @@ const GEAR_SLOTS = [
   'finger',           'Trinket',
   'Main Hand',        'Off Hand',
   'Two-Hand',         'One-Hand',
-  'Tier Token',       'Held In Off-hand',
+  'TOKEN',       'Held In Off-hand',
   'Ranged',
 ];
 
@@ -1084,6 +1084,7 @@ function populateGpBulk() {
 function formatSlotName(slot) {
   if (!slot) return '';
   if (slot === 'finger') return 'Finger';
+  if (slot === 'TOKEN') return 'Token';
   return slot;
 }
 
