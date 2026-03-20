@@ -185,6 +185,16 @@ function getClassColor(className) {
   return CLASS_COLORS[className.toLowerCase()] || '#fff';
 }
 
+function refreshWowheadTooltips() {
+  if (window.$WowheadPower) {
+    window.$WowheadPower.refreshLinks();
+  } else if (window.__WowheadPower) {
+    window.__WowheadPower.refreshLinks();
+  } else if (window.WH && window.WH.Tooltips && window.WH.Tooltips.init) {
+    window.WH.Tooltips.init();
+  }
+}
+
 // ── All 15 WoW gear slots (display order) ───────────────────────
 const GEAR_SLOTS = [
   'Head',             'Neck',
@@ -520,37 +530,44 @@ async function formatReasonWithLinks(reason) {
   const matches = [...cleanReason.matchAll(wowheadUrlRegex)];
 
   for (const match of matches) {
-    const itemId = match[0].match(/item=(\d+)/)[1];
-    if (!itemIds.includes(itemId)) {
-      itemIds.push(itemId);
+    const itemIdMatch = match[0].match(/item=(\d+)/);
+    if (itemIdMatch) {
+      const itemId = itemIdMatch[1];
+      if (!itemIds.includes(itemId)) {
+        itemIds.push(itemId);
+      }
     }
   }
 
-  // Fetch all item names in parallel
-  const itemNames = {};
+  // Fetch all item names and qualities in parallel
+  const itemDataMap = {};
   try {
-    const namePromises = itemIds.map(id =>
+    const dataPromises = itemIds.map(id =>
       apiFetch(`/api/item-info?id=${id}`)
         .then(r => r.json())
         .then(data => {
-          itemNames[id] = data.name || id;
+          itemDataMap[id] = {
+            name: data.name || id,
+            quality: data.qualityName || 'Common'
+          };
         })
         .catch(() => {
-          itemNames[id] = id; // Fallback to ID if fetch fails
+          itemDataMap[id] = { name: id, quality: 'Common' }; // Fallback
         })
     );
-    await Promise.all(namePromises);
+    await Promise.all(dataPromises);
   } catch (err) {
-    console.error('Error fetching item names:', err);
-    // If fetch fails, we'll fall back to showing item IDs
+    console.error('Error fetching item data:', err);
   }
 
   result = result.replace(wowheadUrlRegex, (match) => {
-    const itemId = match.match(/item=(\d+)/)[1];
-    const itemName = itemNames[itemId] || itemId;
-    // Create link with item name (WoWhead tooltip will work based on the href URL)
-    // rename-link="true" ensures the tooltip power script can style it with the correct quality color
-    links.push(`<a href="${match}" target="_blank" data-wh-rename-link="true" class="wowhead-link">${escHtml(itemName)}</a>`);
+    const itemIdMatch = match.match(/item=(\d+)/);
+    const itemId = itemIdMatch ? itemIdMatch[1] : null;
+    const item = itemDataMap[itemId] || { name: itemId || 'Item', quality: 'Common' };
+    const qualityClass = `quality-${item.quality.toLowerCase()}`;
+    
+    // Create link with item name and quality color
+    links.push(`<a href="${match}" target="_blank" data-wh-rename-link="true" class="wowhead-link ${qualityClass}">${escHtml(item.name)}</a>`);
     return placeholderPrefix + (links.length - 1) + placeholderSuffix;
   });
 
@@ -640,9 +657,7 @@ async function populateHistoryModal(transactions, characterName) {
   });
 
   // Refresh WoWhead tooltips for dynamically added content
-  if (window.__WowheadPower) {
-    window.__WowheadPower.refreshLinks();
-  }
+  refreshWowheadTooltips();
 }
 
 function openEditTransactionModal(transactionId, transactionType, transaction, characterName) {
@@ -2061,7 +2076,7 @@ function renderLootContainer() {
   }).join('');
 
   // Refresh Tooltips
-  if (window.$WowheadPower) window.$WowheadPower.refreshLinks();
+  refreshWowheadTooltips();
 }
 
 function renderBossesView(items) {
