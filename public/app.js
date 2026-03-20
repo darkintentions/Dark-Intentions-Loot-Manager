@@ -2000,7 +2000,6 @@ async function syncLootFromWoWAudit() {
 }
 
 let currentLootItems = [];
-let currentLootView = 'bosses'; // 'bosses' or 'all'
 
 async function loadLootHistory() {
   const container = $('#loot-container');
@@ -2043,12 +2042,7 @@ function renderLootContainer() {
     const items = groupedByDate[date];
     const dateStr = formatDateWithDay ? formatDateWithDay(date) : date;
     
-    let contentHtml = '';
-    if (currentLootView === 'bosses') {
-      contentHtml = renderBossesView(items);
-    } else {
-      contentHtml = renderListView(items);
-    }
+    let contentHtml = renderBossesView(items);
 
     return `
       <div class="raid-date-section" data-date="${date}">
@@ -2104,7 +2098,7 @@ function renderBossesView(items) {
                   </div>
                   <div class="loot-player-info" style="margin-top: 2px; display: flex; justify-content: space-between; align-items: baseline;">
                     <div>
-                      <span class="loot-player-name" style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</span>
+                      <span class="loot-player-name" style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">&nbsp;&nbsp;&nbsp;${escHtml(item.character_name || 'Unknown')}</span>
                       ${item.response ? `<span class="loot-response" style="margin-left: 8px; font-size: 17px; color: #aaa; font-style: italic;">(${escHtml(item.response)})</span>` : ''}
                     </div>
                     ${item.note ? `<div class="loot-note" style="margin-top: 0;">"${escHtml(item.note)}"</div>` : ''}
@@ -2119,63 +2113,6 @@ function renderBossesView(items) {
   `;
 }
 
-function renderListView(items) {
-  return `
-    <div class="loot-list-view">
-      <table class="loot-list-table">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Type</th>
-            <th>Slot</th>
-            <th>Character</th>
-            <th>Boss</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items.map(item => `
-            <tr>
-              <td>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <a href="https://www.wowhead.com/item=${item.item_id}" data-wh-icon-size="small" style="text-decoration: none; font-weight: 600;">
-                    ${escHtml(item.name || `Item #${item.item_id}`)}
-                  </a>
-                </div>
-              </td>
-              <td style="font-size: 12px; color: #aaa;">${escHtml(item.typeCode || '—')}</td>
-              <td style="font-size: 12px; color: #888;">${escHtml(item.slot || '—')}</td>
-              <td style="font-weight: 600; font-size: 17px;">
-                <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 15px;">
-                  <div style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">
-                    ${escHtml(item.character_name || 'Unknown')}
-                    ${item.response ? `<span style="font-size: 17px; color: #888; font-style: italic; font-weight: normal; margin-left: 5px;">(${escHtml(item.response)})</span>` : ''}
-                  </div>
-                  ${item.note ? `<div style="font-size: 17px; color: #666; font-style: italic; font-weight: normal; white-space: nowrap;">"${escHtml(item.note)}"</div>` : ''}
-                </div>
-              </td>
-              <td style="font-size: 17px; color: #888;">${escHtml(item.boss)}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-// Add these to your init logic or global scope
-$('#view-bosses-btn')?.addEventListener('click', () => {
-  currentLootView = 'bosses';
-  $('#view-bosses-btn').classList.add('active');
-  $('#view-list-btn').classList.remove('active');
-  renderLootContainer();
-});
-
-$('#view-list-btn')?.addEventListener('click', () => {
-  currentLootView = 'all';
-  $('#view-list-btn').classList.add('active');
-  $('#view-bosses-btn').classList.remove('active');
-  renderLootContainer();
-});
 
 // Helper for class colors in loot (we need to find the character in roster)
 function getRosterMemberClass(charName) {
