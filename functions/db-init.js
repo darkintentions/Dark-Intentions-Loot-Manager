@@ -49,6 +49,39 @@ export async function ensureTablesExist(env) {
   } catch (err) {
     await initializeDatabase(env);
   }
+
+  // Always sync gear slots to ensure UI matches DB even on existing installs
+  await syncGearSlots(env);
+}
+
+/**
+ * Ensures all expected gear slots exist in epgp_gear_values and naming is consistent.
+ */
+async function syncGearSlots(env) {
+  try {
+    const expectedSlots = [
+      'Head', 'Neck', 'Shoulder', 'Back', 'Chest', 'Wrist', 'Hands', 'Waist', 'Legs', 'Feet',
+      'finger', 'Trinket', 'Main Hand', 'Off Hand', 'Two-Hand', 'One-Hand', 'TOKEN', 'Held In Off-hand', 'Ranged'
+    ];
+
+    const statements = [];
+
+    // 1. Rename existing inconsistent names
+    statements.push(env.DB.prepare("UPDATE epgp_gear_values SET slot_name = 'One-Hand' WHERE slot_name = 'one_hand'"));
+    statements.push(env.DB.prepare("UPDATE epgp_gear_values SET slot_name = 'Two-Hand' WHERE slot_name = 'two_hand'"));
+    statements.push(env.DB.prepare("UPDATE epgp_gear_values SET slot_name = 'TOKEN' WHERE slot_name = 'Tier Token' OR slot_name = 'Tier'"));
+
+    // 2. Insert missing slots with default 0
+    for (const slot of expectedSlots) {
+      statements.push(env.DB.prepare("INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES (?, 0)").bind(slot));
+    }
+
+    if (statements.length > 0) {
+      await env.DB.batch(statements);
+    }
+  } catch (err) {
+    console.error('Failed to sync gear slots:', err.message);
+  }
 }
 
 async function initializeDatabase(env) {
