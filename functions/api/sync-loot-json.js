@@ -71,6 +71,15 @@ export async function onRequest({ request, env }) {
 
     // 2. Fetch Roster to map "Player-Realm" to character_id and name
     const { results: rosterRows } = await env.DB.prepare("SELECT character_id, name, realm FROM roster").all();
+    
+    if (rosterRows.length === 0) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Roster is empty and no loot data saved. Sync your roster first!',
+        rosterEmpty: true 
+      }), { status: 400, headers });
+    }
+
     const characterMap = new Map(); // Key: "name-realm" (normalized), Value: { id, name }
     for (const row of rosterRows) {
       // RCLC strips spaces from realm names in keys (e.g. "Moon Guard" -> "MoonGuard")
@@ -96,6 +105,7 @@ export async function onRequest({ request, env }) {
     const now = new Date().toISOString();
     const errors = [];
     const insertedItems = [];
+    const unmatchedPlayers = new Set();
     
     // Simple cache to avoid redundant WoWhead requests during this sync
     const slotCache = new Map();
@@ -234,6 +244,10 @@ export async function onRequest({ request, env }) {
             insertedCount++;
             insertedItems.push({ name: itemName, char: charInfo ? charInfo.name : charKey, gp: gpAmount });
             existingIds.add(rclcId); 
+            
+            if (!charInfo) {
+              unmatchedPlayers.add(charKey);
+            }
           } else {
             updatedCount++;
           }
@@ -265,6 +279,7 @@ export async function onRequest({ request, env }) {
       updated: updatedCount,
       gpAwarded: gpAwardedCount,
       insertedItems: insertedItems,
+      unmatchedPlayers: Array.from(unmatchedPlayers),
       errors: errors.length > 0 ? errors : null
     }), { headers });
 

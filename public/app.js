@@ -2025,7 +2025,7 @@ function renderLootContainer() {
   if (!container) return;
 
   if (currentLootItems.length === 0) {
-    container.innerHTML = '<div class="empty-row text-center" style="padding: 40px;">No loot history found. Sync from WoWAudit to get started.</div>';
+    container.innerHTML = '<div class="empty-row text-center" style="padding: 40px;">No loot history found. Sync from DI Monitor App or upload its diloot.json file.</div>';
     return;
   }
 
@@ -2157,6 +2157,7 @@ $('#loot-file-input').addEventListener('change', async (e) => {
     if (data.success) {
       showMessage('loot', 'success', `✓ ${data.message}`);
       await loadLootHistory();
+      await loadRoster(); // Ensure roster PR values update
     } else {
       throw new Error(data.error || 'Import failed');
     }
