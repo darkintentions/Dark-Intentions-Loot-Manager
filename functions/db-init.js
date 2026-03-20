@@ -8,10 +8,14 @@
  * Keeping them in sync ensures fresh deployments work correctly.
  */
 export async function ensureTablesExist(env) {
-  // Migrate loot_history if it still has the old 'name' column
+  // Migrate loot_history schema updates
   try {
     const tableInfo = await env.DB.prepare("PRAGMA table_info(loot_history)").all();
-    if (tableInfo.results && tableInfo.results.some(c => c.name === 'name')) {
+    const hasName = tableInfo.results && tableInfo.results.some(c => c.name === 'name');
+    const hasOldAwardedCol = tableInfo.results && tableInfo.results.some(c => c.name === 'awarded_by_character_id');
+    const hasTypeCode = tableInfo.results && tableInfo.results.some(c => c.name === 'typeCode');
+    
+    if (hasName || hasOldAwardedCol || !hasTypeCode) {
       console.log('Detected old loot_history schema, dropping for recreation...');
       await env.DB.prepare("DROP TABLE loot_history").run();
     }
@@ -103,12 +107,12 @@ async function initializeDatabase(env) {
       item_id                 INTEGER NOT NULL,
       slot                    TEXT,
       character_id            INTEGER NOT NULL,
-      awarded_by_character_id INTEGER,
       awarded_by_name         TEXT,
       awarded_at              TEXT,
       difficulty              TEXT,
       instance                TEXT,
       boss                    TEXT,
+      typeCode                TEXT,
       note                    TEXT,
       wish_value              INTEGER DEFAULT 0,
       bonus_ids               TEXT,

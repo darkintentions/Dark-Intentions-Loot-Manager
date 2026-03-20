@@ -2057,7 +2057,7 @@ function renderBossesView(items) {
       bosses[bossKey] = {
         name: item.boss || 'Unknown Boss',
         instance: item.instance || 'Unknown Instance',
-        difficulty: item.difficulty || 'Normal',
+        difficulty: item.difficulty || 'Heroic',
         items: []
       };
     }
@@ -2070,7 +2070,7 @@ function renderBossesView(items) {
         <div class="boss-card">
           <div class="boss-card-header">
             <div class="boss-name">${escHtml(boss.name)}</div>
-            <div class="difficulty-badge difficulty-${boss.difficulty.toLowerCase()}">${escHtml(boss.difficulty)}</div>
+            <div class="difficulty-badge difficulty-${boss.difficulty.toString().toLowerCase()}">${escHtml(boss.difficulty)}</div>
           </div>
           <div class="boss-card-instance" style="font-size: 0.7rem; color: #666; padding: 4px 18px; border-bottom: 1px solid rgba(255,255,255,0.03);">
             ${escHtml(boss.instance)}
@@ -2082,8 +2082,9 @@ function renderBossesView(items) {
                   <a href="https://www.wowhead.com/item=${item.item_id}" class="loot-item-link" data-wh-icon-size="small">
                     ${escHtml(item.name || `Item #${item.item_id}`)}
                   </a>
+                  <span class="loot-type-tag" style="font-size: 0.65rem; color: #888; margin-left: 5px;">${escHtml(item.typeCode || '')}</span>
                   <div class="loot-player-info">
-                    <span class="loot-player-name" style="color: ${getClassColor(getRosterMemberClass(item.name))}">${escHtml(item.name === item.awarded_by_name ? 'Disenchanted?' : item.name)}</span>
+                    <span class="loot-player-name" style="color: ${getClassColor(getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</span>
                   </div>
                 </div>
               </div>
@@ -2102,6 +2103,7 @@ function renderListView(items) {
         <thead>
           <tr>
             <th>Item</th>
+            <th>Type</th>
             <th>Slot</th>
             <th>Character</th>
             <th>Boss</th>
@@ -2117,8 +2119,9 @@ function renderListView(items) {
                   </a>
                 </div>
               </td>
+              <td style="font-size: 0.75rem; color: #aaa;">${escHtml(item.typeCode || '—')}</td>
               <td style="color: #888;">${escHtml(item.slot || '—')}</td>
-              <td style="font-weight: 600; color: ${getClassColor(getRosterMemberClass(item.name))}">${escHtml(item.name)}</td>
+              <td style="font-weight: 600; color: ${getClassColor(getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</td>
               <td style="font-size: 0.8rem; color: #888;">${escHtml(item.boss)}</td>
             </tr>
           `).join('')}

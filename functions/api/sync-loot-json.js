@@ -101,6 +101,7 @@ export async function onRequest({ request, env }) {
           const itemSlot = item.itemSlot || '';
           const instance = item.instance || item.zone || '';
           const boss = item.boss || item.encounter || '';
+          const typeCode = item.typeCode || '';
           
           // Parse date/time
           let awardedAt = '';
@@ -135,8 +136,8 @@ export async function onRequest({ request, env }) {
               INSERT OR REPLACE INTO loot_history (
                 rclootcouncil_id, item_id, slot, 
                 character_id, awarded_by_name, awarded_at, 
-                difficulty, instance, boss
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                difficulty, instance, boss, typeCode
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).bind(
               rclcId.toString(),
               itemId,
@@ -146,7 +147,8 @@ export async function onRequest({ request, env }) {
               awardedAt,
               difficulty,
               instance,
-              boss
+              boss,
+              typeCode
             )
           );
           insertedCount++;
