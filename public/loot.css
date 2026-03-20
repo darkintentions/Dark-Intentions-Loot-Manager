@@ -198,7 +198,7 @@
 .loot-item-link {
     display: block;
     font-weight: 600;
-    font-size: 17px;
+    font-size: 17px !important;
     margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
