@@ -710,25 +710,25 @@ $('#roster-search').addEventListener('input', (e) => {
   filterRoster(e.target.value);
 });
 
-// Sync PRs Signal (Forces DI Monitor to update PRValues)
+// Force Sync PRs Signal (Forces DI Monitor to update PRValues)
 $('#sync-prs-btn').addEventListener('click', async () => {
   const btn = $('#sync-prs-btn');
   const orgHtml = btn.innerHTML;
 
   try {
     btn.disabled = true;
-    btn.innerHTML = '<span class="btn-icon">⏳</span> Syncing…';
+    btn.innerHTML = '<span class="btn-icon">⏳</span> Forcing Sync…';
 
     const res = await fetch('/api/sync-prs', { method: 'POST' });
     const data = await res.json();
 
     if (data.success) {
-      showMessage('roster', 'success', `✓ PR sync signal sent (${new Date(data.last_pr_sync).toLocaleTimeString()})`);
+      showMessage('roster', 'success', `✓ Force PR sync signal sent (${new Date(data.last_pr_sync).toLocaleTimeString()})`);
     } else {
       throw new Error(data.error || 'Failed to send sync signal');
     }
   } catch (err) {
-    console.error('Sync PRs error:', err);
+    console.error('Force Sync PRs error:', err);
     showMessage('roster', 'error', `✗ ${err.message}`);
   } finally {
     btn.disabled = false;
