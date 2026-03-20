@@ -2104,7 +2104,7 @@ function renderBossesView(items) {
                   </div>
                   <div class="loot-player-info" style="margin-top: 2px;">
                     <span class="loot-player-name" style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</span>
-                    ${item.response ? `<span class="loot-response" style="margin-left: 8px; font-size: 11px; color: #aaa; font-style: italic;">(${escHtml(item.response)})</span>` : ''}
+                    ${item.response ? `<span class="loot-response" style="margin-left: 8px; font-size: 17px; color: #aaa; font-style: italic;">(${escHtml(item.response)})</span>` : ''}
                   </div>
                   ${item.note ? `<div class="loot-note">"${escHtml(item.note)}"</div>` : ''}
                 </div>
@@ -2142,10 +2142,10 @@ function renderListView(items) {
               </td>
               <td style="font-size: 0.75rem; color: #aaa;">${escHtml(item.typeCode || '—')}</td>
               <td style="color: #888;">${escHtml(item.slot || '—')}</td>
-              <td style="font-weight: 600; color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">
+              <td style="font-weight: 600; font-size: 17px; color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">
                 ${escHtml(item.character_name || 'Unknown')}
-                ${item.response ? `<span style="font-size: 0.75rem; color: #888; font-style: italic; font-weight: normal; margin-left: 5px;">(${escHtml(item.response)})</span>` : ''}
-                ${item.note ? `<div style="font-size: 0.65rem; color: #666; font-style: italic; font-weight: normal;">"${escHtml(item.note)}"</div>` : ''}
+                ${item.response ? `<span style="font-size: 17px; color: #888; font-style: italic; font-weight: normal; margin-left: 5px;">(${escHtml(item.response)})</span>` : ''}
+                ${item.note ? `<div style="font-size: 17px; color: #666; font-style: italic; font-weight: normal;">"${escHtml(item.note)}"</div>` : ''}
               </td>
               <td style="font-size: 0.8rem; color: #888;">${escHtml(item.boss)}</td>
             </tr>
