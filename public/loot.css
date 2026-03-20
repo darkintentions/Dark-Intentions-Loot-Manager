@@ -100,6 +100,7 @@
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
+    font-size: 13px;
 }
 
 .boss-card:hover {
@@ -121,6 +122,16 @@
     font-family: 'Cinzel', serif;
     font-weight: 700;
     color: #fff;
+    font-size: 14px;
+}
+
+.boss-instance-label {
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+    opacity: 0.8;
 }
 
 .boss-card-header .difficulty-badge {
@@ -141,8 +152,8 @@
 }
 
 .loot-slot-tag {
-    font-size: 0.6rem;
-    color: #888;
+    font-size: 11px;
+    color: #fff;
     background: rgba(255, 255, 255, 0.05);
     padding: 2px 5px;
     border-radius: 4px;

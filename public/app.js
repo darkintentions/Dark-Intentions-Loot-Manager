@@ -2090,20 +2090,17 @@ function renderBossesView(items) {
         <div class="boss-card">
           <div class="boss-card-header">
             <div class="boss-name">${escHtml(boss.name)}</div>
-            <div class="difficulty-badge difficulty-${boss.difficulty.toString().toLowerCase()}">${escHtml(boss.difficulty)}</div>
-          </div>
-          <div class="boss-card-instance" style="font-size: 0.7rem; color: #666; padding: 4px 18px; border-bottom: 1px solid rgba(255,255,255,0.03);">
-            ${escHtml(boss.instance)}
+            <div class="boss-instance-label">${escHtml(boss.instance)}</div>
           </div>
           <div class="boss-loot-list">
             ${boss.items.map(item => `
               <div class="loot-entry">
                 <div class="loot-info">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
                     <a href="https://www.wowhead.com/item=${item.item_id}" class="loot-item-link" data-wh-icon-size="small">
                       ${escHtml(item.name || `Item #${item.item_id}`)}
                     </a>
-                    <span class="loot-slot-tag" style="font-size: 0.6rem; color: #888; background: rgba(255,255,255,0.05); padding: 1px 4px; border-radius: 3px;">${escHtml(item.slot || item.typeCode || '')}</span>
+                    <span class="loot-slot-tag">${escHtml(item.slot || item.typeCode || '')}</span>
                   </div>
                   <div class="loot-player-info" style="margin-top: 2px;">
                     <span class="loot-player-name" style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</span>
