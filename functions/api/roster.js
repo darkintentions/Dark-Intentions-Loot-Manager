@@ -122,10 +122,23 @@ export async function onRequest({ request, env }) {
       }
 
       const payload = await wowRes.json();
+      
+      // LOG PAYLOAD STRUCTURE FOR DEBUGGING
+      await logEvent(env, 'info', 'API', `WoWAudit Payload Received: ${Array.isArray(payload) ? 'Array' : 'Object'} with keys: ${Object.keys(payload).join(', ')}`, { payload_preview: JSON.stringify(payload).substring(0, 500) });
+
       // API may return array or { characters: [...] }
       const chars = Array.isArray(payload)
         ? payload
         : (payload.characters ?? payload.data ?? []);
+
+      if (chars.length === 0) {
+        await logEvent(env, 'warning', 'API', 'WoWAudit sync returned 0 characters. Keeping current roster.');
+        return new Response(JSON.stringify({ 
+          success: false, 
+          error: 'WoWAudit returned no characters. Check your API key and guild settings in WoW Audit.',
+          details: `Payload structure: ${JSON.stringify(payload).substring(0, 200)}`
+        }), { status: 200, headers });
+      }
 
       // Get default GP value from settings
       const defaultGpRow = await env.DB
