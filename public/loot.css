@@ -166,14 +166,18 @@
 }
 
 .loot-item-link {
-    display: block;
+    display: inline-block;
     font-weight: 600;
     font-size: 17px !important;
+    text-decoration: none !important;
+}
+
+.loot-info .loot-item-link {
+    display: block;
     margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-decoration: none !important;
 }
 
 .loot-player-name {

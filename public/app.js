@@ -567,7 +567,7 @@ async function formatReasonWithLinks(reason) {
     const qualityClass = `quality-${item.quality.toLowerCase()}`;
     
     // Create link with item name and quality color
-    links.push(`<a href="${match}" target="_blank" data-wh-rename-link="true" class="wowhead-link ${qualityClass}">${escHtml(item.name)}</a>`);
+    links.push(`<a href="${match}" target="_blank" data-wh-rename-link="true" class="wowhead-link ${qualityClass} loot-item-link">${escHtml(item.name)}</a>`);
     return placeholderPrefix + (links.length - 1) + placeholderSuffix;
   });
 
