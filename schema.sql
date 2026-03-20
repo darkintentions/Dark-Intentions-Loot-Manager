@@ -81,24 +81,27 @@ VALUES
   ('signup_ep', '1'),
   ('on_time_ep', '1');
 
--- ─── Seed: All 15 WoW Gear Slots ─────────────────────────────
+-- ─── Seed: All 18 WoW Gear Slots ─────────────────────────────
 INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES
-  ('Head',      0),
-  ('Neck',      0),
-  ('Shoulder',  0),
-  ('Back',      0),
-  ('Chest',     0),
-  ('Wrist',     0),
-  ('Hands',     0),
-  ('Waist',     0),
-  ('Legs',      0),
-  ('Feet',      0),
-  ('Ring',      0),
-  ('Trinket',   0),
-  ('Main Hand', 0),
-  ('Off Hand',  0),
-  ('Tier',      0),
-  ('Ranged',    0);
+  ('Head',             0),
+  ('Neck',             0),
+  ('Shoulder',         0),
+  ('Back',             0),
+  ('Chest',            0),
+  ('Wrist',            0),
+  ('Hands',            0),
+  ('Waist',            0),
+  ('Legs',             0),
+  ('Feet',             0),
+  ('finger',           0),
+  ('Trinket',          0),
+  ('Main Hand',        0),
+  ('Off Hand',         0),
+  ('Two-Hand',         0),
+  ('One-Hand',         0),
+  ('Tier Token',       0),
+  ('Held In Off-hand', 0),
+  ('Ranged',           0);
 
 -- ─── WoWAudit Period ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS wowaudit_period (

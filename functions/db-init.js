@@ -145,28 +145,32 @@ async function initializeDatabase(env) {
       ('on_time_reason', 'On Time'),
       ('last_pr_sync', null);
 
-    // Migration: Align Gear Slots with WoWAudit API
-    await env.DB.prepare("UPDATE epgp_gear_values SET slot_name = 'finger' WHERE slot_name = 'Ring'").run();
+    -- Migrations: Align Gear Slots with User's new naming convention
+    UPDATE epgp_gear_values SET slot_name = 'One-Hand' WHERE slot_name = 'one_hand';
+    UPDATE epgp_gear_values SET slot_name = 'Two-Hand' WHERE slot_name = 'two_hand';
+    UPDATE epgp_gear_values SET slot_name = 'Tier Token' WHERE slot_name = 'Tier';
+    INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES ('Held In Off-hand', 0);
 
     INSERT OR IGNORE INTO epgp_gear_values (slot_name, point_value) VALUES
-      ('Head',      0),
-      ('Neck',      0),
-      ('Shoulder',  0),
-      ('Back',      0),
-      ('Chest',     0),
-      ('Wrist',     0),
-      ('Hands',     0),
-      ('Waist',     0),
-      ('Legs',      0),
-      ('Feet',      0),
-      ('finger',    0),
-      ('Trinket',   0),
-      ('Main Hand', 0),
-      ('Off Hand',  0),
-      ('two_hand',  0),
-      ('one_hand',  0),
-      ('Tier',      0),
-      ('Ranged',    0);
+      ('Head',             0),
+      ('Neck',             0),
+      ('Shoulder',         0),
+      ('Back',             0),
+      ('Chest',            0),
+      ('Wrist',            0),
+      ('Hands',            0),
+      ('Waist',            0),
+      ('Legs',             0),
+      ('Feet',             0),
+      ('finger',           0),
+      ('Trinket',          0),
+      ('Main Hand',        0),
+      ('Off Hand',         0),
+      ('Two-Hand',         0),
+      ('One-Hand',         0),
+      ('Tier Token',       0),
+      ('Held In Off-hand', 0),
+      ('Ranged',           0);
 
     CREATE TABLE IF NOT EXISTS historical_activity (
       id          INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -1,6 +1,28 @@
 import { ensureTablesExist } from '../db-init.js';
 import { logEvent } from '../utils/logger.js';
 
+/**
+ * Fetch item slot name from WoWhead XML
+ * Example: <inventorySlot id="17">Two-Hand</inventorySlot>
+ */
+async function fetchWowheadSlot(itemId) {
+  if (!itemId || itemId === 0) return '';
+  
+  try {
+    const url = `https://www.wowhead.com/item=${itemId}&xml`;
+    const response = await fetch(url);
+    if (!response.ok) return '';
+    
+    const xml = await response.text();
+    // Parse <inventorySlot id="X">Slot Name</inventorySlot>
+    const match = xml.match(/<inventorySlot id="\d+">(.*?)<\/inventorySlot>/);
+    return match ? match[1] : '';
+  } catch (err) {
+    console.error(`Error fetching WoWhead XML for item ${itemId}:`, err);
+    return '';
+  }
+}
+
 export async function onRequest({ request, env }) {
   const headers = {
     'Content-Type': 'application/json',
@@ -63,7 +85,9 @@ export async function onRequest({ request, env }) {
     let insertedCount = 0;
     let gpAwardedCount = 0;
     const now = new Date().toISOString();
-    const errors = [];
+    
+    // Simple cache to avoid redundant WoWhead requests during this sync
+    const slotCache = new Map();
 
     // 5. Process the data
     const batchStatements = [];
@@ -78,7 +102,7 @@ export async function onRequest({ request, env }) {
       
       for (const item of items) {
         // Map RCLootCouncil fields
-        const rclcId = item.id || item.lootCouncilID || `${charKey}-${item.itemID || item.itemID}-${item.date}-${item.time}`;
+        const rclcId = item.id || item.lootCouncilID || `${charKey}-${item.itemID || item.itemId || 0}-${item.date}-${item.time}`;
         
         // Skip existing items to improve performance
         if (existingIds.has(rclcId.toString())) continue;
@@ -98,13 +122,26 @@ export async function onRequest({ request, env }) {
           const itemId = idMatch ? parseInt(idMatch[1], 10) : (item.itemID || item.itemId || 0);
           const itemName = nameMatch ? nameMatch[1] : (item.itemName || 'Unknown Item');
           
-          let itemSlot = item.itemSlot || '';
           const instance = item.instance || item.zone || '';
           const boss = item.boss || item.encounter || '';
           const typeCode = item.typeCode || '';
 
+          // FETCH SLOT FROM WOWHEAD XML
+          let itemSlot = '';
           if (typeCode === 'TOKEN') {
             itemSlot = 'TOKEN';
+          } else if (itemId > 0) {
+            if (slotCache.has(itemId)) {
+              itemSlot = slotCache.get(itemId);
+            } else {
+              itemSlot = await fetchWowheadSlot(itemId);
+              slotCache.set(itemId, itemSlot);
+            }
+          }
+
+          // Fallback to JSON slot if XML failed and it's not a TOKEN
+          if (!itemSlot && typeCode !== 'TOKEN') {
+            itemSlot = item.itemSlot || '';
           }
           
           // Parse date/time

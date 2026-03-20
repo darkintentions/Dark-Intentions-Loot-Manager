@@ -166,15 +166,16 @@ function classCss(className) {
 
 // ── All 15 WoW gear slots (display order) ───────────────────────
 const GEAR_SLOTS = [
-  'Head',      'Neck',
-  'Shoulder',  'Back',
-  'Chest',     'Wrist',
-  'Hands',     'Waist',
-  'Legs',      'Feet',
-  'finger',    'Trinket',
-  'Main Hand', 'Off Hand',
-  'two_hand',  'one_hand',
-  'Tier',      'Ranged',
+  'Head',             'Neck',
+  'Shoulder',         'Back',
+  'Chest',            'Wrist',
+  'Hands',            'Waist',
+  'Legs',             'Feet',
+  'finger',           'Trinket',
+  'Main Hand',        'Off Hand',
+  'Two-Hand',         'One-Hand',
+  'Tier Token',       'Held In Off-hand',
+  'Ranged',
 ];
 
 // ================================================================
@@ -1061,8 +1062,6 @@ function populateGpBulk() {
 function formatSlotName(slot) {
   if (!slot) return '';
   if (slot === 'finger') return 'Finger';
-  if (slot === 'two_hand') return 'Two Hand';
-  if (slot === 'one_hand') return 'One Hand';
   return slot;
 }
 
