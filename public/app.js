@@ -2102,11 +2102,13 @@ function renderBossesView(items) {
                     </a>
                     <span class="loot-slot-tag">${escHtml(item.slot || item.typeCode || '')}</span>
                   </div>
-                  <div class="loot-player-info" style="margin-top: 2px;">
-                    <span class="loot-player-name" style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</span>
-                    ${item.response ? `<span class="loot-response" style="margin-left: 8px; font-size: 17px; color: #aaa; font-style: italic;">(${escHtml(item.response)})</span>` : ''}
+                  <div class="loot-player-info" style="margin-top: 2px; display: flex; justify-content: space-between; align-items: baseline;">
+                    <div>
+                      <span class="loot-player-name" style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</span>
+                      ${item.response ? `<span class="loot-response" style="margin-left: 8px; font-size: 17px; color: #aaa; font-style: italic;">(${escHtml(item.response)})</span>` : ''}
+                    </div>
+                    ${item.note ? `<div class="loot-note" style="margin-top: 0;">"${escHtml(item.note)}"</div>` : ''}
                   </div>
-                  ${item.note ? `<div class="loot-note">"${escHtml(item.note)}"</div>` : ''}
                 </div>
               </div>
             `).join('')}
@@ -2142,12 +2144,16 @@ function renderListView(items) {
               </td>
               <td style="font-size: 0.75rem; color: #aaa;">${escHtml(item.typeCode || '—')}</td>
               <td style="color: #888;">${escHtml(item.slot || '—')}</td>
-              <td style="font-weight: 600; font-size: 17px; color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">
-                ${escHtml(item.character_name || 'Unknown')}
-                ${item.response ? `<span style="font-size: 17px; color: #888; font-style: italic; font-weight: normal; margin-left: 5px;">(${escHtml(item.response)})</span>` : ''}
-                ${item.note ? `<div style="font-size: 17px; color: #666; font-style: italic; font-weight: normal;">"${escHtml(item.note)}"</div>` : ''}
+              <td style="font-weight: 600; font-size: 17px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 15px;">
+                  <div style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">
+                    ${escHtml(item.character_name || 'Unknown')}
+                    ${item.response ? `<span style="font-size: 17px; color: #888; font-style: italic; font-weight: normal; margin-left: 5px;">(${escHtml(item.response)})</span>` : ''}
+                  </div>
+                  ${item.note ? `<div style="font-size: 17px; color: #666; font-style: italic; font-weight: normal; white-space: nowrap;">"${escHtml(item.note)}"</div>` : ''}
+                </div>
               </td>
-              <td style="font-size: 0.8rem; color: #888;">${escHtml(item.boss)}</td>
+              <td style="font-size: 17px; color: #888;">${escHtml(item.boss)}</td>
             </tr>
           `).join('')}
         </tbody>

@@ -122,14 +122,14 @@
     font-family: 'Cinzel', serif;
     font-weight: 700;
     color: #fff;
-    font-size: 14px;
+    font-size: 17px !important;
 }
 
 .boss-instance-label {
     font-family: 'Cinzel', serif;
     font-weight: 700;
     color: #fff;
-    font-size: 14px;
+    font-size: 17px !important;
     opacity: 0.5;
     text-transform: uppercase;
 }
@@ -152,7 +152,7 @@
 }
 
 .loot-slot-tag {
-    font-size: 11px;
+    font-size: 17px !important;
     color: #fff;
     background: rgba(255, 255, 255, 0.05);
     padding: 2px 5px;
@@ -175,7 +175,7 @@
 }
 
 .loot-note {
-    font-size: 17px;
+    font-size: 17px !important;
     color: #666;
     font-style: italic;
     margin-top: 4px;
