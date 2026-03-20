@@ -198,7 +198,7 @@
 .loot-item-link {
     display: block;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 17px;
     margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
@@ -206,8 +206,13 @@
     text-decoration: none !important;
 }
 
+.loot-player-name {
+    font-size: 17px;
+    font-weight: 600;
+}
+
 .loot-player-info {
-    font-size: 0.75rem;
+    font-size: 17px;
     color: #888;
 }
 
