@@ -212,7 +212,7 @@ export async function onRequest({ request, env }) {
               env.DB.prepare(`
                 INSERT INTO gp_log (name, gp, reason, timestamp)
                 VALUES (?, ?, ?, ?)
-              `).bind(charInfo.name, gpAmount, `Awarded ${itemName} (Loot History)`, now)
+              `).bind(charInfo.name, gpAmount, `Awarded https://www.wowhead.com/item=${itemId} (Loot History)`, now)
             );
             gpAwardedCount++;
           }

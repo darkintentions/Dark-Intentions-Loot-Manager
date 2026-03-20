@@ -549,7 +549,8 @@ async function formatReasonWithLinks(reason) {
     const itemId = match.match(/item=(\d+)/)[1];
     const itemName = itemNames[itemId] || itemId;
     // Create link with item name (WoWhead tooltip will work based on the href URL)
-    links.push(`<a href="${match}" target="_blank" data-wh-rename-link="false" class="wowhead-link">${escHtml(itemName)}</a>`);
+    // rename-link="true" ensures the tooltip power script can style it with the correct quality color
+    links.push(`<a href="${match}" target="_blank" data-wh-rename-link="true" class="wowhead-link">${escHtml(itemName)}</a>`);
     return placeholderPrefix + (links.length - 1) + placeholderSuffix;
   });
 
