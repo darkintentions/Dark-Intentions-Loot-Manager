@@ -361,7 +361,7 @@ function renderRoster(roster) {
 
     return `
       <tr class="roster-row" data-character="${escHtml(c.name)}">
-        <td><span class="expand-arrow">▸</span> ${pr}</td>
+        <td class="pr-cell"><span class="expand-arrow">▸</span> ${pr}</td>
         <td><span class="char-name ${css}">${escHtml(c.name)}</span></td>
         <td>${escHtml(c.realm || '—')}</td>
         <td class="${css}">${escHtml(c.class || '—')}</td>

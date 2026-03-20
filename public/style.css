@@ -449,6 +449,11 @@ body {
   white-space: nowrap;
 }
 
+.data-table thead th[data-sort="pr"],
+.pr-cell {
+  text-align: center !important;
+}
+
 .data-table tbody tr {
   border-bottom: 1px solid var(--color-border);
   transition: background 0.12s;
@@ -1017,10 +1022,11 @@ body {
   display: inline-block;
   transition: transform 0.18s;
   color: var(--color-gold-bright);
-  font-size: 14px;
-  width: 16px;
+  font-size: 19px;
+  width: 22px;
   text-align: center;
-  margin-right: 4px;
+  margin-right: 2px;
+  vertical-align: middle;
 }
 
 .roster-row.expanded .expand-arrow {
