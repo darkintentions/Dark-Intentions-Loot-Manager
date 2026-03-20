@@ -260,7 +260,7 @@ export async function onRequest({ request, env }) {
 
     return new Response(JSON.stringify({
       success: true,
-      message: `✓ Success: ${insertedCount} new items, ${updatedCount} records updated, ${gpAwardedCount} GP awarded.`,
+      message: `✓ Success: ${insertedCount} new items, ${updatedCount} records updated, ${gpAwardedCount} items awarded GP.`,
       inserted: insertedCount,
       updated: updatedCount,
       gpAwarded: gpAwardedCount,
