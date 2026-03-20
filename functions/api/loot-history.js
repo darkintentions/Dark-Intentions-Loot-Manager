@@ -83,10 +83,7 @@ export async function onRequest({ request, env }) {
               `INSERT OR REPLACE INTO loot_history (
                 rclootcouncil_id,
                 item_id,
-                name,
-                icon,
                 slot,
-                quality,
                 character_id,
                 awarded_by_character_id,
                 awarded_by_name,
@@ -94,23 +91,16 @@ export async function onRequest({ request, env }) {
                 difficulty,
                 instance,
                 boss,
-                discarded,
-                same_response_amount,
                 note,
                 wish_value,
-                response_type,
                 bonus_ids,
-                old_items,
                 wish_data
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             )
             .bind(
               item.rclootcouncil_id,
               item.item_id,
-              item.name,
-              item.icon || '',
               item.slot || '',
-              item.quality || '',
               item.character_id,
               item.awarded_by_character_id || null,
               item.awarded_by_name || '',
@@ -118,13 +108,9 @@ export async function onRequest({ request, env }) {
               item.difficulty || '',
               item.instance || '',
               item.boss || '',
-              item.discarded ? 1 : 0,
-              item.same_response_amount || 0,
               item.note || '',
               item.wish_value || 0,
-              JSON.stringify(item.response_type || {}),
               JSON.stringify(item.bonus_ids || []),
-              JSON.stringify(item.old_items || []),
               JSON.stringify(item.wish_data || [])
             )
             .run();

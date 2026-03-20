@@ -69,6 +69,8 @@ export async function onRequest({ request, env }) {
     const batchStatements = [];
     const gpStatements = [];
 
+    const debugItems = [];
+
     for (const [charKey, items] of Object.entries(playersData)) {
       if (!Array.isArray(items)) continue;
 
@@ -76,14 +78,12 @@ export async function onRequest({ request, env }) {
       const normalizedCharKey = charKey.replace(/\s+/g, '').toLowerCase();
       const charInfo = characterMap.get(normalizedCharKey);
       
-      // If we can't find the character in our roster, we can still record the loot for history,
-      // but we can't award GP.
-      
       for (const item of items) {
         // Map RCLootCouncil fields
         const rclcId = item.id || item.lootCouncilID || `${charKey}-${item.itemID || item.itemID}-${item.date}-${item.time}`;
         
-        if (existingIds.has(rclcId)) continue;
+        // Remove duplicate check temporarily to force update existing records with new ItemID logic
+        // if (existingIds.has(rclcId)) continue;
         
         // Skip Normal difficulty if specified (User requirement)
         const difficulty = item.difficulty || item.difficultyID || '';
@@ -92,16 +92,21 @@ export async function onRequest({ request, env }) {
         }
 
         try {
-          // Normalize fields
-          const itemName = item.itemName || 'Unknown Item';
-          const itemId = item.itemID || 0;
-          const itemIcon = item.itemIcon || '';
+          // Parse item ID and Name from lootWon link (Robust ID extraction)
+          const lootWon = item.lootWon || '';
+          const idMatch = lootWon.match(/item:(\d+)/i);
+          const nameMatch = lootWon.match(/\|h\[(.*?)\]\|h/);
+          
+          const itemId = idMatch ? parseInt(idMatch[1], 10) : (item.itemID || item.itemId || 0);
+          const itemName = nameMatch ? nameMatch[1] : (item.itemName || 'Unknown Item');
+          
+          if (debugItems.length < 5) {
+            debugItems.push({ rclcId, itemId, itemName, lootWon: lootWon.substring(0, 50) + '...' });
+          }
+
           const itemSlot = item.itemSlot || '';
-          const itemQuality = item.itemQuality || '';
           const instance = item.instance || item.zone || '';
           const boss = item.boss || item.encounter || '';
-          const response = item.response || '';
-          const discarded = item.isDiscarded || false;
           
           // Parse date/time
           let awardedAt = '';
@@ -134,31 +139,26 @@ export async function onRequest({ request, env }) {
           batchStatements.push(
             env.DB.prepare(`
               INSERT OR REPLACE INTO loot_history (
-                rclootcouncil_id, item_id, name, icon, slot, quality, 
+                rclootcouncil_id, item_id, slot, 
                 character_id, awarded_by_name, awarded_at, 
-                difficulty, instance, boss, discarded, response_type
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                difficulty, instance, boss
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).bind(
               rclcId.toString(),
               itemId,
-              itemName,
-              itemIcon,
               itemSlot,
-              itemQuality,
               charInfo ? charInfo.id : 0,
               item.awardedBy || '',
               awardedAt,
               difficulty,
               instance,
-              boss,
-              discarded ? 1 : 0,
-              response
+              boss
             )
           );
           insertedCount++;
           existingIds.add(rclcId); 
         } catch (e) {
-          errors.push(`Error processing item ${itemId} for ${charKey}: ${e.message}`);
+          errors.push(`Error processing item ${rclcId} for ${charKey}: ${e.message}`);
         }
       }
     }
@@ -168,11 +168,12 @@ export async function onRequest({ request, env }) {
       await env.DB.batch([...gpStatements, ...batchStatements]);
     }
 
-    await logEvent(env, 'success', 'Loot', `Imported ${insertedCount} loot items from JSON file (${gpAwardedCount} GP awards)`, { insertedCount, gpAwardedCount, errors });
+    await logEvent(env, 'success', 'Loot', `Imported ${insertedCount} loot items from JSON file (${gpAwardedCount} GP awards)`, { insertedCount, gpAwardedCount, errors, debugPreview: debugItems });
 
     return new Response(JSON.stringify({
       success: true,
       message: `✓ Successfully imported ${insertedCount} loot items and awarded GP for ${gpAwardedCount} items.`,
+      debug: debugItems,
       inserted: insertedCount,
       gpAwarded: gpAwardedCount,
       errors: errors.length > 0 ? errors : null

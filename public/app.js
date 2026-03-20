@@ -2078,14 +2078,12 @@ function renderBossesView(items) {
           <div class="boss-loot-list">
             ${boss.items.map(item => `
               <div class="loot-entry">
-                <img src="${item.icon ? 'https://wow.zamimg.com/images/wow/icons/large/' + item.icon + '.jpg' : 'https://wow.zamimg.com/images/wow/icons/large/inv_misc_questionmark.jpg'}" class="loot-icon">
                 <div class="loot-info">
-                  <a href="https://www.wowhead.com/item=${item.item_id}" class="loot-item-link quality-${(item.quality || '').toLowerCase()}" data-wh-icon-size="small">
-                    ${escHtml(item.name)}
+                  <a href="https://www.wowhead.com/item=${item.item_id}" class="loot-item-link" data-wh-icon-size="small">
+                    ${escHtml(item.name || `Item #${item.item_id}`)}
                   </a>
                   <div class="loot-player-info">
                     <span class="loot-player-name" style="color: ${getClassColor(getRosterMemberClass(item.name))}">${escHtml(item.name === item.awarded_by_name ? 'Disenchanted?' : item.name)}</span>
-                    <span class="loot-response">${escHtml(item.response_type?.label || 'Direct')}</span>
                   </div>
                 </div>
               </div>
@@ -2106,7 +2104,6 @@ function renderListView(items) {
             <th>Item</th>
             <th>Slot</th>
             <th>Character</th>
-            <th>Response</th>
             <th>Boss</th>
           </tr>
         </thead>
@@ -2115,15 +2112,13 @@ function renderListView(items) {
             <tr>
               <td>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                  <img src="${item.icon ? 'https://wow.zamimg.com/images/wow/icons/large/' + item.icon + '.jpg' : ''}" style="width: 24px; height: 24px; border-radius: 4px;">
-                  <a href="https://www.wowhead.com/item=${item.item_id}" data-wh-icon-size="small" class="quality-${(item.quality || '').toLowerCase()}" style="text-decoration: none; font-weight: 600;">
-                    ${escHtml(item.name)}
+                  <a href="https://www.wowhead.com/item=${item.item_id}" data-wh-icon-size="small" style="text-decoration: none; font-weight: 600;">
+                    ${escHtml(item.name || `Item #${item.item_id}`)}
                   </a>
                 </div>
               </td>
               <td style="color: #888;">${escHtml(item.slot || '—')}</td>
               <td style="font-weight: 600; color: ${getClassColor(getRosterMemberClass(item.name))}">${escHtml(item.name)}</td>
-              <td><span class="loot-response">${escHtml(item.response_type?.label || '—')}</span></td>
               <td style="font-size: 0.8rem; color: #888;">${escHtml(item.boss)}</td>
             </tr>
           `).join('')}
