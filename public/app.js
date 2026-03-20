@@ -159,6 +159,22 @@ const CLASS_CSS = {
   'warrior':       'class-warrior',
 };
 
+const CLASS_COLORS = {
+  'death knight': '#C41F3B',
+  'demon hunter': '#A330C9',
+  'druid':        '#FF7D0A',
+  'evoker':       '#33937F',
+  'hunter':       '#ABD473',
+  'mage':         '#3FC7EB',
+  'monk':         '#00FF96',
+  'paladin':      '#F58CBA',
+  'priest':       '#FFFFFF',
+  'rogue':        '#FFF569',
+  'shaman':       '#0070DE',
+  'warlock':      '#8787ED',
+  'warrior':      '#C79C6E',
+};
+
 function classCss(className) {
   if (!className) return '';
   return CLASS_CSS[className.toLowerCase()] || '';
