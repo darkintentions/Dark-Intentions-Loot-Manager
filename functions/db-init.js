@@ -18,7 +18,7 @@ export async function ensureTablesExist(env) {
   } catch (e) { /* Table likely doesn't exist yet */ }
 
   try {
-    const criticalTables = ['attendance', 'system_logs', 'wowaudit_period'];
+    const criticalTables = ['loot_history', 'attendance', 'system_logs', 'wowaudit_period'];
     for (const table of criticalTables) {
       const result = await env.DB
         .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
