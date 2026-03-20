@@ -201,6 +201,10 @@ async function initializeDatabase(env) {
       attended           BOOLEAN NOT NULL,
       UNIQUE(name, realm, date)
     );
+
+    -- Migrations
+    ALTER TABLE loot_history ADD COLUMN instance TEXT;
+    ALTER TABLE loot_history ADD COLUMN boss TEXT;
   `;
 
   // Execute each statement separately
