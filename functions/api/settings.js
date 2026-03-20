@@ -27,7 +27,6 @@ export async function onRequest({ request, env }) {
       return new Response(
         JSON.stringify({
           api_key: settingsMap['wowaudit_api_key'] ?? '',
-          api_key: settingsMap['wowaudit_api_key'] ?? '',
           default_gp: settingsMap['default_gp'] ?? '',
           enable_logging: settingsMap['enable_logging'] ?? 'false'
         }),

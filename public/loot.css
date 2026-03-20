@@ -3,42 +3,47 @@
 
 /* Raid Date Grouping */
 .raid-date-section {
-    margin-bottom: 30px;
+    margin-bottom: 32px;
 }
 
 .raid-date-header {
     width: 100%;
     display: flex;
     align-items: center;
-    background: linear-gradient(90deg, rgba(30, 30, 45, 0.9) 0%, rgba(15, 15, 25, 0.5) 100%);
-    border-left: 4px solid #c41e3a;
-    padding: 12px 20px;
-    margin-bottom: 15px;
+    background: linear-gradient(90deg, rgba(168, 85, 247, 0.1) 0%, transparent 100%);
+    border-left: 4px solid var(--accent-purple);
+    padding: 14px 24px;
+    margin-bottom: 20px;
     cursor: pointer;
-    border-radius: 0 8px 8px 0;
-    transition: background 0.2s;
+    border-radius: 4px 12px 12px 4px;
+    transition: var(--transition);
 }
 
 .raid-date-header:hover {
-    background: linear-gradient(90deg, rgba(40, 40, 60, 0.9) 0%, rgba(20, 20, 35, 0.5) 100%);
+    background: linear-gradient(90deg, rgba(168, 85, 247, 0.15) 0%, transparent 100%);
+    transform: translateX(4px);
 }
 
 .raid-date-header h2 {
     margin: 0;
-    font-size: 1.1rem;
-    font-family: 'Cinzel', serif;
-    color: #e0e0e0;
+    font-size: 1.2rem;
+    font-family: var(--font-title);
+    color: #fff;
     flex: 1;
+    letter-spacing: 0.5px;
 }
 
 .raid-date-header .raid-meta {
-    font-size: 17px !important;
-    color: #888;
-    margin-right: 15px;
+    font-family: var(--font-accent);
+    font-size: 14px;
+    color: var(--color-text-dim);
+    margin-right: 20px;
+    font-weight: 500;
 }
 
 .raid-date-header .collapse-icon {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
+    color: var(--color-text-dim);
     transition: transform 0.3s ease;
 }
 
@@ -53,91 +58,94 @@
 /* Boss Cards View */
 .boss-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px;
-    padding: 10px 5px;
-}
-
-.boss-card {
-    background: #1e1e2d;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-    font-size: 17px;
-}
-
-.boss-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    border-color: rgba(196, 30, 58, 0.3);
-}
-
-.boss-card-header {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 12px 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.boss-card-header .boss-name {
-    font-family: 'Cinzel', serif;
-    font-weight: 700;
-    color: #fff;
-    font-size: 17px !important;
-}
-
-.boss-instance-label {
-    font-family: 'Cinzel', serif;
-    font-weight: 700;
-    color: #fff;
-    font-size: 17px !important;
-    opacity: 0.5;
-    text-transform: uppercase;
-}
-
-.boss-card-header .difficulty-badge {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
-    letter-spacing: 0.5px;
-}
-
-.difficulty-normal { background: rgba(76, 175, 80, 0.2); color: #4caf50; border: 1px solid rgba(76, 175, 80, 0.3); }
-.difficulty-heroic { background: rgba(50, 160, 255, 0.2); color: #4dabff; border: 1px solid rgba(50, 160, 255, 0.3); }
-.difficulty-mythic { background: rgba(163, 53, 238, 0.2); color: #a335ee; border: 1px solid rgba(163, 53, 238, 0.3); }
-
-.boss-loot-list {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 24px;
     padding: 10px 0;
 }
 
-.loot-slot-tag {
-    font-size: 12px !important;
+.boss-card {
+    background: var(--bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+}
+
+.boss-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.boss-card-header {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.boss-card-header .boss-name {
+    font-family: var(--font-title);
+    font-weight: 700;
     color: #fff;
+    font-size: 16px;
+    letter-spacing: 0.3px;
+}
+
+.boss-instance-label {
+    font-family: var(--font-accent);
+    font-weight: 600;
+    color: var(--color-text-dim);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.boss-card-header .difficulty-badge {
+    font-family: var(--font-accent);
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+}
+
+.difficulty-normal { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+.difficulty-heroic { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+.difficulty-mythic { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2); }
+
+.boss-loot-list {
+    padding: 8px 0;
+}
+
+.loot-slot-tag {
+    font-family: var(--font-accent);
+    font-size: 10px;
+    color: var(--color-text-dim);
     background: rgba(255, 255, 255, 0.05);
-    padding: 2px 5px;
+    padding: 2px 6px;
     border-radius: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-weight: 600;
 }
 
 .loot-entry {
     display: flex;
-    align-items: center;
-    padding: 8px 18px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-    transition: background 0.15s ease-out;
+    align-items: flex-start;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    transition: var(--transition);
 }
 
 .loot-entry:hover {
-    background: rgba(200, 168, 75, 0.08);
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .loot-entry:last-child {
@@ -145,19 +153,20 @@
 }
 
 .loot-note {
-    font-size: 17px !important;
-    color: #666;
+    font-family: var(--font-main);
+    font-size: 12px;
+    color: var(--color-text-dim);
     font-style: italic;
-    margin-top: 4px;
-    opacity: 0.8;
+    margin-top: 2px;
 }
 
 .loot-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    margin-right: 12px;
-    border: 1px solid #444;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    margin-right: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .loot-info {
@@ -167,9 +176,15 @@
 
 .loot-item-link {
     display: inline-block;
+    font-family: var(--font-main);
     font-weight: 600;
-    font-size: 17px !important;
+    font-size: 15px;
     text-decoration: none !important;
+    transition: var(--transition);
+}
+
+.loot-item-link:hover {
+    filter: brightness(1.2);
 }
 
 .loot-info .loot-item-link {
@@ -181,41 +196,46 @@
 }
 
 .loot-player-name {
-    font-size: 17px;
+    font-family: var(--font-accent);
+    font-size: 14px;
     font-weight: 600;
 }
 
 .loot-player-info {
-    font-size: 17px;
-    color: #888;
-}
-
-.loot-player-name {
-    font-weight: 600;
+    font-family: var(--font-accent);
+    font-size: 12px;
+    color: var(--color-text-dim);
+    font-weight: 500;
 }
 
 .loot-response {
-    font-size: 16px !important;
+    font-family: var(--font-accent);
+    font-size: 11px;
     background: rgba(255, 255, 255, 0.05);
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
     margin-left: 8px;
-    color: #aaa;
+    color: var(--color-text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-
-.raid-meta {
-    font-family: 'Cinzel', serif;
-    font-size: 1.2rem;
-    color: #fff;
+.loot-gp-badge {
+    font-family: var(--font-accent);
+    font-size: 11px;
     font-weight: 700;
-    opacity: 0.5;
+    color: var(--color-success);
+    background: rgba(34, 197, 94, 0.1);
+    padding: 2px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    white-space: nowrap;
 }
 
 .wowhead-link {
     text-decoration: none !important;
 }
-
 
 .quality-poor      { color: #9d9d9d; }
 .quality-common    { color: #ffffff; }
@@ -231,21 +251,7 @@
         grid-template-columns: 1fr;
     }
     
-    .panel-header-actions {
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 10px;
+    .raid-date-header {
+        padding: 12px 16px;
     }
-    
-}
-
-.loot-gp-badge {
-    font-size: 13px !important;
-    font-weight: 700;
-    color: #4caf50;
-    background: rgba(76, 175, 80, 0.1);
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid rgba(76, 175, 80, 0.2);
-    white-space: nowrap;
 }

@@ -2824,10 +2824,26 @@ $('#create-user-submit-btn').addEventListener('click', async () => {
   }
 });
 
+// ── Theme Handling ─────────────────────────────────────────────
+function initTheme() {
+  const savedTheme = localStorage.getItem('di-theme') || 'lumina';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  const themeSelect = $('#theme-select');
+  if (themeSelect) {
+    themeSelect.value = savedTheme;
+    themeSelect.onchange = (e) => {
+      const newTheme = e.target.value;
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('di-theme', newTheme);
+    };
+  }
+}
+
 // ================================================================
 //  INIT — load default tab
 // ================================================================
 async function init() {
+  initTheme();
   await loadSession();
   tabLoaded.roster = true;
   loadRoster();
