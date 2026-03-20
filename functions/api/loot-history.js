@@ -85,7 +85,6 @@ export async function onRequest({ request, env }) {
                 item_id,
                 slot,
                 character_id,
-                awarded_by_name,
                 awarded_at,
                 difficulty,
                 instance,
@@ -95,14 +94,13 @@ export async function onRequest({ request, env }) {
                 wish_value,
                 bonus_ids,
                 wish_data
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             )
             .bind(
               item.rclootcouncil_id,
               item.item_id,
               item.slot || '',
               item.character_id,
-              item.awarded_by_name || '',
               item.awarded_at || '',
               item.difficulty || '',
               item.instance || '',

@@ -13,9 +13,10 @@ export async function ensureTablesExist(env) {
     const tableInfo = await env.DB.prepare("PRAGMA table_info(loot_history)").all();
     const hasName = tableInfo.results && tableInfo.results.some(c => c.name === 'name');
     const hasOldAwardedCol = tableInfo.results && tableInfo.results.some(c => c.name === 'awarded_by_character_id');
+    const hasAwardedByName = tableInfo.results && tableInfo.results.some(c => c.name === 'awarded_by_name');
     const hasTypeCode = tableInfo.results && tableInfo.results.some(c => c.name === 'typeCode');
     
-    if (hasName || hasOldAwardedCol || !hasTypeCode) {
+    if (hasName || hasOldAwardedCol || hasAwardedByName || !hasTypeCode) {
       console.log('Detected old loot_history schema, dropping for recreation...');
       await env.DB.prepare("DROP TABLE loot_history").run();
     }
@@ -107,7 +108,6 @@ async function initializeDatabase(env) {
       item_id                 INTEGER NOT NULL,
       slot                    TEXT,
       character_id            INTEGER NOT NULL,
-      awarded_by_name         TEXT,
       awarded_at              TEXT,
       difficulty              TEXT,
       instance                TEXT,

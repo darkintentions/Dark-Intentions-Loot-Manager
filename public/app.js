@@ -2086,6 +2086,7 @@ function renderBossesView(items) {
                   <div class="loot-player-info">
                     <span class="loot-player-name" style="color: ${getClassColor(getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</span>
                   </div>
+                  ${item.note ? `<div class="loot-note" style="font-size: 0.65rem; color: #666; font-style: italic; margin-top: 2px;">"${escHtml(item.note)}"</div>` : ''}
                 </div>
               </div>
             `).join('')}
@@ -2121,7 +2122,10 @@ function renderListView(items) {
               </td>
               <td style="font-size: 0.75rem; color: #aaa;">${escHtml(item.typeCode || '—')}</td>
               <td style="color: #888;">${escHtml(item.slot || '—')}</td>
-              <td style="font-weight: 600; color: ${getClassColor(getRosterMemberClass(item.character_name))}">${escHtml(item.character_name || 'Unknown')}</td>
+              <td style="font-weight: 600; color: ${getClassColor(getRosterMemberClass(item.character_name))}">
+                ${escHtml(item.character_name || 'Unknown')}
+                ${item.note ? `<div style="font-size: 0.65rem; color: #666; font-style: italic; font-weight: normal;">"${escHtml(item.note)}"</div>` : ''}
+              </td>
               <td style="font-size: 0.8rem; color: #888;">${escHtml(item.boss)}</td>
             </tr>
           `).join('')}

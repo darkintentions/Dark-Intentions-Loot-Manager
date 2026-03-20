@@ -135,20 +135,20 @@ export async function onRequest({ request, env }) {
             env.DB.prepare(`
               INSERT OR REPLACE INTO loot_history (
                 rclootcouncil_id, item_id, slot, 
-                character_id, awarded_by_name, awarded_at, 
-                difficulty, instance, boss, typeCode
+                character_id, awarded_at, 
+                difficulty, instance, boss, typeCode, note
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).bind(
               rclcId.toString(),
               itemId,
               itemSlot,
               charInfo ? charInfo.id : 0,
-              item.awardedBy || '',
               awardedAt,
               difficulty,
               instance,
               boss,
-              typeCode
+              typeCode || '',
+              item.note || ''
             )
           );
           insertedCount++;
