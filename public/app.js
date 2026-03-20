@@ -2100,7 +2100,7 @@ function renderBossesView(items) {
                     <a href="https://www.wowhead.com/item=${item.item_id}" class="loot-item-link" data-wh-icon-size="small">
                       ${escHtml(item.name || `Item #${item.item_id}`)}
                     </a>
-                    <span class="loot-slot-tag">${escHtml(item.slot || item.typeCode || '')}</span>
+                    <span class="loot-slot-tag" style="font-size: 15px !important;">${escHtml(item.slot || item.typeCode || '')}</span>
                   </div>
                   <div class="loot-player-info" style="margin-top: 2px; display: flex; justify-content: space-between; align-items: baseline;">
                     <div>
@@ -2142,8 +2142,8 @@ function renderListView(items) {
                   </a>
                 </div>
               </td>
-              <td style="font-size: 0.75rem; color: #aaa;">${escHtml(item.typeCode || '—')}</td>
-              <td style="color: #888;">${escHtml(item.slot || '—')}</td>
+              <td style="font-size: 15px; color: #aaa;">${escHtml(item.typeCode || '—')}</td>
+              <td style="font-size: 15px; color: #888;">${escHtml(item.slot || '—')}</td>
               <td style="font-weight: 600; font-size: 17px;">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 15px;">
                   <div style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">
