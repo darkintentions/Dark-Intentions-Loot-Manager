@@ -99,7 +99,7 @@ export async function onRequest({ request, env }) {
             .bind(
               item.rclootcouncil_id,
               item.item_id,
-              item.slot || '',
+              (item.typeCode === 'TOKEN' ? 'TOKEN' : (item.slot || '')),
               item.character_id,
               item.awarded_at || '',
               item.difficulty || '',

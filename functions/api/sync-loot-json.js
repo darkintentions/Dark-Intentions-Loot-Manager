@@ -98,10 +98,14 @@ export async function onRequest({ request, env }) {
           const itemId = idMatch ? parseInt(idMatch[1], 10) : (item.itemID || item.itemId || 0);
           const itemName = nameMatch ? nameMatch[1] : (item.itemName || 'Unknown Item');
           
-          const itemSlot = item.itemSlot || '';
+          let itemSlot = item.itemSlot || '';
           const instance = item.instance || item.zone || '';
           const boss = item.boss || item.encounter || '';
           const typeCode = item.typeCode || '';
+
+          if (typeCode === 'TOKEN') {
+            itemSlot = 'TOKEN';
+          }
           
           // Parse date/time
           let awardedAt = '';
