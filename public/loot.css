@@ -208,6 +208,10 @@
     opacity: 0.5;
 }
 
+.wowhead-link {
+    text-decoration: none !important;
+}
+
 
 .quality-poor      { color: #9d9d9d; }
 .quality-common    { color: #ffffff; }
