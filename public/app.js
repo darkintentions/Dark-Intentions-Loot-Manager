@@ -2826,7 +2826,7 @@ $('#create-user-submit-btn').addEventListener('click', async () => {
 
 // ── Theme Handling ─────────────────────────────────────────────
 function initTheme() {
-  const savedTheme = localStorage.getItem('di-theme') || 'lumina';
+  const savedTheme = localStorage.getItem('di-theme') || 'lumina-light';
   document.documentElement.setAttribute('data-theme', savedTheme);
   const themeSelect = $('#theme-select');
   if (themeSelect) {
