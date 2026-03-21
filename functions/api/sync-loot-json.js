@@ -205,7 +205,13 @@ export async function onRequest({ request, env }) {
           // Map both "TOKEN" and "tier token" to the "tier token" key in settings
           const normalizedSlot = (itemSlot || '').toLowerCase();
           const slotKey = (normalizedSlot === 'token' || normalizedSlot === 'tier token') ? 'token' : normalizedSlot;
-          const gpAmount = gearMap.get(slotKey) || 0;
+          let gpAmount = gearMap.get(slotKey) || 0;
+
+          // User requirement: mog or off spec should give 0 GP
+          const respLower = (response || '').toLowerCase();
+          if (respLower === 'mog' || respLower === 'off spec' || respLower === 'offspec') {
+            gpAmount = 0;
+          }
 
           if (isNew && charInfo && gpAmount > 0) {
             gpStatements.push(

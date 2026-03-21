@@ -611,11 +611,15 @@ async function populateHistoryModal(transactions, characterName) {
     const originalReason = escHtml(t.reason || '');
     const originalTimestamp = escHtml(t.timestamp || '');
 
+    const isAdmin = currentUser && currentUser.is_admin;
+    const editBtn = isAdmin ? `<button class="transaction-icon-btn edit-transaction-btn" data-transaction-id="${t.id}" data-transaction-type="${t.type}" title="Edit">✎</button>` : '';
+    const deleteBtn = isAdmin ? `<button class="transaction-icon-btn delete-btn delete-transaction-btn" data-transaction-id="${t.id}" data-transaction-type="${t.type}" title="Delete">🗑</button>` : '';
+
     return `
       <div class="transaction-item" data-transaction-id="${t.id}" data-transaction-type="${t.type}"
            data-original-amount="${originalAmount}" data-original-reason="${originalReason}"
            data-original-timestamp="${originalTimestamp}">
-        <button class="transaction-icon-btn edit-transaction-btn" data-transaction-id="${t.id}" data-transaction-type="${t.type}" title="Edit">✎</button>
+        ${editBtn}
         <div class="transaction-content">
           <span class="transaction-type-badge ${badgeClass}">${badge}</span>
           <div class="transaction-details">
@@ -624,7 +628,7 @@ async function populateHistoryModal(transactions, characterName) {
             <span class="transaction-timestamp">${formattedTime}</span>
           </div>
         </div>
-        <button class="transaction-icon-btn delete-btn delete-transaction-btn" data-transaction-id="${t.id}" data-transaction-type="${t.type}" title="Delete">🗑</button>
+        ${deleteBtn}
       </div>
     `;
   }).join('');
