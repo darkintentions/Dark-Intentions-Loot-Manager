@@ -56,8 +56,37 @@
   --gradient-primary: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
 }
 
-/* Classic Theme (Gold & Dark Blue) */
+/* Version 1 Theme (Red & Darker Sidebar) */
 [data-theme="classic"] {
+  --bg-primary:       #0d0d16;
+  --bg-sidebar:       #08080f;
+  --bg-card:          #1b1b2a;
+  --bg-input:         #252538;
+  --bg-dropdown:      #151521;
+
+  --accent-purple:    #ff4d4d;
+  --accent-blue:      #e05555;
+  --color-gold:       #ff4d4d;
+  --color-gold-hover: #ff6e6e;
+  --color-gold-glow:  rgba(255, 77, 77, 0.1);
+  --color-gold-border:rgba(255, 77, 77, 0.3);
+
+  --color-text:       #e0e0e0;
+  --color-text-dim:   #aaa;
+  --color-text-muted: #888;
+  --color-border:     rgba(255, 255, 255, 0.08);
+
+  --color-success:    #4caf50;
+  --color-error:      #f44336;
+
+  --shadow-sm:        0 4px 10px rgba(0, 0, 0, 0.4);
+  --shadow-md:        0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-glow:      0 0 10px rgba(255, 77, 77, 0.2);
+  --gradient-primary: linear-gradient(135deg, #ff4d4d 0%, #a82e2e 100%);
+}
+
+/* Standard Theme (Gold & Dark Blue - Copy of original Version 1) */
+[data-theme="standard"] {
   --bg-primary:       #1e1e2d;
   --bg-sidebar:       #151521;
   --bg-card:          #1b1b2a;
