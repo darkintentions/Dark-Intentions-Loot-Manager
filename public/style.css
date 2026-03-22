@@ -432,6 +432,19 @@ body {
   transform: translateX(4px);
 }
 
+/* Sign Up Raid Section Hover */
+.signup-raid-section {
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.signup-raid-section:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: var(--color-gold) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: default;
+}
+
 .nav-item.active {
   background: linear-gradient(90deg, rgba(168, 85, 247, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
   color: #fff;
