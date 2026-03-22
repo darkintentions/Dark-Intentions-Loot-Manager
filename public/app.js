@@ -2279,71 +2279,15 @@ function renderSignups(signups) {
     }
 
     html += `
-      <div class="signup-raid-section" style="margin-bottom: 30px; border: 1px solid var(--color-border); border-radius: 8px; background: rgba(255,255,255,0.02); overflow: hidden;">
-        <div class="signup-raid-header" style="padding: 15px 20px; border-bottom: 1px solid var(--color-border); background: rgba(0,0,0,0.15);">
-          <div style="display: flex; align-items: center; margin-bottom: 8px;">
-            <span class="ep-bubble">${epValue}</span>
+      <div class="signup-raid-section" style="margin-bottom: 20px; border: 1px solid var(--color-border); border-radius: 8px; background: rgba(255,255,255,0.02); overflow: hidden;">
+        <div class="signup-raid-header" style="padding: 18px 20px; background: rgba(0,0,0,0.15);">
+          <div style="display: flex; align-items: center; margin-bottom: 10px;">
+            <span class="ep-bubble" style="margin-right: 12px; transform: scale(1.1);">${epValue}</span>
             <strong style="font-size: 1.15em; color: #fff;">Raid Date: ${formatDateWithDay(date)}</strong>
           </div>
-          <div style="font-size: 0.95em; color: var(--color-text-muted); line-height: 1.4;">
+          <div style="font-size: 16px; color: var(--color-text); line-height: 1.5; font-weight: 500;">
             ${summaryMessage}
           </div>
-        </div>
-        <div class="signup-raid-content" style="padding: 15px;">
-          <table class="data-table" style="table-layout: fixed; width: 100%;">
-            <colgroup>
-              <col style="width: 25%;">
-              <col style="width: 15%;">
-              <col style="width: 10%;">
-              <col style="width: 2px;">
-              <col style="width: 25%;">
-              <col style="width: 15%;">
-              <col style="width: 10%;">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Character</th>
-                <th>Status</th>
-                <th>EP</th>
-                <th style="border-left: 1px solid var(--color-border); padding: 0;"></th>
-                <th>Character</th>
-                <th>Status</th>
-                <th>EP</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${(() => {
-                let rows = '';
-                for (let j = 0; j < records.length; j += 2) {
-                  const r1 = records[j];
-                  const r2 = records[j + 1];
-
-                  const getCellHtml = (r) => {
-                    const statusClass = r ? getSignupStatusClass(r.status) : '';
-                    const epBadge = r ? (r.ep_awarded 
-                      ? `<span style="color: #4CAF50; font-weight: bold;">+${r.ep_awarded}</span>` 
-                      : (r.status !== 'Unknown' ? '<span style="color: #FFC107; font-size: 0.85em;">Late / No Point</span>' : '<span style="color: #888; font-size: 0.85em;">—</span>')) : '';
-                    const classCssName = r ? classCss(r.class) : '';
-                    
-                    return `
-                      <td>${r ? `<strong class="${classCssName}">${escHtml(r.character_name)}</strong>` : ''}</td>
-                      <td class="${statusClass}">${r ? escHtml(r.status) : ''}</td>
-                      <td>${epBadge}</td>
-                    `;
-                  };
-
-                  rows += `
-                    <tr>
-                      ${getCellHtml(r1)}
-                      <td style="border-left: 1px solid var(--color-border); padding: 0; width: 0;"></td>
-                      ${getCellHtml(r2)}
-                    </tr>
-                  `;
-                }
-                return rows;
-              })()}
-            </tbody>
-          </table>
         </div>
       </div>
     `;
