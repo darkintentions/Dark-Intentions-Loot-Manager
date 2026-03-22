@@ -2281,12 +2281,12 @@ function renderSignups(signups) {
     html += `
       <div class="signup-raid-section" style="margin-bottom: 20px; border: 1px solid var(--color-border); border-radius: 8px; background: rgba(255,255,255,0.02); overflow: hidden;">
         <div class="signup-raid-header" style="padding: 18px 20px; background: rgba(0,0,0,0.15);">
-          <div style="display: flex; align-items: center; margin-bottom: 10px;">
-            <span class="ep-bubble" style="margin-right: 12px; transform: scale(1.1);">${epValue}</span>
-            <strong style="font-size: 1.15em; color: #fff;">Raid Date: ${formatDateWithDay(date)}</strong>
+          <div style="margin-bottom: 8px;">
+            <strong style="font-size: 16px; color: #fff;">Raid Date: ${formatDateWithDay(date)}</strong>
           </div>
-          <div style="font-size: 16px; color: var(--color-text); line-height: 1.5; font-weight: 500;">
-            ${summaryMessage}
+          <div style="font-size: 16px; color: var(--color-text); line-height: 1.5; font-weight: 500; display: flex; align-items: center;">
+            <span class="ep-bubble" style="margin-right: 12px;">${epValue}</span>
+            <span>${summaryMessage}</span>
           </div>
         </div>
       </div>

@@ -405,7 +405,7 @@ body {
 }
 
 .last-updated-text {
-    font-size: 0.85rem;
+    font-size: 16px;
     color: var(--color-text-muted);
     margin-right: 15px;
     font-family: var(--font-accent);
@@ -413,7 +413,7 @@ body {
 
 .ep-bubble {
     font-family: var(--font-accent);
-    font-size: 11px;
+    font-size: 16px;
     font-weight: 600;
     color: #4caf50;
     background: rgba(76, 175, 80, 0.15);
