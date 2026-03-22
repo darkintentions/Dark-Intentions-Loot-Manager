@@ -153,12 +153,12 @@
   --bg-input:         #252538;
   --bg-dropdown:      #151521;
 
-  --accent-purple:    #ffffff;
-  --accent-blue:      #ffffff;
-  --color-gold:       #ffffff;
-  --color-gold-hover: #f0f0f0;
-  --color-gold-glow:  rgba(255, 255, 255, 0.1);
-  --color-gold-border:rgba(255, 255, 255, 0.4);
+  --accent-purple:    #cccccc;
+  --accent-blue:      #cccccc;
+  --color-gold:       #cccccc;
+  --color-gold-hover: #bbbbbb;
+  --color-gold-glow:  rgba(204, 204, 204, 0.1);
+  --color-gold-border:rgba(204, 204, 204, 0.4);
 
   --color-text:       #ffffff;
   --color-text-dim:   #b0b0b0;
@@ -166,51 +166,56 @@
   --color-border:     rgba(255, 255, 255, 0.1);
 
   --color-success:    #22c55e;
-  --color-error:      #ffffff;
+  --color-error:      #cccccc;
 
   --shadow-sm:        0 4px 12px rgba(0, 0, 0, 0.8);
   --shadow-md:        0 12px 36px rgba(0, 0, 0, 0.9);
-  --shadow-glow:      0 0 15px rgba(255, 255, 255, 0.2);
+  --shadow-glow:      0 0 15px rgba(204, 204, 204, 0.2);
   --gradient-primary: transparent;
 }
 
 [data-theme="yaj"] .btn {
   background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  color: #ffffff !important;
+  border: 1px solid rgba(204, 204, 204, 0.3) !important;
+  color: #cccccc !important;
   background-image: none !important;
   box-shadow: none !important;
 }
 
 [data-theme="yaj"] .btn:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: #ffffff !important;
+  background: rgba(204, 204, 204, 0.1) !important;
+  border-color: #cccccc !important;
 }
 
 [data-theme="yaj"] .btn-primary,
 [data-theme="yaj"] .btn-danger,
 [data-theme="yaj"] .btn-icon-only {
   background: transparent !important;
-  border: 1px solid #ffffff !important;
-  color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid #cccccc !important;
+  color: #cccccc !important;
+  box-shadow: 0 0 10px rgba(204, 204, 204, 0.1) !important;
 }
 
 [data-theme="yaj"] .accent-glow {
   background-image: none !important;
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(204, 204, 204, 0.1) !important;
 }
 
 [data-theme="yaj"] .nav-item.active {
   background-image: none !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-right: 3px solid #ffffff !important;
+  background: rgba(204, 204, 204, 0.05) !important;
+  border-right: 3px solid #cccccc !important;
 }
 
 [data-theme="yaj"] .message.error {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
+  background: rgba(204, 204, 204, 0.05) !important;
+  border-color: rgba(204, 204, 204, 0.2) !important;
+  color: #cccccc !important;
+}
+
+[data-theme="yaj"] .coming-soon-icon,
+[data-theme="yaj"] .btn-icon {
+  filter: brightness(0) invert(0.8);
 }
 
 [data-theme="yaj"] .coming-soon-icon,
