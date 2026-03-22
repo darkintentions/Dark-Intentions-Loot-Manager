@@ -83,7 +83,7 @@
   --gradient-primary: linear-gradient(135deg, #c8a84b 0%, #8b6e2a 100%);
 }
 
-/* Lumina Light Theme (Translucent/Glassy) */
+/* Moon Theme (Translucent/Glassy) */
 [data-theme="lumina-light"] {
   --bg-primary:       #12122b;
   --bg-secondary:     #1a1a3a;
@@ -110,6 +110,34 @@
   --shadow-md:        0 12px 40px rgba(0, 0, 0, 0.4);
   --shadow-glow:      0 0 20px rgba(192, 132, 252, 0.5);
   --gradient-primary: linear-gradient(135deg, #c084fc 0%, #60a5fa 100%);
+}
+
+/* Yaj Theme (Geometric Stealth) */
+[data-theme="yaj"] {
+  --bg-primary:       #0c0c0c;
+  --bg-sidebar:       #121212;
+  --bg-card:          #181818;
+  --bg-input:         #1c1c1c;
+
+  --accent-purple:    #cc0000;
+  --accent-blue:      #ffffff;
+  --color-gold:       #cc0000;
+  --color-gold-hover: #ff1a1a;
+  --color-gold-glow:  rgba(204, 0, 0, 0.2);
+  --color-gold-border:rgba(204, 0, 0, 0.4);
+
+  --color-text:       #ffffff;
+  --color-text-dim:   #b0b0b0;
+  --color-text-muted: #666666;
+  --color-border:     rgba(255, 255, 255, 0.08);
+
+  --color-success:    #22c55e;
+  --color-error:      #cc0000;
+
+  --shadow-sm:        0 4px 12px rgba(0, 0, 0, 0.8);
+  --shadow-md:        0 12px 36px rgba(0, 0, 0, 0.9);
+  --shadow-glow:      0 0 15px rgba(204, 0, 0, 0.4);
+  --gradient-primary: linear-gradient(135deg, #cc0000 0%, #1a1a1a 100%);
 }
 
 /* ── Reset ──────────────────────────────────────────────────────── */
