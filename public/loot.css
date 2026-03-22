@@ -178,7 +178,7 @@
     display: inline-block;
     font-family: var(--font-main);
     font-weight: 600;
-    font-size: 15px;
+    font-size: 16px;
     text-decoration: none !important;
     transition: var(--transition);
 }
@@ -197,7 +197,7 @@
 
 .loot-player-name {
     font-family: var(--font-accent);
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
 }
 
@@ -210,7 +210,7 @@
 
 .loot-response {
     font-family: var(--font-accent);
-    font-size: 11px;
+    font-size: 14px;
     background: rgba(255, 255, 255, 0.05);
     padding: 2px 8px;
     border-radius: 12px;

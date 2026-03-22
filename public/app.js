@@ -2123,7 +2123,7 @@ function renderBossesView(items) {
                   <div class="loot-player-info" style="margin-top: 2px; display: flex; justify-content: space-between; align-items: baseline;">
                     <div>
                       <span class="loot-player-name" style="color: ${getClassColor(item.character_class || getRosterMemberClass(item.character_name))}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escHtml(item.character_name || 'Unknown')}</span>
-                      ${item.response ? `<span class="loot-response" style="margin-left: 8px; font-size: 16px; color: #aaa; font-style: italic;">(${escHtml(item.response)})</span>` : ''}
+                      ${item.response ? `<span class="loot-response" style="margin-left: 8px; color: #aaa; font-style: italic;">(${escHtml(item.response)})</span>` : ''}
                     </div>
                     ${item.note ? `<div class="loot-note" style="margin-top: 0;">"${escHtml(item.note)}"</div>` : ''}
                   </div>
