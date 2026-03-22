@@ -59,8 +59,15 @@ export async function onRequest({ request, env }) {
         wish_data: item.wish_data ? JSON.parse(item.wish_data) : [],
       }));
 
+      // Fetch last sync timestamp
+      const syncResult = await env.DB.prepare("SELECT value FROM settings WHERE key = 'last_loot_sync'").first();
+      const lastLootSync = syncResult ? syncResult.value : null;
+
       return new Response(
-        JSON.stringify({ history_items: items }),
+        JSON.stringify({ 
+          history_items: items,
+          last_loot_sync: lastLootSync
+        }),
         { headers }
       );
     } catch (err) {
@@ -130,6 +137,13 @@ export async function onRequest({ request, env }) {
       }
 
       await logEvent(env, 'success', 'Loot', `Stored ${insertedCount} loot history items`, { inserted: insertedCount });
+
+      // Update last_loot_sync timestamp
+      const now = new Date().toISOString();
+      await env.DB.prepare(`
+        INSERT OR REPLACE INTO settings (key, value, updated_at)
+        VALUES ('last_loot_sync', ?, datetime('now'))
+      `).bind(now).run();
 
       return new Response(
         JSON.stringify({

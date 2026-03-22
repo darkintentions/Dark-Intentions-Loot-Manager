@@ -274,6 +274,12 @@ export async function onRequest({ request, env }) {
          OR response = 'Personal Loot - Non tradeable'
     `));
 
+    // Update last_loot_sync timestamp
+    allStatements.push(env.DB.prepare(`
+      INSERT OR REPLACE INTO settings (key, value, updated_at)
+      VALUES ('last_loot_sync', ?, datetime('now'))
+    `).bind(now));
+
     await env.DB.batch(allStatements);
 
     await logEvent(env, 'success', 'Loot', `Processed ${insertedCount + updatedCount} loot items (${insertedCount} new, ${updatedCount} updated, ${gpAwardedCount} GP)`, { insertedCount, updatedCount, gpAwardedCount, errors });

@@ -2032,6 +2032,18 @@ async function loadLootHistory() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     currentLootItems = data.history_items || [];
+    
+    // Display last updated timestamp
+    const lastUpdatedEl = $('#loot-last-updated');
+    if (lastUpdatedEl) {
+      if (data.last_loot_sync) {
+        const date = new Date(data.last_loot_sync);
+        lastUpdatedEl.textContent = `Last Updated: ${date.toLocaleString()}`;
+      } else {
+        lastUpdatedEl.textContent = '';
+      }
+    }
+
     renderLootContainer();
   } catch (err) {
     console.error('Error loading loot:', err);
@@ -2249,17 +2261,35 @@ function renderSignups(signups) {
   let html = '';
   dates.forEach((date, i) => {
     const records = grouped[date];
-    // Start expanded for the most recent date, collapsed for others
-    const collapsedClass = i === 0 ? '' : 'collapsed';
-    const displayStyle = i === 0 ? '' : 'style="display: none;"';
+    
+    // Determine EP value for the bubble
+    const epRecord = records.find(r => r.ep_awarded > 0);
+    const epValue = epRecord ? `+${epRecord.ep_awarded} EP` : '+1 EP';
+    
+    // Logic for "Everyone except for"
+    const missedDeadline = records
+      .filter(r => !r.ep_awarded || r.ep_awarded === 0)
+      .map(r => r.character_name);
+
+    let summaryMessage = '';
+    if (missedDeadline.length === 0) {
+      summaryMessage = `Good job! Everyone signed up early before the Monday 6 PM EST deadline.`;
+    } else {
+      summaryMessage = `Everyone signed up in time before the Monday 6 PM EST deadline except for: <span style="color: var(--color-gold); font-weight: 600;">${escHtml(missedDeadline.join(', '))}</span>`;
+    }
 
     html += `
-      <div class="collapsible-section" style="margin-bottom: 10px;">
-        <button class="collapsible-header ${collapsedClass}" data-target="signups-${date}" style="width: 100%; text-align: left; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: #e1e1e6;">
-          <span class="collapse-icon">${i === 0 ? '▼' : '▶'}</span>
-          <strong style="margin-left: 10px; font-size: 1.1em;">Raid Date: ${formatDateWithDay(date)} <span style="font-weight: normal; font-size: 0.9em; color: #aaa;">(${records.length} Signups)</span></strong>
-        </button>
-        <div id="signups-${date}" class="collapsible-content" ${displayStyle}>
+      <div class="signup-raid-section" style="margin-bottom: 30px; border: 1px solid var(--color-border); border-radius: 8px; background: rgba(255,255,255,0.02); overflow: hidden;">
+        <div class="signup-raid-header" style="padding: 15px 20px; border-bottom: 1px solid var(--color-border); background: rgba(0,0,0,0.15);">
+          <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            <span class="ep-bubble">${epValue}</span>
+            <strong style="font-size: 1.15em; color: #fff;">Raid Date: ${formatDateWithDay(date)}</strong>
+          </div>
+          <div style="font-size: 0.95em; color: var(--color-text-muted); line-height: 1.4;">
+            ${summaryMessage}
+          </div>
+        </div>
+        <div class="signup-raid-content" style="padding: 15px;">
           <table class="data-table" style="table-layout: fixed; width: 100%;">
             <colgroup>
               <col style="width: 25%;">
@@ -2275,7 +2305,7 @@ function renderSignups(signups) {
                 <th>Character</th>
                 <th>Status</th>
                 <th>EP</th>
-                <th style="border-left: 2px solid rgba(255,255,255,0.1); padding: 0;"></th>
+                <th style="border-left: 1px solid var(--color-border); padding: 0;"></th>
                 <th>Character</th>
                 <th>Status</th>
                 <th>EP</th>
@@ -2292,7 +2322,7 @@ function renderSignups(signups) {
                     const statusClass = r ? getSignupStatusClass(r.status) : '';
                     const epBadge = r ? (r.ep_awarded 
                       ? `<span style="color: #4CAF50; font-weight: bold;">+${r.ep_awarded}</span>` 
-                      : (r.status !== 'Unknown' ? '<span style="color: #FFC107; font-size: 0.85em;">Pending</span>' : '<span style="color: #888; font-size: 0.85em;">—</span>')) : '';
+                      : (r.status !== 'Unknown' ? '<span style="color: #FFC107; font-size: 0.85em;">Late / No Point</span>' : '<span style="color: #888; font-size: 0.85em;">—</span>')) : '';
                     const classCssName = r ? classCss(r.class) : '';
                     
                     return `
@@ -2305,7 +2335,7 @@ function renderSignups(signups) {
                   rows += `
                     <tr>
                       ${getCellHtml(r1)}
-                      <td style="border-left: 2px solid rgba(255,255,255,0.1); padding: 0; width: 0;"></td>
+                      <td style="border-left: 1px solid var(--color-border); padding: 0; width: 0;"></td>
                       ${getCellHtml(r2)}
                     </tr>
                   `;
@@ -2320,25 +2350,6 @@ function renderSignups(signups) {
   });
 
   container.innerHTML = html;
-
-  // Add click listeners to new collapsible headers
-  container.querySelectorAll('.collapsible-header').forEach(header => {
-    header.addEventListener('click', () => {
-      const isCollapsed = header.classList.contains('collapsed');
-      const targetId = header.getAttribute('data-target');
-      const targetContent = document.getElementById(targetId);
-      
-      if (isCollapsed) {
-        header.classList.remove('collapsed');
-        header.querySelector('.collapse-icon').textContent = '▼';
-        targetContent.style.display = 'block';
-      } else {
-        header.classList.add('collapsed');
-        header.querySelector('.collapse-icon').textContent = '▶';
-        targetContent.style.display = 'none';
-      }
-    });
-  });
 }
 
 
